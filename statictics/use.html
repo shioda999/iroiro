@@ -2,17 +2,126 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <title>統計計算の使い方</title>
+    <meta charset="utf-8">
+    <title>統計計算の使い方</title>
+    <link rel="stylesheet" type="text/css" href="src/style.css">
 </head>
 
 <body>
-<div id="text"></div>
+<div class = "headline">・出来ること</div>
+<p class = "normal">
+    ・サンプルから平均や分散を求める。</br>
+    ・母平均や母分散の検定・推定を行う(母集団は正規分布であることが前提)。
+</p>
+<div class = "headline">・出来ないこと</div>
+<p class = "normal">
+    ・2標本t検定</br>
+    ・スチューデントのt検定以外のt検定</br>
+    ・F検定
+</p>
+<div class = "headline">・使い方</div>
+<p class = "normal">
+    ・<a href="#format">書式</a>に従ってjsonファイルにデータを入力する。</br>
+    ・<button type="button">読込</button>をクリックすると、ファイル選択ダイアログが出てくるので、作成したjsonファイルを選択。
+</p>
+<div class = "headline">・使用例</div>
+<div class = "normal">例1)&nbsp;&nbsp;&nbsp;&nbsp;<a href="example/score.json" download="score.json">score.json</a>
+    <p class = "example">
+        ある試験における生徒たちの得点は以下のようになった。</br>
+        87, 66, 53, 49, 72, 75, 69, 81, 96, 77, 62, 76, 73, 51, 49, 32, 55</br>
+        平均と分散をそれぞれ小数第5位まで求めよ。</br></br>
+    </p>
+</div>
+<div class = "normal">例2)&nbsp;&nbsp;&nbsp;&nbsp;<a href="example/nuts.json" download="nuts.json">nuts.json</a>
+    <p class = "example">
+        あるお菓子を10袋購入してナッツの数を調べたところ、平均9.2であった。</br>
+        製造会社が発表しているデータによれば、ナッツの数は平均10.3個, 標準偏差2.1個である。</br>
+        標本のナッツは少なすぎるといえるだろうか。危険率5%で検定せよ。</br></br>
+    </p>
+</div>
+<div class = "normal">例3)&nbsp;&nbsp;&nbsp;&nbsp;<a href="example/mouse.json" download="mouse.json">mouse.json</a>
+    <p class = "example">
+        たくさんの実験用マウスのうち10匹を無作為に選び、体重(g)を測定したところ以下のようなデータになった。</br>
+        425, 468, 385, 440, 323, 489, 366, 426, 438, 398</br>
+        このときの母平均を信頼区間80%で求めよ。</br></br>
+    </p>
+</div>
+<div class = "headline" id = "format">・書式</div>
+<div class = "normal">
+    ・jsonファイルの書式が正しいかどうかは<a href = "https://jsonlint.com/" target="_blank">https://jsonlint.com/</a>
+    で確かめられます。</br>
+    ・データ全体は{}で囲むこと。</br>
+    ・各要素の間に,をいれること。</br>
+    ・各変数名は以下の表に従ってください。</br>
+    <table border="1">
+        <tr>
+            <th>名前</th>
+            <th>意味</th>
+            <th>使用例</th>
+        </tr>
+        <tr>
+            <td>sample</td>
+            <td>標本</td>
+            <td>"sample":[10, 20, 30]</td>
+        </tr>
+        <tr>
+            <td>n</td>
+            <td>標本数</td>
+            <td>"n":3</td>
+        </tr>
+        <tr>
+            <td>mu</td>
+            <td>母平均</td>
+            <td>"mu": 5</td>
+        </tr>
+        <tr>
+            <td>X</td>
+            <td>標本平均</td>
+            <td>"X": 5</td>
+        </tr>
+        <tr>
+            <td>sigma</td>
+            <td>母標準偏差</td>
+            <td>"sigma": 5</td>
+        </tr>
+        <tr>
+            <td>sigma2</td>
+            <td>母分散</td>
+            <td>"sigma2": 25</td>
+        </tr>
+        <tr>
+            <td>S</td>
+            <td>標準偏差</td>
+            <td>"S": 5</td>
+        </tr>
+        <tr>
+            <td>S2</td>
+            <td>標本の分散</td>
+            <td>"S2": 25</td>
+        </tr>
+        <tr>
+            <td>percent</td>
+            <td>危険率</td>
+            <td>"percent": 10</td>
+        </tr>
+        <tr>
+            <td>two_side</td>
+            <td>必ず両側検定</td>
+            <td>"two_side": true</td>
+        </tr>
+    </table>
+    ※注意点
+    <p class = "example">
+        ・sampleがある場合には、n, X, S, S2は不要。</br>
+        ・基本的に片側検定をするようになっているので、両側検定したい場合には"two_side": trueにすること。
+    </p>
+</div>
+</br></br></br>
 </body>
 <style>
   * {
-    padding: 0;
-    margin: 0
-  }
+        padding: 0;
+        margin: 0
+    }
 </style>
 </html>

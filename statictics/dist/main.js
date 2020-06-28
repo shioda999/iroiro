@@ -102,21 +102,16 @@ var Calc = /** @class */ (function () {
     function Calc() {
         var _this = this;
         this.result = "";
-        this.error = "";
-        this.result_nest = 0;
         this.calculate = function (data) {
             var i;
             _this.load_and_check(data); //データの格納
             _this.test(); //実際にこのような標本を抽出できる確率
             _this.mu_estimate(); //母平均の推定
             _this.sigma_estimate(); //母分散の推定
-            var output = _this.error + "</br>" + _this.result;
+            var output = "</br>" + _this.result;
             document.getElementById("text").innerHTML = output;
         };
     }
-    Calc.prototype.print_error = function (str) {
-        this.error += str + "</br>";
-    };
     Calc.prototype.print = function (str, type) {
         if (type === void 0) { type = "normal"; }
         var head, end;
@@ -135,7 +130,7 @@ var Calc = /** @class */ (function () {
         this.sigma = data.sigma;
         this.sigma2 = data.sigma2;
         this.mu = data.mu;
-        this.X_bar = data.X_bar;
+        this.X = data.X;
         this.percent = data.percent / 100;
         this.sample = data.sample;
         this.two_side = data.two_side;
@@ -143,7 +138,7 @@ var Calc = /** @class */ (function () {
         if (this.decimal_place)
             this.decimal_place = Math.floor(this.decimal_place);
         if (data.sigma && data.sigma2)
-            this.print_error("sigma or sigma2のどちらか片方のみにしてください。");
+            this.print("sigma or sigma2のどちらか片方のみにしてください。", "error");
         else {
             if (data.sigma)
                 this.sigma2 = Math.pow(data.sigma, 2);
@@ -151,7 +146,7 @@ var Calc = /** @class */ (function () {
                 this.sigma = Math.sqrt(data.sigma2);
         }
         if (data.S && data.S2)
-            this.print_error("S or S2のどちらか片方のみにしてください。");
+            this.print("S or S2のどちらか片方のみにしてください。", "error");
         else {
             if (data.S)
                 this.S2 = Math.pow(data.S, 2);
@@ -160,38 +155,46 @@ var Calc = /** @class */ (function () {
         }
         if (data.sample) {
             if (data.n)
-                this.print_error("サンプルがあるのでnは不要です。");
+                this.print("サンプルがあるのでnは不要です。", "error");
             if (data.S)
-                this.print_error("サンプルがあるのでSは不要です。");
+                this.print("サンプルがあるのでSは不要です。", "error");
             if (data.S2)
-                this.print_error("サンプルがあるのでS2は不要です。");
-            if (data.X_bar)
-                this.print_error("サンプルがあるのでX_barは不要です。");
+                this.print("サンプルがあるのでS2は不要です。", "error");
+            if (data.X)
+                this.print("サンプルがあるのでXは不要です。", "error");
             this.n = data.sample.length;
-            this.X_bar = this.S2 = 0;
+            this.X = this.S2 = 0;
             for (i = 0; i < this.n; i++) {
-                this.X_bar += data.sample[i];
+                this.X += data.sample[i] / this.n;
             }
-            this.X_bar /= this.n;
             for (i = 0; i < this.n; i++) {
-                this.S2 += Math.pow(this.X_bar - data.sample[i], 2) / this.n;
+                this.S2 += Math.pow(this.X - data.sample[i], 2) / this.n;
             }
             this.S = Math.sqrt(this.S2);
         }
+        this.print("・入力データ", "headline");
         if (!this.decimal_place) {
             this.print("※decimal_placeが指定されなかったので、小数第3位まで表示。");
             this.decimal_place = 3;
         }
         else
             this.print("小数第" + this.decimal_place + "位まで表示。");
-        this.print("標本数   n = " + this.n);
-        this.print("標本平均 X = " + this.Round(this.X_bar));
-        this.print("標本偏差 S = " + this.Round(this.S));
-        this.print("標本分散 S^2 = " + this.Round(this.S2));
-        this.print("母平均   μ = " + this.Round(this.mu));
-        this.print("母分散   σ^2 = " + this.Round(this.sigma2));
-        this.print("母平均(不偏推定量)μ = " + this.Round(this.X_bar));
-        this.print("母分散(不偏推定量)σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))));
+        if (this.n)
+            this.print("標本数   n = " + this.n);
+        if (this.mu)
+            this.print("母平均   μ = " + this.Round(this.mu));
+        if (this.X)
+            this.print("標本平均 X = " + this.Round(this.X));
+        if (this.sigma)
+            this.print("母標準偏差   σ = " + this.Round(this.sigma));
+        if (this.sigma2)
+            this.print("母分散   σ^2 = " + this.Round(this.sigma2));
+        if (this.S)
+            this.print("標準偏差 S = " + this.Round(this.S));
+        if (this.S2)
+            this.print("標本の分散 S^2 = " + this.Round(this.S2));
+        if (this.S2 && this.n && !this.sigma)
+            this.print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))));
         var str = this.two_side ? "(必ず両側検定)" : "";
         if (!this.percent) {
             this.print("※percentが指定されなかったので、危険率5%で検定。" + str);
@@ -199,106 +202,102 @@ var Calc = /** @class */ (function () {
         }
         else
             this.print("危険率" + this.percent * 100 + "%" + str);
-        this.print_br();
-        this.print_br();
     };
     Calc.prototype.test = function () {
-        if (this.n && this.X_bar && this.mu && (this.sigma || this.S)) {
-            this.print("・実際に上記のような標本を抽出できる確率");
+        if (this.n && this.X && this.mu && (this.sigma || this.S)) {
+            this.print("・標本平均が今以上になる確率", "headline");
             if (this.sigma) {
-                var v = Math.sqrt(this.n) * (this.X_bar - this.mu) / this.sigma;
-                this.print("Z = √n(X_bar - μ)/σ = " + this.Round(v));
+                var v = Math.sqrt(this.n) * (this.X - this.mu) / this.sigma;
+                this.print("Z = √n(X - μ)/σ = " + this.Round(v));
                 this.print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
-                //this.print("Z = " + Math.sqrt(n) * (X_bar ))
+                //this.print("Z = " + Math.sqrt(n) * (X ))
             }
             else {
-                var v = Math.sqrt(this.n - 1) * (this.X_bar - this.mu) / this.S;
+                var v = Math.sqrt(this.n - 1) * (this.X - this.mu) / this.S;
                 this.print("母分散が不明なので、あくまで参考。");
-                this.print("Z = √n-1)(X_bar - μ)/S = " + this.Round(v));
+                this.print("Z = √n-1)(X - μ)/S = " + this.Round(v));
                 this.print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
             }
-            this.print_br();
         }
     };
     Calc.prototype.mu_estimate = function () {
-        if (this.n && this.X_bar && (this.sigma || this.S)) {
-            this.print("・母平均μの" + (this.mu ? "検定" : "区間推定"));
+        if (this.n && this.X && (this.sigma || this.S)) {
+            this.print("・母平均μの" + (this.mu ? "検定" : "区間推定"), "headline");
             if (this.sigma) {
                 if (this.mu && !this.two_side) { //片側検定
-                    this.print("Z = √n(X_bar - μ)/σはN(0,1)に従う。");
+                    this.print("Z = √n(X - μ)/σはN(0,1)に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent), r = v * this.sigma / Math.sqrt(this.n);
-                    if (this.X_bar > this.mu) {
+                    if (this.X > this.mu) {
                         this.print(" Z < " + this.Round(v));
-                        this.conclusion("μ", this.Round(this.X_bar - r), undefined, this.mu);
+                        this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                     }
                     else {
                         this.print(-this.Round(v) + " < Z ");
-                        this.conclusion("μ", undefined, this.Round(this.X_bar + r), this.mu);
+                        this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                     }
                 }
                 else { //両側検定
-                    this.print("Z = √n(X_bar - μ)/σはN(0,1)に従う。");
+                    this.print("Z = √n(X - μ)/σはN(0,1)に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent / 2), r = v * this.sigma / Math.sqrt(this.n);
                     this.print(-this.Round(v) + " < Z < " + this.Round(v));
-                    this.conclusion("μ", this.Round(this.X_bar - r), this.Round(this.X_bar + r), this.mu);
+                    this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                 }
             }
             else {
                 if (this.mu && !this.two_side) { //片側検定
                     this.print("(1)nが小さいとき、");
-                    this.print("T = √n - 1)(X_bar - μ) / Sは自由度n - 1のt分布に従う。");
+                    this.print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["T"])(this.percent, this.n - 1), r = void 0;
                     if (v == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                        this.print("数値は表に乗っていませんでした。");
+                        this.print("数値は表に乗っていませんでした。", "error");
                     else {
                         r = v * this.S / Math.sqrt(this.n - 1);
-                        if (this.X_bar > this.mu) {
+                        if (this.X > this.mu) {
                             this.print(" T < " + this.Round(v));
-                            this.conclusion("μ", this.Round(this.X_bar - r), undefined, this.mu);
+                            this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                         }
                         else {
                             this.print(-this.Round(v) + " < T ");
-                            this.conclusion("μ", undefined, this.Round(this.X_bar + r), this.mu);
+                            this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                         }
                     }
                     this.print("(2)nが大きいとき、");
-                    this.print("Z = √n-1)(X_bar - μ)/SはN(0,1)に従う。");
+                    this.print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
                     v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent), r = v * this.S / Math.sqrt(this.n - 1);
-                    if (this.X_bar > this.mu) {
+                    if (this.X > this.mu) {
                         this.print(" Z < " + this.Round(v));
-                        this.conclusion("μ", this.Round(this.X_bar - r), undefined, this.mu);
+                        this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                     }
                     else {
                         this.print(-this.Round(v) + " < Z ");
-                        this.conclusion("μ", undefined, this.Round(this.X_bar + r), this.mu);
+                        this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                     }
                 }
                 else { //両側検定
                     this.print("(1)nが小さいとき、");
-                    this.print("T = √n - 1)(X_bar - μ) / Sは自由度n - 1のt分布に従う。");
+                    this.print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["T"])(this.percent / 2, this.n - 1), r = void 0;
                     if (v == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                        this.print("数値は表に乗っていませんでした。");
+                        this.print("数値は表に乗っていませんでした。", "error");
                     else {
                         r = v * this.S / Math.sqrt(this.n - 1);
                         this.print(-this.Round(v) + " < T < " + this.Round(v));
-                        this.conclusion("μ", this.Round(this.X_bar - r), this.Round(this.X_bar + r), this.mu);
+                        this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                     }
                     this.print("(2)nが大きいとき、");
-                    this.print("Z = √n-1)(X_bar - μ)/SはN(0,1)に従う。");
+                    this.print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
                     v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent / 2), r = v * this.S / Math.sqrt(this.n - 1);
                     this.print(-this.Round(v) + " < Z < " + this.Round(v));
-                    this.conclusion("μ", this.Round(this.X_bar - r), this.Round(this.X_bar + r), this.mu);
+                    this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                 }
             }
-            this.print_br();
         }
     };
     Calc.prototype.sigma_estimate = function () {
         var i;
         if (this.n && this.S) {
             var x = 0, free = void 0;
-            this.print("・母分散σ^2の" + (this.sigma ? "検定" : "区間推定"));
+            this.print("・母分散σ^2の" + (this.sigma ? "検定" : "区間推定"), "headline");
             if (this.mu && this.sample) {
                 this.print("Z = (1/σ^2)*Σ(sample_i - μ)^2が自由度nのχ^2分布に従う。");
                 for (i = 0; i < this.n; i++)
@@ -312,12 +311,11 @@ var Calc = /** @class */ (function () {
             }
             var v1 = Object(_value__WEBPACK_IMPORTED_MODULE_0__["Kai"])(this.percent / 2, free), v2 = Object(_value__WEBPACK_IMPORTED_MODULE_0__["Kai"])(1 - this.percent / 2, free);
             if (v1 == _value__WEBPACK_IMPORTED_MODULE_0__["Error"] || v2 == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                this.print("数値は表に乗っていませんでした。");
+                this.print("数値は表に乗っていませんでした。", "error");
             else {
                 this.print(this.Round(v2) + " < Z < " + this.Round(v1));
                 this.conclusion("σ^2", this.Round(x / v1), this.Round(x / v2), this.sigma2);
             }
-            this.print_br();
         }
     };
     Calc.prototype.Round = function (v) {
