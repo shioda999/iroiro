@@ -1,11 +1,13 @@
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 module.exports = {
   // モード値を production に設定すると最適化された状態で、
   // development に設定するとソースマップ有効でJSファイルが出力される
   mode: "development",
-
+  cache: true,
+  watch: true,
+  devtool: '#source-map',
   // メインとなるJavaScriptファイル（エントリーポイント）
   entry: "./src/main.ts",
-
   module: {
     rules: [
       {
@@ -16,6 +18,9 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    new HardSourceWebpackPlugin()
+  ],
   // import 文で .ts ファイルを解決するため
   resolve: {
     extensions: [".ts", ".js", ".d.ts"]
