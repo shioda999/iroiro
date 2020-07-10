@@ -86,6 +86,37 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/Cross.ts":
+/*!**********************!*\
+  !*** ./src/Cross.ts ***!
+  \**********************/
+/*! exports provided: Cross */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cross", function() { return Cross; });
+var Cross = /** @class */ (function () {
+    function Cross(data) {
+        this.load_and_check(data);
+    }
+    Cross.prototype.load_and_check = function (data) {
+        this.cross = data.cross;
+        if (data.class) {
+            if (this.cross.length == this.cross[0].length)
+                this.class = data.class;
+            else {
+                //警告
+            }
+        }
+    };
+    return Cross;
+}());
+
+
+
+/***/ }),
+
 /***/ "./src/calc.ts":
 /*!*********************!*\
   !*** ./src/calc.ts ***!
@@ -97,31 +128,16 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Calc", function() { return Calc; });
 /* harmony import */ var _value__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./value */ "./src/value.ts");
+/* harmony import */ var _output__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./output */ "./src/output.ts");
+
 
 var Calc = /** @class */ (function () {
-    function Calc() {
-        var _this = this;
-        this.result = "";
-        this.calculate = function (data) {
-            var i;
-            _this.load_and_check(data); //データの格納
-            _this.test(); //実際にこのような標本を抽出できる確率
-            _this.mu_estimate(); //母平均の推定
-            _this.sigma_estimate(); //母分散の推定
-            var output = "</br>" + _this.result;
-            document.getElementById("text").innerHTML = output;
-        };
+    function Calc(data) {
+        this.load_and_check(data); //データの格納
+        this.test(); //実際にこのような標本を抽出できる確率
+        this.mu_estimate(); //母平均の推定
+        this.sigma_estimate(); //母分散の推定
     }
-    Calc.prototype.print = function (str, type) {
-        if (type === void 0) { type = "normal"; }
-        var head, end;
-        head = "<p class = \"" + type + "\">";
-        end = "</p>";
-        this.result += head + str + end;
-    };
-    Calc.prototype.print_br = function () {
-        this.result += "</br>";
-    };
     Calc.prototype.load_and_check = function (data) {
         var i;
         this.n = data.n;
@@ -138,7 +154,7 @@ var Calc = /** @class */ (function () {
         if (this.decimal_place)
             this.decimal_place = Math.floor(this.decimal_place);
         if (data.sigma && data.sigma2)
-            this.print("sigma or sigma2のどちらか片方のみにしてください。", "error");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("sigma or sigma2のどちらか片方のみにしてください。", "error");
         else {
             if (data.sigma)
                 this.sigma2 = Math.pow(data.sigma, 2);
@@ -146,7 +162,7 @@ var Calc = /** @class */ (function () {
                 this.sigma = Math.sqrt(data.sigma2);
         }
         if (data.S && data.S2)
-            this.print("S or S2のどちらか片方のみにしてください。", "error");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("S or S2のどちらか片方のみにしてください。", "error");
         else {
             if (data.S)
                 this.S2 = Math.pow(data.S, 2);
@@ -155,13 +171,13 @@ var Calc = /** @class */ (function () {
         }
         if (data.sample) {
             if (data.n)
-                this.print("サンプルがあるのでnは不要です。", "error");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("サンプルがあるのでnは不要です。", "error");
             if (data.S)
-                this.print("サンプルがあるのでSは不要です。", "error");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("サンプルがあるのでSは不要です。", "error");
             if (data.S2)
-                this.print("サンプルがあるのでS2は不要です。", "error");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("サンプルがあるのでS2は不要です。", "error");
             if (data.X)
-                this.print("サンプルがあるのでXは不要です。", "error");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("サンプルがあるのでXは不要です。", "error");
             this.n = data.sample.length;
             this.X = this.S2 = 0;
             for (i = 0; i < this.n; i++) {
@@ -172,122 +188,122 @@ var Calc = /** @class */ (function () {
             }
             this.S = Math.sqrt(this.S2);
         }
-        this.print("・入力データ", "headline");
+        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・入力データ", "headline");
         if (!this.decimal_place) {
-            this.print("※decimal_placeが指定されなかったので、小数第3位まで表示。");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※decimal_placeが指定されなかったので、小数第3位まで表示。");
             this.decimal_place = 3;
         }
         else
-            this.print("小数第" + this.decimal_place + "位まで表示。");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("小数第" + this.decimal_place + "位まで表示。");
         if (this.n)
-            this.print("標本数   n = " + this.n);
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("標本数   n = " + this.n);
         if (this.mu)
-            this.print("母平均   μ = " + this.Round(this.mu));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("母平均   μ = " + this.Round(this.mu));
         if (this.X)
-            this.print("標本平均 X = " + this.Round(this.X));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("標本平均 X = " + this.Round(this.X));
         if (this.sigma)
-            this.print("母標準偏差   σ = " + this.Round(this.sigma));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("母標準偏差   σ = " + this.Round(this.sigma));
         if (this.sigma2)
-            this.print("母分散   σ^2 = " + this.Round(this.sigma2));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("母分散   σ^2 = " + this.Round(this.sigma2));
         if (this.S)
-            this.print("標準偏差 S = " + this.Round(this.S));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("標準偏差 S = " + this.Round(this.S));
         if (this.S2)
-            this.print("標本の分散 S^2 = " + this.Round(this.S2));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("標本の分散 S^2 = " + this.Round(this.S2));
         if (this.S2 && this.n && !this.sigma)
-            this.print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))));
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))));
         var str = this.two_side ? "(必ず両側検定)" : "";
         if (!this.percent) {
-            this.print("※percentが指定されなかったので、危険率5%で検定。" + str);
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※percentが指定されなかったので、危険率5%で検定。" + str);
             this.percent = 0.05;
         }
         else
-            this.print("危険率" + this.percent * 100 + "%" + str);
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("危険率" + this.percent * 100 + "%" + str);
     };
     Calc.prototype.test = function () {
         if (this.n && this.X && this.mu && (this.sigma || this.S)) {
-            this.print("・標本平均が今以上になる確率", "headline");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・標本平均が今以上になる確率", "headline");
             if (this.sigma) {
                 var v = Math.sqrt(this.n) * (this.X - this.mu) / this.sigma;
-                this.print("Z = √n(X - μ)/σ = " + this.Round(v));
-                this.print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
-                //this.print("Z = " + Math.sqrt(n) * (X ))
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n(X - μ)/σ = " + this.Round(v));
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
+                //Output.print("Z = " + Math.sqrt(n) * (X ))
             }
             else {
                 var v = Math.sqrt(this.n - 1) * (this.X - this.mu) / this.S;
-                this.print("母分散が不明なので、あくまで参考。");
-                this.print("Z = √n-1)(X - μ)/S = " + this.Round(v));
-                this.print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("母分散が不明なので、あくまで参考。");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n-1)(X - μ)/S = " + this.Round(v));
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("確率は" + this.Round((Object(_value__WEBPACK_IMPORTED_MODULE_0__["Phi"])(v) * 100)) + "%");
             }
         }
     };
     Calc.prototype.mu_estimate = function () {
         if (this.n && this.X && (this.sigma || this.S)) {
-            this.print("・母平均μの" + (this.mu ? "検定" : "区間推定"), "headline");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・母平均μの" + (this.mu ? "検定" : "区間推定"), "headline");
             if (this.sigma) {
                 if (this.mu && !this.two_side) { //片側検定
-                    this.print("Z = √n(X - μ)/σはN(0,1)に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n(X - μ)/σはN(0,1)に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent), r = v * this.sigma / Math.sqrt(this.n);
                     if (this.X > this.mu) {
-                        this.print(" Z < " + this.Round(v));
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(" Z < " + this.Round(v));
                         this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                     }
                     else {
-                        this.print(-this.Round(v) + " < Z ");
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < Z ");
                         this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                     }
                 }
                 else { //両側検定
-                    this.print("Z = √n(X - μ)/σはN(0,1)に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n(X - μ)/σはN(0,1)に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent / 2), r = v * this.sigma / Math.sqrt(this.n);
-                    this.print(-this.Round(v) + " < Z < " + this.Round(v));
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < Z < " + this.Round(v));
                     this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                 }
             }
             else {
                 if (this.mu && !this.two_side) { //片側検定
-                    this.print("(1)nが小さいとき、");
-                    this.print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("(1)nが小さいとき、");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["T"])(this.percent, this.n - 1), r = void 0;
                     if (v == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                        this.print("数値は表に乗っていませんでした。", "error");
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("数値は表に乗っていませんでした。", "error");
                     else {
                         r = v * this.S / Math.sqrt(this.n - 1);
                         if (this.X > this.mu) {
-                            this.print(" T < " + this.Round(v));
+                            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(" T < " + this.Round(v));
                             this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                         }
                         else {
-                            this.print(-this.Round(v) + " < T ");
+                            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < T ");
                             this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                         }
                     }
-                    this.print("(2)nが大きいとき、");
-                    this.print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("(2)nが大きいとき、");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
                     v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent), r = v * this.S / Math.sqrt(this.n - 1);
                     if (this.X > this.mu) {
-                        this.print(" Z < " + this.Round(v));
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(" Z < " + this.Round(v));
                         this.conclusion("μ", this.Round(this.X - r), undefined, this.mu);
                     }
                     else {
-                        this.print(-this.Round(v) + " < Z ");
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < Z ");
                         this.conclusion("μ", undefined, this.Round(this.X + r), this.mu);
                     }
                 }
                 else { //両側検定
-                    this.print("(1)nが小さいとき、");
-                    this.print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("(1)nが小さいとき、");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("T = √n - 1)(X - μ) / Sは自由度n - 1のt分布に従う。");
                     var v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["T"])(this.percent / 2, this.n - 1), r = void 0;
                     if (v == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                        this.print("数値は表に乗っていませんでした。", "error");
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("数値は表に乗っていませんでした。", "error");
                     else {
                         r = v * this.S / Math.sqrt(this.n - 1);
-                        this.print(-this.Round(v) + " < T < " + this.Round(v));
+                        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < T < " + this.Round(v));
                         this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                     }
-                    this.print("(2)nが大きいとき、");
-                    this.print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("(2)nが大きいとき、");
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = √n-1)(X - μ)/SはN(0,1)に従う。");
                     v = Object(_value__WEBPACK_IMPORTED_MODULE_0__["inv_Phi"])(this.percent / 2), r = v * this.S / Math.sqrt(this.n - 1);
-                    this.print(-this.Round(v) + " < Z < " + this.Round(v));
+                    _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(-this.Round(v) + " < Z < " + this.Round(v));
                     this.conclusion("μ", this.Round(this.X - r), this.Round(this.X + r), this.mu);
                 }
             }
@@ -297,23 +313,23 @@ var Calc = /** @class */ (function () {
         var i;
         if (this.n && this.S) {
             var x = 0, free = void 0;
-            this.print("・母分散σ^2の" + (this.sigma ? "検定" : "区間推定"), "headline");
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・母分散σ^2の" + (this.sigma ? "検定" : "区間推定"), "headline");
             if (this.mu && this.sample) {
-                this.print("Z = (1/σ^2)*Σ(sample_i - μ)^2が自由度nのχ^2分布に従う。");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = (1/σ^2)*Σ(sample_i - μ)^2が自由度nのχ^2分布に従う。");
                 for (i = 0; i < this.n; i++)
                     x += Math.pow(this.mu - this.sample[i], 2) / this.n;
                 free = this.n;
             }
             else {
-                this.print("Z = nS^2/σ^2が自由度n-1のχ^2分布に従う。");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("Z = nS^2/σ^2が自由度n-1のχ^2分布に従う。");
                 x = this.n * this.S2;
                 free = this.n - 1;
             }
             var v1 = Object(_value__WEBPACK_IMPORTED_MODULE_0__["Kai"])(this.percent / 2, free), v2 = Object(_value__WEBPACK_IMPORTED_MODULE_0__["Kai"])(1 - this.percent / 2, free);
             if (v1 == _value__WEBPACK_IMPORTED_MODULE_0__["Error"] || v2 == _value__WEBPACK_IMPORTED_MODULE_0__["Error"])
-                this.print("数値は表に乗っていませんでした。", "error");
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("数値は表に乗っていませんでした。", "error");
             else {
-                this.print(this.Round(v2) + " < Z < " + this.Round(v1));
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(this.Round(v2) + " < Z < " + this.Round(v1));
                 this.conclusion("σ^2", this.Round(x / v1), this.Round(x / v2), this.sigma2);
             }
         }
@@ -331,7 +347,7 @@ var Calc = /** @class */ (function () {
             str += " < " + r;
         if (v)
             str += ((!l || l && l < v) && (!r || r && v < r)) ? "(信頼区間内)" : "(信頼区間外)";
-        this.print(str);
+        _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(str);
     };
     return Calc;
 }());
@@ -350,6 +366,10 @@ var Calc = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./calc */ "./src/calc.ts");
+/* harmony import */ var _Cross__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Cross */ "./src/Cross.ts");
+/* harmony import */ var _output__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./output */ "./src/output.ts");
+
+
 
 var input = document.createElement("input");
 var reader = new FileReader();
@@ -364,19 +384,90 @@ var changeFile = function (ev) {
     }
     reader.readAsText(file);
 };
+var switch_inst = function (data) {
+    _output__WEBPACK_IMPORTED_MODULE_2__["Output"].clear();
+    if (data.cross) {
+        var inst = new _Cross__WEBPACK_IMPORTED_MODULE_1__["Cross"](data);
+    }
+    else {
+        var inst = new _calc__WEBPACK_IMPORTED_MODULE_0__["Calc"](data);
+    }
+};
 var readFile = function () {
-    var inst = new _calc__WEBPACK_IMPORTED_MODULE_0__["Calc"]();
     if (typeof (reader.result) !== "string")
         return;
     var data = JSON.parse(reader.result);
-    inst.calculate(data);
+    switch_inst(data);
+};
+var readForm = function () {
+    var data = {}, temp;
+    var sample = document.form.form_sample.value;
+    if (temp = document.form.form_n.value)
+        data.n = parseFloat(temp);
+    if (temp = document.form.form_mu.value)
+        data.mu = parseFloat(temp);
+    if (temp = document.form.form_sigma.value)
+        data.sigma = parseFloat(temp);
+    if (temp = document.form.form_sigma2.value)
+        data.sigma2 = parseFloat(temp);
+    if (temp = document.form.form_X.value)
+        data.X = parseFloat(temp);
+    if (temp = document.form.form_S.value)
+        data.S = parseFloat(temp);
+    if (temp = document.form.form_S2.value)
+        data.S2 = parseFloat(temp);
+    if (temp = document.form.form_decimal_place.value)
+        data.decimal_place = parseFloat(temp);
+    if (temp = document.form.form_percent.value)
+        data.percent = parseFloat(temp);
+    if (sample) {
+        var numbers = sample.split(",");
+        data.sample = [];
+        numbers.forEach(function (v) { return data.sample.push(parseFloat(v)); });
+    }
+    console.log(data);
+    switch_inst(data);
 };
 input.type = "file";
 input.hidden = true;
 input.onchange = changeFile;
 reader.onload = readFile;
-var button = document.getElementById("form-button");
-button.onclick = function () { return input.click(); };
+var button = document.getElementById("readFilebutton");
+if (button)
+    button.onclick = function () { return input.click(); };
+var button2 = document.getElementById("readFormbutton");
+if (button2)
+    button2.onclick = function () { return readForm(); };
+
+
+/***/ }),
+
+/***/ "./src/output.ts":
+/*!***********************!*\
+  !*** ./src/output.ts ***!
+  \***********************/
+/*! exports provided: Output */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Output", function() { return Output; });
+var Output = /** @class */ (function () {
+    function Output() {
+    }
+    Output.print = function (str, type) {
+        if (type === void 0) { type = "normal"; }
+        var head, end;
+        head = "<p class = \"" + type + "\">";
+        end = "</p>";
+        document.getElementById("text").innerHTML += head + str + end;
+    };
+    Output.clear = function () {
+        document.getElementById("text").innerHTML = "";
+    };
+    return Output;
+}());
+
 
 
 /***/ }),
