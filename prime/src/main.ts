@@ -5,14 +5,16 @@ const form = document.form
 if (button) form.onkeyup = button.onclick = () => onclick()
 function onclick() {
     Output.clear()
-    if (form.form_num.value != undefined) {
+    let v = parseInt(form.form_num.value)
+    if (v > 0) {
         Output.print("・結果", "headline")
-        if (form.form_num.value > 9999999999999) {
+        console.log(v)
+        if (v > 9999999999999) {
             Output.print("値が大きすぎ!", "error")
             return
         }
-        prime(form.form_num.value)
-        //divide(form.form_num.value)
+        prime(v)
+        divide(form.form_num.value)
         Output.renderKaTeX()
     }
 }
@@ -31,7 +33,7 @@ function prime(v: number){
         if(c)list.push(i, c)
     }
     if (v != 1) list.push(v, 1)
-    let str = form.form_num.value + "="
+    let str = parseInt(form.form_num.value) + "="
     let work = list.next
     while (work) {
         if(work != list.next) str += "\\cdot"
