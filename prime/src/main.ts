@@ -5,20 +5,30 @@ const form = document.form
 if (button) form.onkeyup = button.onclick = () => onclick()
 function onclick() {
     Output.clear()
-    Output.print("・結果", "headline")
-    prime(form.form_num.value)
-    divide(form.form_num.value)
-    Output.renderKaTeX()
+    if (form.form_num.value != undefined) {
+        Output.print("・結果", "headline")
+        if (form.form_num.value > 9999999999999) {
+            Output.print("値が大きすぎ!", "error")
+            return
+        }
+        prime(form.form_num.value)
+        //divide(form.form_num.value)
+        Output.renderKaTeX()
+    }
 }
 function prime(v: number){
     let k = Math.ceil(Math.sqrt(v))
     let list = new List()
+    if (v == 1) {
+        Output.print("$1 = 1^1$")
+        return
+    }
     for (let i = 2; i <= k; i++){
-        let k = 0
+        let c = 0
         while (v % i == 0) {
-            v /= i, k++
+            v /= i, c++
         }
-        if(k)list.push(i, k)
+        if(c)list.push(i, c)
     }
     if (v != 1) list.push(v, 1)
     let str = form.form_num.value + "="
@@ -28,7 +38,7 @@ function prime(v: number){
         str += work.num + "^{" + work.num2 + "}"
         work = work.next
     }
-    Output.print(str, "math")
+    Output.print("$"+str+"$")
 }
 function divide(v: number){
     let k = Math.floor(Math.sqrt(v)), sum = 0
@@ -51,7 +61,7 @@ function divide(v: number){
         if(work.num != work.num2)str2 = work.num2 + str2
         work = work.next
     }
-    Output.print("約数の個数:" + size, "math")
-    Output.print("約数の和:" + sum, "math")
-    Output.print(str+","+str2, "math")
+    Output.print("約数の個数:$" + size + "$")
+    Output.print("約数の和:$" + sum + "$")
+    Output.print("$"+str+","+str2+"$")
 }

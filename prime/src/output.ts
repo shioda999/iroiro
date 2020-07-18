@@ -1,7 +1,6 @@
 export class Output{
     public static print(str: string, type: string = "normal") {
         let head: string, end: string
-        if(type === "math") str = "$" + str + "$", type = "normal"
         head = "<p class = \"" + type + "\">"
         end = "</p>"
         document.getElementById("text").innerHTML += head + str + end
