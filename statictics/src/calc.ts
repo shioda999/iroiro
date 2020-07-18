@@ -1,5 +1,5 @@
 import { Phi, inv_Phi, T, Kai, Error } from './value'
-import { Output } from './output'
+import { Output } from '../../common/output'
 export class Calc {
     private n: number
     private S: number

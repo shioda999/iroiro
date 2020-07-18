@@ -1,5 +1,5 @@
-import { List } from './list'
-import { Output } from './output'
+import { List } from '../../common/list'
+import { Output } from '../../common/output'
 let button = document.getElementById("button")
 const form = document.form
 if (button) form.onkeyup = button.onclick = () => onclick()

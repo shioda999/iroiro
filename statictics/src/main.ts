@@ -1,6 +1,6 @@
 import { Calc } from './calc'
 import { Cross } from './Cross'
-import { Output } from './output'
+import { Output } from '../../common/output'
 let input = document.createElement("input")
 let reader = new FileReader()
 
@@ -48,7 +48,6 @@ let readForm = () => {
         data.sample = []
         numbers.forEach(v => data.sample.push(parseFloat(v)))
     }
-    console.log(data)
     switch_inst(data)
 }
 input.type = "file"
