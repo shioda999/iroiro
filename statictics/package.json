@@ -17,6 +17,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "hard-source-webpack-plugin": "^0.13.1"
+    "hard-source-webpack-plugin": "^0.13.1",
+    "lodash": "^4.17.19"
   }
 }
