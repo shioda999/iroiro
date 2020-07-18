@@ -12,6 +12,7 @@ export class Calc {
     private sample: number[]
     private two_side: any
     private decimal_place: number
+    private bin_p: number
     constructor(data: any){
         this.load_and_check(data)//データの格納
         this.test()//実際にこのような標本を抽出できる確率
@@ -31,8 +32,15 @@ export class Calc {
         this.sample = data.sample
         this.two_side = data.two_side
         this.decimal_place = data.decimal_place
+        this.bin_p = data.bin_p
         if (this.decimal_place) this.decimal_place = Math.floor(this.decimal_place)
-        
+        if (!this.sample && !this.n) Output.print("標本数を入力してください。", "error")
+        if (this.bin_p) {
+            if(this.sample)Output.print("sampleは無視されます。", "error")
+            if(this.sigma)Output.print("sigmaは無視されます。", "error")
+            if(this.sigma2)Output.print("sigma2は無視されます。", "error")
+            if(this.mu)Output.print("muは無視されます。", "error")
+        }
         if (data.sigma && data.sigma2) Output.print("sigma or sigma2のどちらか片方のみにしてください。", "error")
         else {
             if(data.sigma)this.sigma2 = Math.pow(data.sigma, 2)
@@ -43,7 +51,12 @@ export class Calc {
             if(data.S)this.S2 = Math.pow(data.S, 2)
             if(data.S2)this.S = Math.sqrt(data.S2)
         }
-        if (data.sample) {
+        if (this.bin_p) {
+            this.sigma2 = this.bin_p * (1 - this.bin_p) / this.n
+            this.sigma = Math.sqrt(this.sigma2)
+            this.mu = this.bin_p * this.n
+        }
+        else if (data.sample) {
             if(data.n)Output.print("サンプルがあるのでnは不要です。", "error")
             if(data.S)Output.print("サンプルがあるのでSは不要です。", "error")
             if(data.S2)Output.print("サンプルがあるのでS2は不要です。", "error")
@@ -63,6 +76,7 @@ export class Calc {
             Output.print("※decimal_placeが指定されなかったので、小数第3位まで表示。")
             this.decimal_place = 3
         }
+        if(this.bin_p)Output.print("二項分布")
         else Output.print("小数第" + this.decimal_place + "位まで表示。")
         if(this.n)Output.print("標本数   n = " + this.n)
         if(this.mu)Output.print("母平均   μ = " + this.Round(this.mu))

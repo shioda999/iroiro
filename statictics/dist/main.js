@@ -151,8 +151,21 @@ var Calc = /** @class */ (function () {
         this.sample = data.sample;
         this.two_side = data.two_side;
         this.decimal_place = data.decimal_place;
+        this.bin_p = data.bin_p;
         if (this.decimal_place)
             this.decimal_place = Math.floor(this.decimal_place);
+        if (!this.sample && !this.n)
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("標本数を入力してください。", "error");
+        if (this.bin_p) {
+            if (this.sample)
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("sampleは無視されます。", "error");
+            if (this.sigma)
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("sigmaは無視されます。", "error");
+            if (this.sigma2)
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("sigma2は無視されます。", "error");
+            if (this.mu)
+                _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("muは無視されます。", "error");
+        }
         if (data.sigma && data.sigma2)
             _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("sigma or sigma2のどちらか片方のみにしてください。", "error");
         else {
@@ -169,7 +182,12 @@ var Calc = /** @class */ (function () {
             if (data.S2)
                 this.S = Math.sqrt(data.S2);
         }
-        if (data.sample) {
+        if (this.bin_p) {
+            this.sigma2 = this.bin_p * (1 - this.bin_p) / this.n;
+            this.sigma = Math.sqrt(this.sigma2);
+            this.mu = this.bin_p * this.n;
+        }
+        else if (data.sample) {
             if (data.n)
                 _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("サンプルがあるのでnは不要です。", "error");
             if (data.S)
@@ -193,6 +211,8 @@ var Calc = /** @class */ (function () {
             _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※decimal_placeが指定されなかったので、小数第3位まで表示。");
             this.decimal_place = 3;
         }
+        if (this.bin_p)
+            _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("二項分布");
         else
             _output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("小数第" + this.decimal_place + "位まで表示。");
         if (this.n)
@@ -401,25 +421,28 @@ var readFile = function () {
 };
 var readForm = function () {
     var data = {}, temp;
-    var sample = document.form.form_sample.value;
-    if (temp = document.form.form_n.value)
+    var form = document.form;
+    var sample = form.form_sample.value;
+    if (temp = form.form_n.value)
         data.n = parseFloat(temp);
-    if (temp = document.form.form_mu.value)
+    if (temp = form.form_mu.value)
         data.mu = parseFloat(temp);
-    if (temp = document.form.form_sigma.value)
+    if (temp = form.form_sigma.value)
         data.sigma = parseFloat(temp);
-    if (temp = document.form.form_sigma2.value)
+    if (temp = form.form_sigma2.value)
         data.sigma2 = parseFloat(temp);
-    if (temp = document.form.form_X.value)
+    if (temp = form.form_X.value)
         data.X = parseFloat(temp);
-    if (temp = document.form.form_S.value)
+    if (temp = form.form_S.value)
         data.S = parseFloat(temp);
-    if (temp = document.form.form_S2.value)
+    if (temp = form.form_S2.value)
         data.S2 = parseFloat(temp);
-    if (temp = document.form.form_decimal_place.value)
+    if (temp = form.form_decimal_place.value)
         data.decimal_place = parseFloat(temp);
-    if (temp = document.form.form_percent.value)
+    if (temp = form.form_percent.value)
         data.percent = parseFloat(temp);
+    if (form.side.value == "two")
+        data.two_side = true;
     if (sample) {
         var numbers = sample.split(",");
         data.sample = [];

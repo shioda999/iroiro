@@ -31,16 +31,18 @@ let readFile = () => {
 }
 let readForm = () => {
     let data: any = {}, temp: string
-    let sample = document.form.form_sample.value
-    if(temp = document.form.form_n.value)data.n = parseFloat(temp)
-    if(temp = document.form.form_mu.value)data.mu = parseFloat(temp)
-    if(temp = document.form.form_sigma.value)data.sigma = parseFloat(temp)
-    if(temp = document.form.form_sigma2.value)data.sigma2 = parseFloat(temp)
-    if(temp = document.form.form_X.value)data.X = parseFloat(temp)
-    if(temp = document.form.form_S.value)data.S = parseFloat(temp)
-    if(temp = document.form.form_S2.value)data.S2 = parseFloat(temp)
-    if(temp = document.form.form_decimal_place.value)data.decimal_place = parseFloat(temp)
-    if(temp = document.form.form_percent.value)data.percent = parseFloat(temp)
+    let form = document.form
+    let sample = form.form_sample.value 
+    if(temp = form.form_n.value)data.n = parseFloat(temp)
+    if(temp = form.form_mu.value)data.mu = parseFloat(temp)
+    if(temp = form.form_sigma.value)data.sigma = parseFloat(temp)
+    if(temp = form.form_sigma2.value)data.sigma2 = parseFloat(temp)
+    if(temp = form.form_X.value)data.X = parseFloat(temp)
+    if(temp = form.form_S.value)data.S = parseFloat(temp)
+    if(temp = form.form_S2.value)data.S2 = parseFloat(temp)
+    if(temp = form.form_decimal_place.value)data.decimal_place = parseFloat(temp)
+    if(temp = form.form_percent.value)data.percent = parseFloat(temp)
+    if(form.side.value == "two")data.two_side = true
     if (sample) {
         let numbers = sample.split(",")
         data.sample = []
