@@ -1,4 +1,4 @@
-export type SceneType = "title" | "Count" | "game" | "back"
+export type SceneType = "title" | "count" | "game" | "back"
 export class Scene {
     private static func: (v: SceneType) => any
     protected release = undefined

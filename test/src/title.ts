@@ -4,12 +4,12 @@ import {Scene} from './Scene'
 export class Title extends Scene {
     constructor(container: PIXI.Container) {
         super()
-        const richText = new PIXI.Text('心理テスト', Global.style)
+        const richText = new PIXI.Text('心理テスト', Global.getstyle())
         richText.x = Global.WIDTH / 2
         richText.y = Global.HEIGHT / 4
         richText.anchor.x = richText.anchor.y = 0.5
         container.addChild(richText)
-        let style = Global.style.clone()
+        let style = Global.getstyle()
         style.fontSize = Global.WIDTH / 20
         const richText2 = new PIXI.Text('クリックでスタート', style)
         richText2.x = Global.WIDTH / 2
@@ -23,6 +23,6 @@ export class Title extends Scene {
         }
     }
     private click() {
-        this.gotoScene("Count")
+        this.gotoScene("count")
     }
 }

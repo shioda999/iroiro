@@ -3,6 +3,7 @@ import {Title} from "./title"
 import {Game} from "./game" 
 import {SceneType, Scene} from './Scene'
 import {Fade} from './Fade'
+import { Count } from "./count"
 export class SceneManager{
     private static instance: SceneManager
     private sceneName : SceneType[] = []
@@ -32,6 +33,7 @@ export class SceneManager{
             this.scene = new {
                 title: Title,
                 game: Game,
+                count: Count,
             }[name](this.container)
         })
     }
