@@ -17,12 +17,16 @@ export class Title extends Scene {
         richText2.anchor.x = richText2.anchor.y = 0.5
         container.addChild(richText2)
         container.interactive = true
-        container.on("pointertap", () => this.click())
+        container.on("pointertap", this.click)
         this.release = () => {
-            container.off("pointertap", () => this.click())
+            container.off("pointertap", this.click)
+            container.removeChild(richText)
+            container.removeChild(richText2)
+            richText.destroy()
+            richText2.destroy()
         }
     }
-    private click() {
-        this.gotoScene("count")
+    private click = ()=> {
+        this.gotoScene("game")
     }
 }

@@ -1,12 +1,14 @@
 import * as PIXI from 'pixi.js'
 import{Global} from './global'
-export class Count{
+import {Scene} from './Scene';
+export class Count extends Scene{
     private bmp: PIXI.Text[]
     private frame: number
     private container
     readonly num = 3
     readonly Time = 60
     constructor(container) {
+        super()
         this.container = container
         this.frame = 0
         this.bmp = []
@@ -22,10 +24,16 @@ export class Count{
             container.addChild(this.bmp[i])
         }
         this.countdown()
+        this.release = () => {
+            this.bmp.forEach((e) => {
+                this.container.removeChild(e)
+                e.destroy()
+            })
+        }
     }
     private countdown = () => {
         if (this.frame >= this.Time * (this.num + 1)) {
-            this.release()
+            this.gotoScene("game")
             return
         }
         requestAnimationFrame(this.countdown)
@@ -34,9 +42,5 @@ export class Count{
             this.bmp[i].y += Global.HEIGHT * Math.abs(Math.PI / this.Time / 2 * Math.sin(this.frame * Math.PI / this.Time))
         }
         this.frame++
-        console.log(this.frame)
-    }
-    public release() {
-        this.bmp.forEach((e) => this.container.removeChild(e))
     }
 }

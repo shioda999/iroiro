@@ -1,8 +1,12 @@
 import * as PIXI from "pixi.js"
 
+const _width = 480
+const _ratio = 1
+const _height = _width * _ratio
 export class Global{
-    static readonly WIDTH = 640
-    static readonly HEIGHT = 480
+    static readonly RATIO = _ratio
+    static readonly WIDTH = _width
+    static readonly HEIGHT = _height
     public static getstyle() {
         return style.clone()
     }
@@ -10,11 +14,8 @@ export class Global{
 const style = new PIXI.TextStyle({
     fontFamily: 'Arial',
     fontSize: Global.WIDTH / 8,
-    fontStyle: 'italic',
     fontWeight: 'bold',
     fill: ['#ffffff', '#00ff99'], // gradient
-    stroke: '#4a1850',
-    strokeThickness: 5,
     dropShadow: true,
     dropShadowColor: '#000000',
     dropShadowBlur: 4,
