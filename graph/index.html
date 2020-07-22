@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>グラフ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+    <link rel="stylesheet" type="text/css" href="../common/style.css">
+</head>
+<body>
+<form name = "form" onsubmit="return false">
+    <p class ="headline">・入力フォーム</p>
+    <p class = "normal">
+        $y = \ \ $<textarea name="text" cols="30" rows="1"></textarea><br>
+        定義域：<input type="number" name="left" style = "width: 3em" value = -3>$\leqq x \leqq $
+        <input type="number" name="right" style = "width: 3em" value = 3>
+        <button type="button" id="button" class = "button">実行</button>
+    </p>
+</form>
+<div id="text"></div>
+</body>
+<script type="module" src="dist/main.js"></script>
+<style>
+  * {
+    padding: 0;
+    margin: 0
+  }
+</style>
+</html>
