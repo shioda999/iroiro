@@ -9,11 +9,12 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
     onload="renderMathInElement(document.body);"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
     <link rel="stylesheet" type="text/css" href="../common/style.css">
 </head>
 <body>
 <form name = "form" onsubmit="return false">
-    <p class ="headline">・aaa入力フォーム</p>
+    <p class ="headline">・入力フォーム</p>
     <p class = "normal">
         $y = \ \ $<textarea name="text" cols="30" rows="1"></textarea><br>
         定義域：<input type="number" name="left" style = "width: 3em" value = -3>$\leqq x \leqq $
@@ -22,6 +23,9 @@
     </p>
 </form>
 <div id="text"></div>
+<canvas width="800" height="400" id="sample" style="background-color:white;">
+図形を表示するには、canvasタグをサポートしたブラウザが必要です。
+</canvas>
 </body>
 <script type="module" src="dist/main.js"></script>
 <style>

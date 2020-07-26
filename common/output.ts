@@ -2,7 +2,6 @@ export class Output{
     public static print(str: string, type: string = "normal") {
         let head: string, end: string
         str = this.escapeHtml(str)
-        console.log(str)
         if (type === "raw") {
             head = ""
             end = ""
@@ -26,11 +25,11 @@ export class Output{
         }
     }
     private static escapeHtml(str) {
-        str = str.replace(/&/g, '&amp;');
-        str = str.replace(/</g, '&lt;');
-        str = str.replace(/>/g, '&gt;');
-        str = str.replace(/"/g, '&quot;');
-        str = str.replace(/'/g, '&#39;');
+        str = str.replace(/&/g, '&amp;')
+        str = str.replace(/</g, '&lt;')
+        str = str.replace(/>/g, '&gt;')
+        str = str.replace(/"/g, '&quot;')
+        str = str.replace(/'/g, '&#39;')
         return str;
     }
 }
