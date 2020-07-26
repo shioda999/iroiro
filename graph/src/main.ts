@@ -26,19 +26,23 @@ function plot(formula: string[]) {
     if(error)Output.print(error, "error")
 }
 function getpoint(formula: string[], left: number, right: number, d: number) {
-    let px: number[] = [], py: number[] = [], max_y, min_y
+    let px: number[] = [], py: number[] = [], max_y = NaN, min_y = NaN
     if (left >= right) {
         Output.print("定義域が不正です。", "error")
         return
     }
-    for (let x = left, y; x <= right; x += d){
+    for (let x: number = left, y: number; x <= right; x += d){
+        y = Parse.calc(formula, x)
+        if (isNaN(y)) continue
         px.push(x)
-        py.push(y = Parse.calc(formula, x))
-        if (x === left) max_y = min_y = y
+        py.push(y)
+        if (isNaN(max_y)) max_y = min_y = y, console.log(y)
         else max_y = Math.max(max_y, y), min_y = Math.min(min_y, y)
     }
-    max_y = Math.min(10, max_y)
-    min_y = Math.max(-10, min_y)
+    if (isNaN(max_y)) max_y = min_y = 0
+    max_y = Math.min(10, max_y + d)
+    min_y = Math.max(-10, min_y - d)
+    //alert(max_y + " " + min_y)
     return {"x": px, "y": py, "max_y": max_y, "min_y": min_y, "max_x": right, "min_x": left, "v_num": px.length}
 }
 function conv(str: string) {
