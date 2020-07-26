@@ -6,7 +6,7 @@ module.exports = {
     cache: true,
     watch: true,
     // メインとなるJavaScriptファイル（エントリーポイント）
-    entry: "./src/main.ts",
+    entry: ["./src/main.ts","./src/use.ts"],
     module: {
     rules: [
         {

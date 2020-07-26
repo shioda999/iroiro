@@ -1,0 +1,544 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>katexテストの使い方</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" type="text/css" href="../common/style.css">
+</head>
+
+<body>
+<div class = "headline">・出来ること</div>
+<p class = "normal">
+    ・KaTexで作られているので、LaTexとほぼ同じ形式の文章を打つことで、綺麗に数式を表示できる。</br>
+    ・一部Latexのコマンドと異なるところがあるので、注意。
+</p>
+<div class = "headline">・数式モード</div>
+<div class = "normal">
+    ・普通にアルファベットを表示したい場合は、ただ普通に書くだけ。<br>
+    ・数式をきれいに出力したい場合、$[ココに書く]$<br>
+    ・数式を真ん中にきれいに出力したい場合、$$[ココに書く]$$<br>
+    <table border="1" id = "table1">
+        <tr>
+            <th>数式モード</th>
+            <th>コマンド例</th>
+            <th>結果</th>
+        </tr>
+        <tr>
+            <td>何もしない</td>
+            <td>a</td>
+            <td>a</td>
+        </tr>
+        <tr>
+            <td>$で囲む</td>
+            <td>$a$</td>
+            <td>$$a$$</td>
+        </tr>
+        <tr>
+            <td>$$で囲む</td>
+            <td>$$a$$</td>
+            <td>$$a$$</td>
+        </tr>
+    </table>
+</div>
+<br>
+<div class = "headline">・改行やスペースなど</div>
+<div class = "normal">
+<table border="1" id = "table2">
+    <tr>
+        <th></th>
+        <th>コマンド例</th>
+        <th>結果</th>
+    </tr>
+    <tr>
+        <td>改行(\\)</td>
+        <td>
+            a+b\\<br>c+d
+        </td>
+        <td>
+            $$a+b\\c+d$$
+        </td>
+    </tr>
+    <tr>
+        <td>スペース(\)</td>
+        <td>
+            a\ b, a\ \ b
+        </td>
+        <td>
+            $$a\ b, a\ \ b$$
+        </td>
+    </tr>
+    <tr>
+        <td>大スペース(\qquad)</td>
+        <td>
+            a\qquad b
+        </td>
+        <td>
+            $$a\qquad b$$
+        </td>
+    </tr>
+</table>
+</div>
+<br>
+<div class = "headline">・式をそろえる方法</div>
+<div class = "normal">
+    ・alignedとcasesがある。casesは場合分けなどに使える。<br>
+    ・&をいれると、その位置で数式をそろえてくれる。<br>
+<table border="1" id = "table3">
+    <tr>
+        <th></th>
+        <th>コマンド例</th>
+        <th>結果</th>
+    </tr>
+    <tr>
+        <td>aligned</td>
+        <td>
+            \begin{aligned}<br>
+                a + b  &= c + d\\<br>
+                &=e + f<br>
+            \end{aligned}<br>
+        </td>
+        <td>
+            $$
+            \begin{aligned}
+                a + b  &= c + d\\
+                &=e + f
+            \end{aligned}
+            $$
+        </td>
+    </tr>
+    <tr>
+        <td>cases</td>
+        <td>
+            f(x)=<br>
+            \begin{cases}<br>
+            a + b\\c<br>
+            \end{cases}<br>
+        </td>
+        <td>
+            $$
+            f(x)=\begin{cases}
+            a + b\\
+            c
+            \end{cases}
+            $$
+        </td>
+    </tr>
+</table>
+</div>
+<br>
+<div class = "error">・LaTexでは\begin{eqnarray}など様々な数式モードがあるが、KaTexでは\begin{aligned}しか使えないので注意。
+</div>
+<br>
+<div class = "headline">・よく使いそうなコマンド</div>
+<div class = "normal">
+    <table border="1" id = "table4">
+        <tr>
+            <th></th>
+            <th>コマンド例</th>
+            <th>結果</th>
+        </tr>
+        <tr>
+            <td>指数</td>
+            <td>a^b, a^{b+c}</td>
+            <td>$$a^b, a^{b+c}$$</td>
+        </tr>
+        <tr>
+            <td>添字</td>
+            <td>a_b, a_{b+c}</td>
+            <td>$$a_b, a_{b+c}$$</td>
+        </tr>
+        <tr>
+            <td>分数</td>
+            <td>\frac a b, \frac{a}{b}</td>
+            <td>$$\frac a b, \frac{a}{b}$$</td>
+        </tr>
+        <tr>
+            <td>分数(大)</td>
+            <td>\dfrac{a}{b}</td>
+            <td>$$\dfrac{a}{b}$$</td>
+        </tr>
+        <tr>
+            <td>絶対値</td>
+            <td>|x|</td>
+            <td>$$|x|$$</td>
+        </tr>
+        <tr>
+            <td>ノルム</td>
+            <td>\|x\|</td>
+            <td>$$\|x\|$$</td>
+        </tr>
+        <tr>
+            <td>三角関数</td>
+            <td>\sin x, \cos x, \tan x</td>
+            <td>$$\sin x, \cos x, \tan x$$</td>
+        </tr>
+        <tr>
+            <td>log</td>
+            <td>\log_a b</td>
+            <td>$$\log_a b$$</td>
+        </tr>
+        <tr>
+            <td>√</td>
+            <td>\sqrt{x}, \sqrt[n]{x}</td>
+            <td>$$\sqrt{x}, \sqrt[n]{x}$$</td>
+        </tr>
+        <tr>
+            <td>極限</td>
+            <td>\lim_{x \to \infty}</td>
+            <td>$$\lim_{x \to \infty}$$</td>
+        </tr>
+        <tr>
+            <td>総和</td>
+            <td>\sum_{k = 0}^{n}</td>
+            <td>$$\sum_{k = 0}^{n}$$</td>
+        </tr>
+        <tr>
+            <td>総乗</td>
+            <td>\prod_{k=0}^{n}</td>
+            <td>$$\prod_{k=0}^{n}$$</td>
+        </tr>
+        <tr>
+            <td>積分</td>
+            <td>\int_{a}^{b}</td>
+            <td>$$\int_{a}^{b}$$</td>
+        </tr>
+        <tr>
+            <td>多重積分</td>
+            <td>\iint_{S}</td>
+            <td>$$\iint_{S}$$</td>
+        </tr>
+        <tr>
+            <td>周回積分</td>
+            <td>\oint_{C}</td>
+            <td>$$\oint_{C}$$</td>
+        </tr>
+        <tr>
+            <td>偏微分</td>
+            <td>\frac{\partial}{\partial x}</td>
+            <td>$$\frac{\partial}{\partial x}$$</td>
+        </tr>
+        <tr>
+            <td>微分</td>
+            <td>\frac{d}{dx}</td>
+            <td>$$\frac{d}{dx}$$</td>
+        </tr>
+        <tr>
+            <td>二階微分</td>
+            <td>\frac{d^2}{d^2x}</td>
+            <td>$$\frac{d^2}{d^2x}$$</td>
+        </tr>
+        <tr>
+            <td>組み合わせ</td>
+            <td>{}_n \mathrm{C} _r</td>
+            <td>$${}_n \mathrm{C} _r$$</td>
+        </tr>
+        <tr>
+            <td>組み合わせ</td>
+            <td>{}_n \mathrm{H} _r</td>
+            <td>$${}_n \mathrm{H} _r$$</td>
+        </tr>
+        <tr>
+            <td>ベクトル</td>
+            <td>\vec{a}</td>
+            <td>$$\vec{a}$$</td>
+        </tr>
+        <tr>
+            <td>ベクトル</td>
+            <td>\overrightarrow{\mathrm{OA}}</td>
+            <td>$$\overrightarrow{\mathrm{OA}}$$</td>
+        </tr>
+        <tr>
+            <td>ベクトル</td>
+            <td>\bm{r}</td>
+            <td>$$\bm{r}$$</td>
+        </tr>
+        <tr>
+            <td>行列</td>
+            <td>A = \left(<br>
+                \begin{array}{ccc}<br>
+                  a & b & c \\<br>
+                  d & e & f \\<br>
+                  g & h & i<br>
+                \end{array}<br>
+              \right)</td>
+            <td>$$A = \left(
+                \begin{array}{ccc}
+                  a & b & c \\
+                  d & e & f \\
+                  g & h & i
+                \end{array}
+              \right)$$</td>
+        </tr>
+        <tr>
+            <td>転置</td>
+            <td>{}^t\!A, A^{\mathrm{T}}</td>
+            <td>$${}^t\!A, A^{\mathrm{T}}$$</td>
+        </tr>
+        <tr>
+            <td>行列式</td>
+            <td>\mathrm{det}A = |A| = \left|<br>
+                \begin{array}{ccc}<br>
+                  a_{11} & a_{12} & a_{13} \\<br>
+                  a_{21} & a_{22} & a_{23} \\<br>
+                  a_{31} & a_{32} & a_{33}<br>
+                \end{array}<br>
+              \right|</td>
+            <td>$$\mathrm{det}A = |A| = \left|
+                \begin{array}{ccc}
+                  a_{11} & a_{12} & a_{13} \\
+                  a_{21} & a_{22} & a_{23} \\
+                  a_{31} & a_{32} & a_{33}
+                \end{array}
+              \right|$$</td>
+        </tr>
+    </table>
+</div>
+<br>
+<div class = "headline">・数の集合</div>
+<div class = "normal">
+    <table border="1" id = "table5">
+        <tr>
+            <th></th>
+            <th>コマンド例</th>
+            <th>結果</th>
+        </tr>
+        <tr>
+            <td>自然数</td>
+            <td>\mathbb{N}</td>
+            <td>$$\mathbb{N}$$</td>
+        </tr>
+        <tr>
+            <td>整数</td>
+            <td>\mathbb{Z}</td>
+            <td>$$\mathbb{Z}$$</td>
+        </tr>
+        <tr>
+            <td>有理数</td>
+            <td>\mathbb{Q}</td>
+            <td>$$\mathbb{Q}$$</td>
+        </tr>
+        <tr>
+            <td>実数</td>
+            <td>\mathbb{R}</td>
+            <td>$$\mathbb{R}$$</td>
+        </tr>
+        <tr>
+            <td>複素数</td>
+            <td>\mathbb{C}</td>
+            <td>$$\mathbb{C}$$</td>
+        </tr>
+    </table>
+</div>
+<br>
+<div class = "headline">・フォント</div>
+<div class = "normal">
+    <table border="1" id = "table6">
+        <tr>
+            <th>デフォルト</th>
+            <th>ABC</th>
+            <th>$$ABC$$</th>
+        </tr>
+        <tr>
+            <th>太字</th>
+            <th>\mathbf{ABC}</th>
+            <th>$$\mathbf{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>太字(ｲﾀﾘｯｸ)</th>
+            <th>\bf{ABC}</th>
+            <th>$$\bf{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>ローマン体</th>
+            <th>\mathrm{ABC}</th>
+            <th>$$\mathrm{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>セリフ</th>
+            <th>\mathsf{ABC}</th>
+            <th>$$\mathsf{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>イタリック</th>
+            <th>\mathit{ABC}</th>
+            <th>$$\mathit{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>黒板太字</th>
+            <th>\mathbb{ABC}</th>
+            <th>$$\mathbb{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>カリグラフィ</th>
+            <th>\mathcal{ABC}</th>
+            <th>$$\mathcal{ABC}$$</th>
+        </tr>
+        <tr>
+            <th>スクリプト</th>
+            <th>\mathscr{ABC}</th>
+            <th>$$\mathscr{ABC}$$</th>
+        </tr>
+    </table>
+</div>
+<br>
+<div class = "headline">・ギリシャ文字</div>
+<div class = "normal">
+    <table border="1" id = "moji_table">
+        <tr>
+            <td align="center">$$\alpha$$\alpha</td>
+            <td align="center">$$\beta$$\beta</td>
+            <td align="center">$$\gamma$$\gamma</td>
+            <td align="center">$$\delta$$\delta</td>
+            <td align="center">$$\epsilon$$\epsilon</td>
+            <td align="center">$$\zeta$$\zeta</td>
+        </tr>
+        <tr>
+            <td align="center">$$\eta$$\eta</td>
+            <td align="center">$$\theta$$\theta</td>
+            <td align="center">$$\iota$$\iota</td>
+            <td align="center">$$\kappa$$\kappa</td>
+            <td align="center">$$\lambda$$\lambda</td>
+            <td align="center">$$\mu$$\mu</td>
+        </tr>
+        <tr>
+            <td align="center">$$\nu$$\nu</td>
+            <td align="center">$$\xi$$\xi</td>
+            <td align="center">$$\omicron$$\omicron</td>
+            <td align="center">$$\pi$$\pi</td>
+            <td align="center">$$\rho$$\rho</td>
+            <td align="center">$$\sigma$$\sigma</td>
+        </tr>
+        <tr>
+            <td align="center">$$\tau$$\tau</td>
+            <td align="center">$$\upsilon$$\upsilon</td>
+            <td align="center">$$\phi$$\phi</td>
+            <td align="center">$$\chi$$\chi</td>
+            <td align="center">$$\psi$$\psi</td>
+            <td align="center">$$\omega$$\omega</td>
+        </tr>
+    </table>
+    ・大文字は\Sigmaのようにコマンドの頭文字を大文字にすればできる。
+</div>
+<br>
+<div class = "headline">・その他の記号</div>
+<div class = "normal">
+    <table border="1" id = "symbol_table">
+        <tr>
+            <td align="center">$$\times$$\times</td>
+            <td align="center">$$\div$$\div</td>
+            <td align="center">$$\pm$$\pm</td>
+            <td align="center">$$\mp$$\mp</td>
+            <td align="center">$$10^\circ$$10^\circ</td>
+            <td align="center">$$\angle$$\angle</td>
+            <td align="center">$$\mid$$\mid</td>
+            <td align="center">$${n \choose k}$${n \choose k}</td>
+        </tr>
+        <tr>
+            <td align="center">$$\cdot$$\cdot</td>
+            <td align="center">$$\cdots$$\cdots</td>
+            <td align="center">$$\dots$$\dots</td>
+            <td align="center">$$\ldots$$\ldots</td>
+            <td align="center">$$\vdots$$\vdots</td>
+            <td align="center">$$\ddots$$\ddots</td>
+            <td align="center">$$\leftarrow$$\leftarrow</td>
+            <td align="center">$$\rightarrow$$\rightarrow</td>
+        </tr>
+        <tr>
+            <td align="center">$$\Leftarrow$$\Leftarrow</td>
+            <td align="center">$$\Rightarrow$$\Rightarrow</td>
+            <td align="center">$$\leftrightarrow$$\leftrightarrow</td>
+            <td align="center">$$\mapsto$$\mapsto</td>
+            <td align="center">$$\nearrow$$\nearrow</td>
+            <td align="center">$$\searrow$$\searrow</td>
+            <td align="center">$$\swarrow$$\swarrow</td>
+            <td align="center">$$\nwarrow$$\nwarrow</td>
+        </tr>
+        <tr>
+            <td align="center">$$\leq$$\leq</td>
+            <td align="center">$$\leqq$$\leqq</td>
+            <td align="center">$$\geq$$\geq</td>
+            <td align="center">$$\geqq$$\geqq</td>
+            <td align="center">$$\neq$$\neq</td>
+            <td align="center">$$\simeq$$\simeq</td>
+            <td align="center">$$\ll$$\ll</td>
+            <td align="center">$$\gg$$\gg</td>
+        </tr>
+        <tr>
+            <td align="center">$$\to$$\to</td>
+            <td align="center">$$\infty$$\infty</td>
+            <td align="center">$$\Rightarrow$$\Rightarrow</td>
+            <td align="center">$$\equiv$$\equiv</td>
+            <td align="center">$$\Leftrightarrow$$\Leftrightarrow</td>
+            <td align="center">$$\simeq$$\simeq</td>
+            <td align="center">$$\forall$$\forall</td>
+            <td align="center">$$\exists$$\exists</td>
+        </tr>
+        <tr>
+            <td align="center">$$\subset$$\subset</td>
+            <td align="center">$$\subseteq$$\subseteq</td>
+            <td align="center">$$\supset$$\supset</td>
+            <td align="center">$$\supseteq$$\supseteq</td>
+            <td align="center">$$\in$$\in</td>
+            <td align="center">$$\ni$$\ni</td>
+            <td align="center">$$\notin$$\notin</td>
+            <td align="center">$$\notni$$\notni</td>
+        </tr>
+        <tr>
+            <td align="center">$$\hat{x}$$\hat{x}</td>
+            <td align="center">$$\bar{x}$$\bar{x}</td>
+            <td align="center">$$\check{x}$$\check{x}</td>
+            <td align="center">$$\tilde{x}$$\tilde{x}</td>
+            <td align="center">$$\dot{x}$$\dot{x}</td>
+            <td align="center">$$\acute{x}$$\acute{x}</td>
+            <td align="center">$$\mathcal{F}$$\mathcal{F}</td>
+            <td align="center">$$\mathcal{L}$$\mathcal{L}</td>
+        </tr>
+        <tr>
+            <td align="center" colspan="2">$$\overline{x + y}$$\overline{x + y}</td>
+            <td align="center" colspan="2">$$\underline{x + y}$$\underline{x + y}</td>
+            <td align="center" colspan="2">$$\overrightarrow{AB}$$\overrightarrow{AB}</td>
+            <td align="center" colspan="2">$$\overleftarrow{AB}$$\overleftarrow{AB}</td>
+        </tr>
+        <tr>
+            <td align="center" colspan="4">$$\overbrace{a + \cdots + z}^{26}$$\overbrace{a + \cdots + z}^{26}</td>
+            <td align="center" colspan="4">$$\underbrace{a + \cdots + z}^{26}$$\underbrace{a + \cdots + z}^{26}</td>
+        </tr>
+    </table>
+    ・大文字は\Sigmaのようにコマンドの頭文字を大文字にすればできる。
+</div>
+<br>
+<div class = "headline">・LaTexと異なる点</div>
+<p class = "error">
+    ・LaTexには\begin{eqnarray}など様々な数式モードがあるが、KaTexでは\begin{aligned}しか使えない<br>
+</p>
+<div class = "headline">・使用例</div>
+<div class = "normal">
+<p class = "example" id = "example_space">
+    $$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
+    \left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)<br>
+    $$\oint \vec{F} \cdot d\vec{s}=0$$
+    \oint \vec{F} \cdot d\vec{s}=0<br>
+    $${}_nC_k = \frac{n!}{k!(n-k)!}$$
+    {}_nC_k = \frac{n!}{k!(n-k)!}<br>
+    $$\forall \epsilon >0,\exists \delta>0;|x-a|&lt\delta \Rightarrow |f(x)-f(a)|&lt\epsilon$$
+    \forall \epsilon >0,\exists \delta>0;|x-a|&lt\delta \Rightarrow |f(x)-f(a)|&lt\epsilon<br>
+    $$\begin{bmatrix} 0 & \cdots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \cdots & 0 \end{bmatrix}$$
+    \begin{bmatrix} 0 & \cdots & 0 \\ \vdots & \ddots & \vdots \\ 0 & \cdots & 0 \end{bmatrix}<br>
+</p>
+</div>
+</br></br></br>
+</body>
+<script type="module" src="dist/use.js"></script>
+<style>
+  * {
+        padding: 0;
+        margin: 0
+    }
+</style>
+</html>
