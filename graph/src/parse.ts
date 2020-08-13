@@ -16,6 +16,7 @@ const default_reserved = {
     "e": { priority: 0, type: "const", value: Math.E },
     "\%": { priority: 0, type: "func", back: true, calc: (p) => p * 0.01 },
     "_-": { priority: 0, type: "func", back: true, calc: (p) => -p },
+    "abs": { priority: 0, type: "func", back: true, calc: (p: number[]) => Math.abs(p[0]) },
     "sin": { priority: 0, type: "func", back: true, calc: (p: number[]) => Math.sin(p[0])},
     "cos": { priority: 0, type: "func", back: true, calc: (p: number[]) => Math.cos(p[0]) },
     "tan": { priority: 0, type: "func", back: true, calc: (p: number[]) => Math.tan(p[0]) },
@@ -79,11 +80,12 @@ export class Parse{
     }
     private static split(str: string, s = 0, e = str.length): string[] {
         let data: string[] = []
+        const delim = [" ", "\\", "\n", "\t"]
         let c = 0, M = 0, k: string = "", n: number, pr_num = 0, minus = 0, dot = 0
         for (let i = s; i < e; i++) {
-            if (str[i] == " " || str[i] == "\\") {
-                continue;
-            }
+            let check = 0
+            delim.forEach(e => { if (e == str[i]) check = 1 })
+            if(check)continue
             c = 0
             minus = 0
             if(pr_num <= 0 && str[i] === "-")minus = 1, i++

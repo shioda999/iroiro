@@ -13,11 +13,18 @@
 </head>
 
 <body>
-<div class = "headline">・出来ること</div>
+<div class = "headline">・使い方</div>
 <p class = "normal">
-    ・KaTexで作られているので、LaTexとほぼ同じ形式の文章を打つことで、綺麗に数式を表示できる。</br>
-    ・一部Latexのコマンドと異なるところがあるので、注意。
+    ・テキストボックスのところにLaTex形式の文章を入力すると、きれいな数式を出力してくれる。<br>
+    ・KaTexで動いているため、一部のLatexコマンドが使えないので注意。<br>
+    <div class = "normal" id = "small_sample">$a+b=c$⇒⇒⇒$$a+b=c$$</div>
 </p>
+<div class = "headline">・リンク</div>
+<div class = "normal">
+    以下、このページでは数式で使うコマンドについて書いてます。
+    表や画像、引用のコマンドの書き方は以下のページ。<br>
+    <li><a href = "./table.html">表</a></li>
+</div>
 <div class = "headline">・数式モード</div>
 <div class = "normal">
     ・普通にアルファベットを表示したい場合は、ただ普通に書くだけ。<br>
@@ -27,7 +34,7 @@
         <tr>
             <th>数式モード</th>
             <th>コマンド例</th>
-            <th>結果</th>
+            <th>&nbsp;&nbsp;結果&nbsp;&nbsp;</th>
         </tr>
         <tr>
             <td>何もしない</td>
@@ -37,7 +44,7 @@
         <tr>
             <td>$で囲む</td>
             <td>$a$</td>
-            <td>$$a$$</td>
+            <td>$a$</td>
         </tr>
         <tr>
             <td>$$で囲む</td>
@@ -46,6 +53,7 @@
         </tr>
     </table>
 </div>
+<p class = "error">・以下説明しているコマンドは、全て$$&nbsp;$$で括られた時の実行結果。</p>
 <br>
 <div class = "headline">・改行やスペースなど</div>
 <div class = "normal">
@@ -234,14 +242,14 @@
             <td>$$\frac{d^2}{d^2x}$$</td>
         </tr>
         <tr>
-            <td>組み合わせ</td>
+            <td>二項係数</td>
             <td>{}_n \mathrm{C} _r</td>
             <td>$${}_n \mathrm{C} _r$$</td>
         </tr>
         <tr>
-            <td>組み合わせ</td>
-            <td>{}_n \mathrm{H} _r</td>
-            <td>$${}_n \mathrm{H} _r$$</td>
+            <td>階乗</td>
+            <td>n!</td>
+            <td>$$n!$$</td>
         </tr>
         <tr>
             <td>ベクトル</td>
@@ -446,18 +454,8 @@
             <td align="center">$$\ldots$$\ldots</td>
             <td align="center">$$\vdots$$\vdots</td>
             <td align="center">$$\ddots$$\ddots</td>
-            <td align="center">$$\leftarrow$$\leftarrow</td>
-            <td align="center">$$\rightarrow$$\rightarrow</td>
-        </tr>
-        <tr>
-            <td align="center">$$\Leftarrow$$\Leftarrow</td>
-            <td align="center">$$\Rightarrow$$\Rightarrow</td>
-            <td align="center">$$\leftrightarrow$$\leftrightarrow</td>
-            <td align="center">$$\mapsto$$\mapsto</td>
-            <td align="center">$$\nearrow$$\nearrow</td>
-            <td align="center">$$\searrow$$\searrow</td>
-            <td align="center">$$\swarrow$$\swarrow</td>
-            <td align="center">$$\nwarrow$$\nwarrow</td>
+            <td align="center">$$\ll$$\ll</td>
+            <td align="center">$$\gg$$\gg</td>
         </tr>
         <tr>
             <td align="center">$$\leq$$\leq</td>
@@ -466,16 +464,25 @@
             <td align="center">$$\geqq$$\geqq</td>
             <td align="center">$$\neq$$\neq</td>
             <td align="center">$$\simeq$$\simeq</td>
-            <td align="center">$$\ll$$\ll</td>
-            <td align="center">$$\gg$$\gg</td>
+            <td align="center">$$\sim$$\sim</td>
+            <td align="center">$$\equiv$$\equiv</td>
         </tr>
         <tr>
+            <td align="center">$$\leftarrow$$\leftarrow</td>
+            <td align="center">$$\rightarrow$$\rightarrow</td>
+            <td align="center">$$\Leftarrow$$\Leftarrow</td>
+            <td align="center">$$\Rightarrow$$\Rightarrow</td>
+            <td align="center">$$\mapsto$$\mapsto</td>
+            <td align="center">$$\leftrightarrow$$\leftrightarrow</td>
+            <td align="center" colspan="2">$$\Leftrightarrow$$\Leftrightarrow</td>
+        </tr>
+        <tr>
+            <td align="center">$$\nearrow$$\nearrow</td>
+            <td align="center">$$\searrow$$\searrow</td>
+            <td align="center">$$\swarrow$$\swarrow</td>
+            <td align="center">$$\nwarrow$$\nwarrow</td>
             <td align="center">$$\to$$\to</td>
             <td align="center">$$\infty$$\infty</td>
-            <td align="center">$$\Rightarrow$$\Rightarrow</td>
-            <td align="center">$$\equiv$$\equiv</td>
-            <td align="center">$$\Leftrightarrow$$\Leftrightarrow</td>
-            <td align="center">$$\simeq$$\simeq</td>
             <td align="center">$$\forall$$\forall</td>
             <td align="center">$$\exists$$\exists</td>
         </tr>
@@ -507,15 +514,15 @@
         </tr>
         <tr>
             <td align="center" colspan="4">$$\overbrace{a + \cdots + z}^{26}$$\overbrace{a + \cdots + z}^{26}</td>
-            <td align="center" colspan="4">$$\underbrace{a + \cdots + z}^{26}$$\underbrace{a + \cdots + z}^{26}</td>
+            <td align="center" colspan="4">$$\underbrace{a + \cdots + z}_{26}$$\underbrace{a + \cdots + z}_{26}</td>
         </tr>
     </table>
-    ・大文字は\Sigmaのようにコマンドの頭文字を大文字にすればできる。
 </div>
 <br>
 <div class = "headline">・LaTexと異なる点</div>
 <p class = "error">
-    ・LaTexには\begin{eqnarray}など様々な数式モードがあるが、KaTexでは\begin{aligned}しか使えない<br>
+    ・LaTexには\begin{eqnarray}など様々な数式モードがあるが、KaTexでは\begin{aligned}しか使えない。<br>
+    ・上の表のとおり、\underbraceの上付き文字表記がうまく動かない。<br>
 </p>
 <div class = "headline">・使用例</div>
 <div class = "normal">
