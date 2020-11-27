@@ -32,9 +32,9 @@ function getpoint(formula: string[], left: number, right: number, d: number) {
         return
     }
     for (let x: number = left, y: number; x <= right; x += d){
-        y = Parse.calc(formula, Math.pow(10, x))
+        y = Parse.calc(formula, x)
         if (isNaN(y)) continue
-        px.push(Math.pow(10, x))
+        px.push(x)
         py.push(y)
         if (isNaN(max_y)) max_y = min_y = y
         else max_y = Math.max(max_y, y), min_y = Math.min(min_y, y)
@@ -42,7 +42,10 @@ function getpoint(formula: string[], left: number, right: number, d: number) {
     if (isNaN(max_y)) max_y = min_y = 0
     max_y = Math.min(10, max_y + d)
     min_y = Math.max(-10, min_y - d)
-    return {"x": px, "y": py, "max_y": max_y, "min_y": min_y, "max_x": Math.pow(10, right), "min_x": left, "v_num": px.length}
+    return {"x": px, "y": py, "max_y": max_y, "min_y": min_y, "max_x": right, "min_x": left, "v_num": px.length}
+}
+function carve() {
+    
 }
 function conv(str: string) {
     str = str.replace(/\*/g, "\\times ")
