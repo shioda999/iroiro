@@ -1,5 +1,5 @@
 import { Output } from '../../common/output'
-console.warn = (e) => { }
+//console.warn = (e) => { }
 
 const form = document["form"]
 const text_form = getRuleBySelector('.textform')
