@@ -1,4 +1,4 @@
-export class Output{
+export class Output {
     public static print(str: string, type: string = "normal") {
         let head: string, end: string
         str = this.escapeHtml(str)
@@ -29,6 +29,7 @@ export class Output{
         str = str.replace(/</g, '&lt;')
         str = str.replace(/>/g, '&gt;')
         str = str.replace(/"/g, '&quot;')
+        str = str.replace(/'/g, '&#39;')
         str = str.replace(/'/g, '&#39;')
         return str;
     }

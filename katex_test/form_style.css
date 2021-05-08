@@ -1,0 +1,43 @@
+.textform {
+    position: fixed;
+    top: 20px;
+    left: 55%;
+    width: 50%;
+    height: 80%;
+}
+.button {
+    position: relative;
+}
+.text {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    margin-bottom: 50px;
+}
+input.font_size{
+    padding-left: 50px;
+    width:40px;
+}
+.floating_menu{
+    text-align: center;
+    margin-bottom: 15px;
+}
+.floating_menu {
+    display: block;
+    width: 100%;
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    z-index: 9999;
+    text-align: center;
+    padding: 0 auto;
+}
+.move{
+    margin:5px;
+}
+.font_size{
+    margin:5px;
+}
+.auto_update{
+    margin-left:8px;
+}

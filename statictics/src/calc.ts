@@ -13,7 +13,7 @@ export class Calc {
     private two_side: any
     private decimal_place: number
     private bin_p: number
-    constructor(data: any){
+    constructor(data: any) {
         this.load_and_check(data)//データの格納
         this.test()//実際にこのような標本を抽出できる確率
         this.mu_estimate()//母平均の推定
@@ -36,20 +36,20 @@ export class Calc {
         if (this.decimal_place) this.decimal_place = Math.floor(this.decimal_place)
         if (!this.sample && !this.n) Output.print("標本数を入力してください。", "error")
         if (this.bin_p) {
-            if(this.sample)Output.print("sampleは無視されます。", "error")
-            if(this.sigma)Output.print("sigmaは無視されます。", "error")
-            if(this.sigma2)Output.print("sigma2は無視されます。", "error")
-            if(this.mu)Output.print("muは無視されます。", "error")
+            if (this.sample) Output.print("sampleは無視されます。", "error")
+            if (this.sigma) Output.print("sigmaは無視されます。", "error")
+            if (this.sigma2) Output.print("sigma2は無視されます。", "error")
+            if (this.mu) Output.print("muは無視されます。", "error")
         }
         if (data.sigma && data.sigma2) Output.print("sigma or sigma2のどちらか片方のみにしてください。", "error")
         else {
-            if(data.sigma)this.sigma2 = Math.pow(data.sigma, 2)
-            if(data.sigma2)this.sigma = Math.sqrt(data.sigma2)
+            if (data.sigma) this.sigma2 = Math.pow(data.sigma, 2)
+            if (data.sigma2) this.sigma = Math.sqrt(data.sigma2)
         }
-        if(data.S && data.S2)Output.print("S or S2のどちらか片方のみにしてください。", "error")
+        if (data.S && data.S2) Output.print("S or S2のどちらか片方のみにしてください。", "error")
         else {
-            if(data.S)this.S2 = Math.pow(data.S, 2)
-            if(data.S2)this.S = Math.sqrt(data.S2)
+            if (data.S) this.S2 = Math.pow(data.S, 2)
+            if (data.S2) this.S = Math.sqrt(data.S2)
         }
         if (this.bin_p) {
             this.sigma2 = this.bin_p * (1 - this.bin_p) / this.n
@@ -57,10 +57,10 @@ export class Calc {
             this.mu = this.bin_p * this.n
         }
         else if (data.sample) {
-            if(data.n)Output.print("サンプルがあるのでnは不要です。", "error")
-            if(data.S)Output.print("サンプルがあるのでSは不要です。", "error")
-            if(data.S2)Output.print("サンプルがあるのでS2は不要です。", "error")
-            if(data.X)Output.print("サンプルがあるのでXは不要です。", "error")
+            if (data.n) Output.print("サンプルがあるのでnは不要です。", "error")
+            if (data.S) Output.print("サンプルがあるのでSは不要です。", "error")
+            if (data.S2) Output.print("サンプルがあるのでS2は不要です。", "error")
+            if (data.X) Output.print("サンプルがあるのでXは不要です。", "error")
             this.n = data.sample.length
             this.X = this.S2 = 0
             for (i = 0; i < this.n; i++) {
@@ -73,22 +73,22 @@ export class Calc {
         }
         Output.print("・入力データ", "headline")
         if (!this.decimal_place) {
-            Output.print("※decimal_placeが指定されなかったので、小数第3位まで表示。")
+            Output.print("※小数点が指定されなかったので、小数第3位まで表示。")
             this.decimal_place = 3
         }
-        if(this.bin_p)Output.print("二項分布")
+        if (this.bin_p) Output.print("二項分布")
         else Output.print("小数第" + this.decimal_place + "位まで表示。")
-        if(this.n)Output.print("標本数   n = " + this.n)
-        if(this.mu)Output.print("母平均   μ = " + this.Round(this.mu))
-        if(this.X)Output.print("標本平均 X = " + this.Round(this.X))
-        if(this.sigma)Output.print("母標準偏差   σ = " + this.Round(this.sigma))
-        if(this.sigma2)Output.print("母分散   σ^2 = " + this.Round(this.sigma2))
-        if(this.S)Output.print("標準偏差 S = " + this.Round(this.S))
-        if(this.S2)Output.print("標本の分散 S^2 = " + this.Round(this.S2))
-        if(this.S2 && this.n && !this.sigma)Output.print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))))
+        if (this.n) Output.print("標本数   n = " + this.n)
+        if (this.mu) Output.print("母平均   μ = " + this.Round(this.mu))
+        if (this.X) Output.print("標本平均 X = " + this.Round(this.X))
+        if (this.sigma) Output.print("母標準偏差   σ = " + this.Round(this.sigma))
+        if (this.sigma2) Output.print("母分散   σ^2 = " + this.Round(this.sigma2))
+        if (this.S) Output.print("標準偏差 S = " + this.Round(this.S))
+        if (this.S2) Output.print("標本の分散 S^2 = " + this.Round(this.S2))
+        if (this.S2 && this.n && !this.sigma) Output.print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))))
         let str = this.two_side ? "(必ず両側検定)" : ""
         if (!this.percent) {
-            Output.print("※percentが指定されなかったので、危険率5%で検定。" + str)
+            Output.print("※危険率が指定されなかったので、危険率5%で検定。" + str)
             this.percent = 0.05
         }
         else Output.print("危険率" + this.percent * 100 + "%" + str)
@@ -97,13 +97,13 @@ export class Calc {
         if (this.n && this.X && this.mu && (this.sigma || this.S)) {
             Output.print("・標本平均が今以上になる確率", "headline")
             if (this.sigma) {
-                let v = Math.sqrt(this.n)*(this.X - this.mu) / this.sigma
+                let v = Math.sqrt(this.n) * (this.X - this.mu) / this.sigma
                 Output.print("Z = √n(X - μ)/σ = " + this.Round(v))
                 Output.print("確率は" + this.Round((Phi(v) * 100)) + "%")
                 //Output.print("Z = " + Math.sqrt(n) * (X ))
             }
             else {
-                let v = Math.sqrt(this.n - 1)*(this.X - this.mu) / this.S
+                let v = Math.sqrt(this.n - 1) * (this.X - this.mu) / this.S
                 Output.print("母分散が不明なので、あくまで参考。")
                 Output.print("Z = √n-1)(X - μ)/S = " + this.Round(v))
                 Output.print("確率は" + this.Round((Phi(v) * 100)) + "%")
@@ -213,7 +213,8 @@ export class Calc {
         if (l) str += l + " < "
         str += param_name
         if (r) str += " < " + r
-        if(v)str += ((!l || l && l < v) && (!r || r && v < r)) ? "(信頼区間内)" : "(信頼区間外)"
-        Output.print(str)
-    } 
+        let flag = (!l || l && l < v) && (!r || r && v < r)
+        if (v) str += flag ? "(信頼区間内)" : "(信頼区間外)"
+        Output.print(str, flag ? "normal" : "error")
+    }
 }

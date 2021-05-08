@@ -102,8 +102,15 @@ var Output = /** @class */ (function () {
     Output.print = function (str, type) {
         if (type === void 0) { type = "normal"; }
         var head, end;
-        head = "<p class = \"" + type + "\">";
-        end = "</p>";
+        str = this.escapeHtml(str);
+        if (type === "raw") {
+            head = "";
+            end = "";
+        }
+        else {
+            head = "<p class = \"" + type + "\">";
+            end = "</p>";
+        }
         document.getElementById("text").innerHTML += head + str + end;
     };
     Output.clear = function () {
@@ -118,6 +125,15 @@ var Output = /** @class */ (function () {
                 { left: "$", right: "$", display: false }
             ]
         });
+    };
+    Output.escapeHtml = function (str) {
+        str = str.replace(/&/g, '&amp;');
+        str = str.replace(/</g, '&lt;');
+        str = str.replace(/>/g, '&gt;');
+        str = str.replace(/"/g, '&quot;');
+        str = str.replace(/'/g, '&#39;');
+        str = str.replace(/'/g, '&#39;');
+        return str;
     };
     return Output;
 }());
@@ -248,7 +264,7 @@ var Calc = /** @class */ (function () {
         }
         _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・入力データ", "headline");
         if (!this.decimal_place) {
-            _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※decimal_placeが指定されなかったので、小数第3位まで表示。");
+            _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※小数点が指定されなかったので、小数第3位まで表示。");
             this.decimal_place = 3;
         }
         if (this.bin_p)
@@ -273,7 +289,7 @@ var Calc = /** @class */ (function () {
             _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("不偏分散σ^2 = " + this.Round((this.S2 * this.n / (this.n - 1))));
         var str = this.two_side ? "(必ず両側検定)" : "";
         if (!this.percent) {
-            _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※percentが指定されなかったので、危険率5%で検定。" + str);
+            _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※危険率が指定されなかったので、危険率5%で検定。" + str);
             this.percent = 0.05;
         }
         else
@@ -405,9 +421,10 @@ var Calc = /** @class */ (function () {
         str += param_name;
         if (r)
             str += " < " + r;
+        var flag = (!l || l && l < v) && (!r || r && v < r);
         if (v)
-            str += ((!l || l && l < v) && (!r || r && v < r)) ? "(信頼区間内)" : "(信頼区間外)";
-        _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(str);
+            str += flag ? "(信頼区間内)" : "(信頼区間外)";
+        _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print(str, flag ? "normal" : "error");
     };
     return Calc;
 }());
