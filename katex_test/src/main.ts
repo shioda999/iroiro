@@ -43,16 +43,18 @@ function setup() {
 function set_button_option() {
     document.getElementById("button_clear").onclick = () => { if (window.confirm("本当にテキストを全て削除しますか？")) form.text.value = "" }
     document.getElementById("button_cases").onclick = () => add_str("\n\\begin{cases}\n", "\n\\end{cases}")
+    document.getElementById("button_align").onclick = () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true)
     document.getElementById("button_frac").onclick = () => add_str("\\frac{a}{b}")
     document.getElementById("button_dfrac").onclick = () => add_str("\\dfrac{a}{b}")
 }
-function add_str(str1, str2 = "") {
+function add_str(str1, str2 = "", flag = false) {
     let pos = form.text.selectionStart
     let pos2 = form.text.selectionEnd
     console.log(pos)
     let pre = form.text.value.slice(0, pos)
     let middle = form.text.value.slice(pos, pos2)
     let after = form.text.value.slice(pos2)
+    middle = middle.replace(/=/g, '&=')
     pre += str1
     middle += str2
     form.text.value = pre + middle + after
