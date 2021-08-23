@@ -10,15 +10,16 @@ const range = menu.children["move"]
 const auto_update: any = menu.children["auto_update"]
 const font_size = menu.children["font_size"]
 
-setTimeout(() => setup(), 200)
+setup()
 
 function setup() {
+    set_button_option()
     auto_update.onclick = () => onclick()
     font_size.addEventListener('change', () => { change_fontsize(), onclick() })
     range.addEventListener('input', () => change_range())
 
     change_fontsize()
-    form.onkeyup = () => {
+    document.getElementById("button_menu").onclick = form.onkeyup = () => {
         let pos = form.text.selectionStart
         let len = form.text.value.length
         change_fontsize()
@@ -31,6 +32,25 @@ function setup() {
     onclick()
 }
 
+function set_button_option() {
+    document.getElementById("button_clear").onclick = () => { if (window.confirm("本当にテキストを全て削除しますか？")) form.text.value = "" }
+    document.getElementById("button_cases").onclick = () => add_str("\n\\begin{cases}\n", "\n\\end{cases}")
+    document.getElementById("button_frac").onclick = () => add_str("\\frac{a}{b}")
+    document.getElementById("button_dfrac").onclick = () => add_str("\\dfrac{a}{b}")
+}
+function add_str(str1, str2 = "") {
+    let pos = form.text.selectionStart
+    let pos2 = form.text.selectionEnd
+    console.log(pos)
+    let pre = form.text.value.slice(0, pos)
+    let middle = form.text.value.slice(pos, pos2)
+    let after = form.text.value.slice(pos2)
+    pre += str1
+    middle += str2
+    form.text.value = pre + middle + after
+    form.text.focus()
+    form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
+}
 function onclick() {
     Output.clear()
     let text = henkan2(form.text.value)
@@ -75,6 +95,8 @@ function henkan(str) {
 }
 function henkan2(str) {
     str = str.replace(/\\$/, '')
+    str = str.replace(/\*/g, '\\times ')
+    str = str.replace(/\//g, '\\div ')
     str = str.replace(/{cases}\n/g, '{cases}')
     str = str.replace(/{aligned}\n/g, '{aligned}')
     str = str.replace(/\\begin{matrix}\n/g, '\\left\(\\begin{array}{}')
