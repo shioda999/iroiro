@@ -12,6 +12,7 @@ function setup() {
     range = menu.children["move"]
     auto_update = menu.children["auto_update"]
     font_size = menu.children["font_size"]
+    console.log(text_form)
     if (text_form == null) {
         console.log("error")
         setTimeout(() => setup(), 200)
