@@ -13,7 +13,7 @@ function setup() {
     range = menu.children["move"]
     auto_update = menu.children["auto_update"]
     font_size = menu.children["font_size"]
-    if (text_form == null) {
+    if (text_form == null || katex_rule == null) {
         console.log("error")
         setTimeout(() => setup(), 200)
         if (error_cnt == 10) alert("error ページをリロードしてください。")
