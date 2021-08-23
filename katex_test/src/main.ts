@@ -10,7 +10,7 @@ const range = menu.children["move"]
 const auto_update: any = menu.children["auto_update"]
 const font_size = menu.children["font_size"]
 
-setup()
+setTimeout(() => setup(), 200)
 
 function setup() {
     set_button_option()
