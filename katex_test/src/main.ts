@@ -4,6 +4,7 @@ let form, text_form, katex_rule, menu, range, auto_update, font_size, error_cnt 
 setTimeout(() => setup(), 200)
 
 function setup() {
+    console.log("setup")
     form = document["form"]
     text_form = getRuleBySelector('.textform')
     katex_rule = getRuleBySelector('.katex')
@@ -12,7 +13,6 @@ function setup() {
     range = menu.children["move"]
     auto_update = menu.children["auto_update"]
     font_size = menu.children["font_size"]
-    console.log(text_form)
     if (text_form == null) {
         console.log("error")
         setTimeout(() => setup(), 200)
@@ -50,7 +50,6 @@ function set_button_option() {
 function add_str(str1, str2 = "", flag = false) {
     let pos = form.text.selectionStart
     let pos2 = form.text.selectionEnd
-    console.log(pos)
     let pre = form.text.value.slice(0, pos)
     let middle = form.text.value.slice(pos, pos2)
     let after = form.text.value.slice(pos2)
@@ -139,7 +138,6 @@ function getRuleBySelector(sele) {
 function change_range() {
     let v = parseInt(range.value) / 100
     let left = 30 * (1 - v) + 80 * v
-    console.log(text_form)
     text_form.style.cssText = "\
     position: fixed;\
     top: 20px;\
