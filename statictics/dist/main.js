@@ -264,7 +264,6 @@ var Calc = /** @class */ (function () {
         }
         _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("・入力データ", "headline");
         if (!this.decimal_place) {
-            _common_output__WEBPACK_IMPORTED_MODULE_1__["Output"].print("※小数点が指定されなかったので、小数第3位まで表示。");
             this.decimal_place = 3;
         }
         if (this.bin_p)

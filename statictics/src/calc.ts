@@ -73,7 +73,6 @@ export class Calc {
         }
         Output.print("・入力データ", "headline")
         if (!this.decimal_place) {
-            Output.print("※小数点が指定されなかったので、小数第3位まで表示。")
             this.decimal_place = 3
         }
         if (this.bin_p) Output.print("二項分布")
