@@ -1,18 +1,18 @@
 import { Output } from '../../common/output'
-//console.warn = (e) => { }
 
-const form = document["form"]
-const text_form = getRuleBySelector('.textform')
-const katex_rule = getRuleBySelector('.katex')
-
-const menu = document.getElementById("floating_menu")
-const range = menu.children["move"]
-const auto_update: any = menu.children["auto_update"]
-const font_size = menu.children["font_size"]
-
-setTimeout(() => setup(), 1000)
+let form, text_form, katex_rule, menu, range, auto_update, font_size
+setTimeout(() => setup(), 200)
 
 function setup() {
+    form = document["form"]
+    text_form = getRuleBySelector('.textform')
+    katex_rule = getRuleBySelector('.katex')
+
+    menu = document.getElementById("floating_menu")
+    range = menu.children["move"]
+    auto_update = menu.children["auto_update"]
+    font_size = menu.children["font_size"]
+
     set_button_option()
     auto_update.onclick = () => onclick()
     font_size.addEventListener('change', () => { change_fontsize(), onclick() })
