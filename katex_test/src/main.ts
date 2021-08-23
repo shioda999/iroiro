@@ -137,6 +137,7 @@ function getRuleBySelector(sele) {
 function change_range() {
     let v = parseInt(range.value) / 100
     let left = 30 * (1 - v) + 80 * v
+    console.log(text_form)
     text_form.style.cssText = "\
     position: fixed;\
     top: 20px;\
