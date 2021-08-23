@@ -1,6 +1,6 @@
 import { Output } from '../../common/output'
 
-let form, text_form, katex_rule, menu, range, auto_update, font_size
+let form, text_form, katex_rule, menu, range, auto_update, font_size, error_cnt = 0
 setTimeout(() => setup(), 200)
 
 function setup() {
@@ -12,6 +12,13 @@ function setup() {
     range = menu.children["move"]
     auto_update = menu.children["auto_update"]
     font_size = menu.children["font_size"]
+    if (text_form == null) {
+        console.log("error")
+        setTimeout(() => setup(), 200)
+        if (error_cnt == 10) alert("error ページをリロードしてください。")
+        error_cnt++
+        return
+    }
 
     set_button_option()
     auto_update.onclick = () => onclick()
