@@ -15,15 +15,6 @@ export class Output {
     public static clear() {
         document.getElementById("text").innerHTML = ""
     }
-    public static renderKaTeX() {
-        if (typeof renderMathInElement === 'undefined') return;
-        renderMathInElement(document.body, {
-            delimiters: [
-                { left: "$$", right: "$$", display: true },
-                { left: "$", right: "$", display: false }
-            ]
-        }
-    }
     private static escapeHtml(str) {
         str = str.replace(/&/g, '&amp;')
         str = str.replace(/</g, '&lt;')

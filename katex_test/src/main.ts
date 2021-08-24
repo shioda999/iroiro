@@ -1,6 +1,7 @@
 import { Output } from '../../common/output'
 
 let form, text_form, katex_rule, menu, range, auto_update, font_size, error_cnt = 0
+let text_temp = ""
 setTimeout(() => setup(), 200)
 
 function setup() {
@@ -31,7 +32,6 @@ function setup() {
         let pos = form.text.selectionStart
         let len = form.text.value.length
         change_fontsize()
-        form.text.value = henkan(form.text.value)
         if (form.text.value.length != len) pos++
         form.text.selectionEnd = form.text.selectionStart = pos
         if (auto_update.checked) onclick()
@@ -61,53 +61,26 @@ function add_str(str1, str2 = "", flag = false) {
     form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
 }
 function onclick() {
-    Output.clear()
     let text = henkan2(form.text.value)
-    Output.print("$" + text + "\\ \\\\\n \\ \\\\\n\\ \\\\\n\\ \\\\\n\\ \\\\\n\\ \\\\\n\\ \\\\\n\\ \\\\\n$")
-    Output.renderKaTeX()
+    let flag = false
+    try {
+        katex.render(text, document.getElementById("text"), {});
+    }
+    catch (error) {
+        flag = true
+        katex.render(text_temp, document.getElementById("text"), {});
+    }
+    if (!flag) text_temp = text
 }
 function change_fontsize() {
     katex_rule.style.cssText = "font-size : " + font_size.value + "em"
-}
-function henkan(str) {
-    str = str.replace(/_([^{]|$)/g, '_{}$1')
-    str = str.replace(/\^([^{]|$)/g, '^{}$1')
-    str = str.replace(/([^\\]|^)sum/g, '$1\\sum')
-    str = str.replace(/([^\\|d]|^)frac/g, '$1\\frac{}{}')
-    str = str.replace(/([^\\]|^)dfrac/g, '$1\\dfrac{}{}')
-    str = str.replace(/([^\\]|^)oint/g, '$1\\oint')
-    str = str.replace(/([^\\]|^)iiint/g, '$1\\iiint')
-    str = str.replace(/([^\\|i]|^)iint/g, '$1\\iint')
-    str = str.replace(/([^\\|o|i]|^)int/g, '$1\\int')
-    str = str.replace(/([^\\]|^)infty/g, '$1\\infty')
-    str = str.replace(/([^\\]|^)div/g, '$1\\div')
-    str = str.replace(/([^\\]|^)times/g, '$1\\times')
-    str = str.replace(/([^\\]|^)sin/g, '$1\\sin')
-    str = str.replace(/([^\\]|^)cos/g, '$1\\cos')
-    str = str.replace(/([^\\]|^)tan/g, '$1\\tan')
-    str = str.replace(/([^\\]|^)log/g, '$1\\log')
-    str = str.replace(/([^\\]|^)lim/g, '$1\\lim')
-    str = str.replace(/([^\\]|^)prod/g, '$1\\prod')
-    str = str.replace(/([^\\]|^)vec/g, '$1\\vec{}')
-    str = str.replace(/([^\\]|^)alpha/g, '$1\\alpha')
-    str = str.replace(/([^\\]|^)beta/g, '$1\\beta')
-    str = str.replace(/([^\\]|^)gamma/g, '$1\\gamma')
-    str = str.replace(/([^\\]|^)pi/g, '$1\\pi')
-    str = str.replace(/([^\\]|^)theta/g, '$1\\theta')
-    str = str.replace(/([^\\]|^)cdot/g, '$1\\cdot')
-    str = str.replace(/([^\\]|^)left\(/g, '$1\\left\(\\right\)')
-    str = str.replace(/([^\\]|^)left\[/g, '$1\\left\[\\right\]')
-    str = str.replace(/([^{]|^)case/g, '$1\\begin{cases}\n\n\\end{cases}')
-    str = str.replace(/([^{]|^)matrix/g, '$1\\begin{matrix}\n\n\\end{matrix}')
-    str = str.replace(/([^{]|^)align/g, '$1\\begin{aligned}\n\n\\end{aligned}')
-    return str;
 }
 function henkan2(str) {
     str = str.replace(/\\$/, '')
     str = str.replace(/\*/g, '\\times ')
     str = str.replace(/\//g, '\\div ')
-    str = str.replace(/{cases}\n/g, '{cases}')
-    str = str.replace(/{aligned}\n/g, '{aligned}')
+    str = str.replace(/\\begin{cases}\n/g, '\\begin{cases}')
+    str = str.replace(/\\begin{aligned}\n/g, '\\begin{aligned}')
     str = str.replace(/\\begin{matrix}\n/g, '\\left\(\\begin{array}{}')
     str = str.replace(/\\end{matrix}/g, '\\end{array}\\right\)')
     str = str.replace(/\.\n/g, '')
