@@ -1,4 +1,7 @@
+import html2canvas from 'html2canvas'
+
 let form, text_form, katex_rule, menu, range, auto_update, font_size, text_area, error_cnt = 0
+let image_list = [], image_id = -1
 setTimeout(() => setup(), 200)
 
 function setup() {
@@ -47,7 +50,10 @@ function set_button_option() {
     document.getElementById("button_mathrm").onclick = () => add_str("\\mathrm{", "}")
     document.getElementById("button_rightarrow").onclick = () => add_str("\\rightarrow ")
     document.getElementById("syntax_checker").onclick = () => syntax_check()
+
     document.getElementById("pen_mode").onclick = () => pen_modeClick()
+    document.getElementById("pen_undo").onclick = () => pen_undo()
+    document.getElementById("pen_do").onclick = () => pen_do()
 }
 function add_str(str1, str2 = "", flag = false) {
     let pos = form.text.selectionStart
@@ -96,17 +102,19 @@ function onClick() {
 }
 function pen_modeClick() {
     if (text_area.innerHTML == "") return
-    html2canvas(text_area).then(canvas => {
+    window.scrollTo(0, 0);
+    html2canvas(text_area).then((canvas) => {
         {
-            const canvas2 = document.getElementById("draw-area")
+            const canvas2: any = document.getElementById("text-area")
+            const draw_canvas: any = document.getElementById("draw-area")
             const context = canvas.getContext("2d")
             const context2 = canvas2.getContext("2d")
             let image = context.getImageData(0, 0, canvas.width, canvas.height);
             const x = text_area.getBoundingClientRect().left
             const y = text_area.getBoundingClientRect().top
             const W = document.body.getBoundingClientRect().width
-            canvas2.width = Math.max(canvas.width + x + 200, W - 10)
-            canvas2.height = canvas.height + y
+            draw_canvas.width = canvas2.width = Math.max(canvas.width + x + 200, W - 20)
+            draw_canvas.height = canvas2.height = canvas.height + y
             context2.putImageData(image, x, y);
             text_area.innerHTML = ""
         });
@@ -158,8 +166,48 @@ function change_range() {
     height: 80%;\
 ";
 }
+function renderImage(image) {
+    const text_canvas: any = document.getElementById("text-area")
+    const canvas: any = document.getElementById("draw-area")
+    const context = canvas.getContext("2d")
+    context.putImageData(image, 0, 0);
+}
+function push_current_canvasImage() {
+    const canvas: any = document.getElementById("draw-area")
+    const context = canvas.getContext("2d")
+    const image = context.getImageData(0, 0, canvas.width, canvas.height);
+    image_id++
+    if (image_list.length == image_id) image_list.push(image)
+    else {
+        image_list[image_id] = image
+        image_list.length = image_id + 1
+    }
+    console.log("push:" + image_id)
+    console.log("length:" + image_list.length)
+}
+function pen_undo() {
+    image_id--
+    if (image_id < 0) {
+        image_id = -1
+        const canvas: any = document.getElementById("draw-area")
+        const context = canvas.getContext("2d")
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    else renderImage(image_list[image_id])
+    console.log("undo:" + image_id)
+    console.log("length:" + image_list.length)
+}
+function pen_do() {
+    if (image_list.length - 1 <= image_id) image_id = image_list.length - 1
+    else {
+        image_id++
+        renderImage(image_list[image_id])
+        console.log("do:" + image_id)
+        console.log("length:" + image_list.length)
+    }
+}
 window.addEventListener('load', () => {
-    const canvas = document.querySelector('#draw-area');
+    const canvas: any = document.querySelector('#draw-area');
     // contextを使ってcanvasに絵を書いていく
     const context = canvas.getContext('2d');
 
@@ -216,6 +264,7 @@ window.addEventListener('load', () => {
     // canvas上に書いた絵を全部消す
     function clearCanvas() {
         context.clearRect(0, 0, canvas.width, canvas.height);
+        push_current_canvasImage()
     }
 
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
@@ -233,11 +282,12 @@ window.addEventListener('load', () => {
     function dragEnd(event) {
         // 線を書く処理の終了を宣言する
         context.closePath();
-        isDrag = false;
 
         // 描画中に記録していた値をリセットする
         lastPosition.x = null;
         lastPosition.y = null;
+        if (isDrag) push_current_canvasImage()
+        isDrag = false;
     }
 
     // マウス操作やボタンクリック時のイベント処理を定義する

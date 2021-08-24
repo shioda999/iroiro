@@ -6,16 +6,16 @@ module.exports = {
     cache: true,
     watch: true,
     // メインとなるJavaScriptファイル（エントリーポイント）
-    entry: ["./src/main.ts","./src/use.ts"],
+    entry: ["./src/main.ts", "./src/use.ts"],
     module: {
-    rules: [
-        {
-          // 拡張子 .ts の場合
-            test: /\.ts$/,
-          // TypeScript をコンパイルする
-            use: "ts-loader"
-        }
-    ]
+        rules: [
+            {
+                // 拡張子 .ts の場合
+                test: /\.ts$/,
+                // TypeScript をコンパイルする
+                use: "ts-loader"
+            }
+        ]
     },
     plugins: [
         new HardSourceWebpackPlugin()

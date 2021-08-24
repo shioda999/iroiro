@@ -12,10 +12,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
     integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4"
     crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
-    integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
-    onload="renderMathInElement(document.body);"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 </head>
 
 <body>
@@ -29,6 +25,8 @@
     <button type="button" class="command_button" id="button_rightarrow"> → </button>
   </div>
   <button type="button" class="pen_mode" id="pen_mode"> ペン</button>
+  <button type="button" class="pen_undo" id="pen_undo"> 戻る</button>
+  <button type="button" class="pen_do" id="pen_do"> 次</button>
   <button type="button" class="syntax_checker" id="syntax_checker"> 構文チェック </button>
   <div class="floating_menu" id="floating_menu">
     <input type="range" id="move" class="move" min="0" max="100">
@@ -51,7 +49,8 @@
       <textarea name="text" cols="60" rows="38" spellcheck="false"></textarea>
     </form>
   </div>
-  <canvas id="draw-area"></canvas>
+  <canvas class="canvas" id="text-area" zIndex="0"></canvas>
+  <canvas class="canvas" id="draw-area" zIndex="10"></canvas>
   <div class="text" id="text"></div>
 </body>
 <script type="module" src="dist/main.js"></script>
