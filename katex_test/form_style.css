@@ -8,7 +8,7 @@
 .text {
     position: absolute;
     top: 20px;
-    left: 0px;
+    left: 5%;
     margin-bottom: 50px;
 }
 input.font_size{
@@ -55,6 +55,23 @@ input.font_size{
     padding: 10px;
     z-index: 9999;
 }
+.command{
+    position: fixed;
+    top: 20px;
+    right: 10px;
+    display: block;
+    width: 10%;
+    padding: 10px;
+    z-index: 9999;
+}
+.command_button{
+    top: 20px;
+    right: 10px;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    z-index: 9999;
+}
 .syntax_checker{
     position: fixed;
     right: 10px;
@@ -63,4 +80,20 @@ input.font_size{
     width: 12%;
     padding: 6px;
     z-index: 10000;
+}
+.pen_mode{
+    position: fixed;
+    left: 30px;
+    bottom: 15px;
+    display: block;
+    width: 5%;
+    padding: 6px;
+    z-index: 10000;
+    border-radius:100%;
+    background-color: white;
+    transition: .4s;
+}
+.pen_mode:hover {
+  background: gray;
+  color: white;
 }
