@@ -1,8 +1,13 @@
 import html2canvas from 'html2canvas'
 
-let form, text_form, katex_rule, menu, range, auto_update, font_size, text_area, error_cnt = 0
-let image_list = [], image_id = -1
-setTimeout(() => setup(), 200)
+let form, text_form, katex_rule, menu, range, auto_update, font_size, text_area, group, error_cnt = 0
+let cur_canvas, cur_context, canvas_list = [], erase_canvas_list = []
+
+window.addEventListener('load', () => {
+    setup();
+    initEventHandler();
+});
+const textcanvas: any = document.getElementById("textcanvas")
 
 function setup() {
     console.log("setup")
@@ -10,6 +15,7 @@ function setup() {
     text_form = getRuleBySelector('.textform')
     katex_rule = getRuleBySelector('.katex')
 
+    group = document.getElementById("draw-area")
     text_area = document.getElementById("text")
     menu = document.getElementById("floating_menu")
     range = menu.children["move"]
@@ -96,27 +102,28 @@ function onClick() {
         ok = false
     }
     if (ok) {
-        console.log(html)
         text_area.innerHTML = html
     }
 }
 function pen_modeClick() {
     if (text_area.innerHTML == "") return
     window.scrollTo(0, 0);
-    html2canvas(text_area).then((canvas) => {
+    html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
         {
-            const canvas2: any = document.getElementById("text-area")
-            const draw_canvas: any = document.getElementById("draw-area")
             const context = canvas.getContext("2d")
+            const canvas2: any = document.getElementById("textcanvas")
             const context2 = canvas2.getContext("2d")
-            let image = context.getImageData(0, 0, canvas.width, canvas.height);
+            const image = context.getImageData(0, 0, canvas.width, canvas.height);
             const x = text_area.getBoundingClientRect().left
             const y = text_area.getBoundingClientRect().top
-            const W = document.body.getBoundingClientRect().width
-            draw_canvas.width = canvas2.width = Math.max(canvas.width + x + 200, W - 20)
-            draw_canvas.height = canvas2.height = canvas.height + y
+            const W = window.innerWidth
+            const H = window.innerHeight
+            canvas2.width = Math.max(canvas.width + x + 200, W - 20)
+            canvas2.height = Math.max(canvas.height + y, H - 10)
             context2.putImageData(image, x, y);
+            //if (image_list[image_id]) draw_context.putImageData(image_list[image_id], 0, 0);
             text_area.innerHTML = ""
+            create_new_canvas()
         });
 }
 function change_fontsize() {
@@ -166,148 +173,104 @@ function change_range() {
     height: 80%;\
 ";
 }
-function renderImage(image) {
-    const text_canvas: any = document.getElementById("text-area")
-    const canvas: any = document.getElementById("draw-area")
-    const context = canvas.getContext("2d")
-    context.putImageData(image, 0, 0);
-}
-function push_current_canvasImage() {
-    const canvas: any = document.getElementById("draw-area")
-    const context = canvas.getContext("2d")
-    const image = context.getImageData(0, 0, canvas.width, canvas.height);
-    image_id++
-    if (image_list.length == image_id) image_list.push(image)
-    else {
-        image_list[image_id] = image
-        image_list.length = image_id + 1
-    }
-    console.log("push:" + image_id)
-    console.log("length:" + image_list.length)
-}
 function pen_undo() {
-    image_id--
-    if (image_id < 0) {
-        image_id = -1
-        const canvas: any = document.getElementById("draw-area")
-        const context = canvas.getContext("2d")
-        context.clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas_list.length > 0) {
+        const target = canvas_list.pop()
+        group.removeChild(target)
+        erase_canvas_list.push(target)
     }
-    else renderImage(image_list[image_id])
-    console.log("undo:" + image_id)
-    console.log("length:" + image_list.length)
 }
 function pen_do() {
-    if (image_list.length - 1 <= image_id) image_id = image_list.length - 1
-    else {
-        image_id++
-        renderImage(image_list[image_id])
-        console.log("do:" + image_id)
-        console.log("length:" + image_list.length)
+    if (erase_canvas_list.length > 0) {
+        const target = erase_canvas_list.pop()
+        group.appendChild(target)
+        canvas_list.push(target)
     }
 }
-window.addEventListener('load', () => {
-    const canvas: any = document.querySelector('#draw-area');
-    // contextを使ってcanvasに絵を書いていく
-    const context = canvas.getContext('2d');
-
-    // 直前のマウスのcanvas上のx座標とy座標を記録する
-    const lastPosition = { x: null, y: null };
-
-    // マウスがドラッグされているか(クリックされたままか)判断するためのフラグ
-    let isDrag = false;
-
-    // 絵を書く
-    function draw(x, y) {
-        // マウスがドラッグされていなかったら処理を中断する。
-        // ドラッグしながらしか絵を書くことが出来ない。
-        if (!isDrag) {
-            return;
-        }
-
-        // 「context.beginPath()」と「context.closePath()」を都度draw関数内で実行するよりも、
-        // 線の描き始め(dragStart関数)と線の描き終わり(dragEnd)で1回ずつ読んだほうがより綺麗に線画書ける
-
-        // 線の状態を定義する
-        // MDN CanvasRenderingContext2D: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
-        context.lineCap = 'round'; // 丸みを帯びた線にする
-        context.lineJoin = 'round'; // 丸みを帯びた線にする
-        context.lineWidth = 5; // 線の太さ
-        context.strokeStyle = 'black'; // 線の色
-
-        // 書き始めは lastPosition.x, lastPosition.y の値はnullとなっているため、
-        // クリックしたところを開始点としている。
-        // この関数(draw関数内)の最後の2行で lastPosition.xとlastPosition.yに
-        // 現在のx, y座標を記録することで、次にマウスを動かした時に、
-        // 前回の位置から現在のマウスの位置まで線を引くようになる。
-        if (lastPosition.x === null || lastPosition.y === null) {
-            // ドラッグ開始時の線の開始位置
-            context.moveTo(x, y);
-        } else {
-            // ドラッグ中の線の開始位置
-            context.moveTo(lastPosition.x, lastPosition.y);
-        }
-        // context.moveToで設定した位置から、context.lineToで設定した位置までの線を引く。
-        // - 開始時はmoveToとlineToの値が同じであるためただの点となる。
-        // - ドラッグ中はlastPosition変数で前回のマウス位置を記録しているため、
-        //   前回の位置から現在の位置までの線(点のつながり)となる
-        context.lineTo(x, y);
-
-        // context.moveTo, context.lineToの値を元に実際に線を引く
-        context.stroke();
-
-        // 現在のマウス位置を記録して、次回線を書くときの開始点に使う
-        lastPosition.x = x;
-        lastPosition.y = y;
+function create_new_canvas() {
+    const text_canvas: any = document.getElementById("textcanvas")
+    if (cur_canvas) {
+        canvas_list.push(cur_canvas)
+        erase_canvas_list.length = 0
     }
+    cur_canvas = document.createElement("canvas")
+    cur_canvas.classList.add("canvas");
+    cur_canvas.width = text_canvas.width;
+    cur_canvas.height = text_canvas.height;
+    cur_canvas.style.zIndex = 11;
+    cur_canvas.style.border = "4px solid";
+    cur_context = cur_canvas.getContext("2d")
+    group.appendChild(cur_canvas)
+    cur_canvas.addEventListener('mousedown', dragStart);
+    cur_canvas.addEventListener('mouseup', dragEnd);
+    cur_canvas.addEventListener('mouseout', dragEnd);
+    cur_canvas.addEventListener('mousemove', (event) => {
+        draw(event.layerX, event.layerY);
+    });
+}
+// 直前のマウスのcanvas上のx座標とy座標を記録する
+const lastPosition = { x: null, y: null };
 
-    // canvas上に書いた絵を全部消す
-    function clearCanvas() {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        push_current_canvasImage()
+// マウスがドラッグされているか(クリックされたままか)判断するためのフラグ
+let isDrag = false;
+
+
+// 絵を書く
+function draw(x, y) {
+    // マウスがドラッグされていなかったら処理を中断する。
+    // ドラッグしながらしか絵を書くことが出来ない。
+    if (!isDrag) {
+        return;
     }
-
-    // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
-    // お絵かき処理が途中で止まらないようにする
-    function dragStart(event) {
-        console.log("start")
-        // これから新しい線を書き始めることを宣言する
-        // 一連の線を書く処理が終了したらdragEnd関数内のclosePathで終了を宣言する
-        context.beginPath();
-
-        isDrag = true;
+    if (lastPosition.x === null || lastPosition.y === null) {
+        // ドラッグ開始時の線の開始位置
+        cur_context.beginPath();
+        lastPosition.x = x
+        lastPosition.y = y
     }
-    // マウスのドラッグが終了したら、もしくはマウスがcanvas外に移動したら
-    // isDragのフラグをfalseにしてdraw関数内でお絵かき処理が中断されるようにする
-    function dragEnd(event) {
-        // 線を書く処理の終了を宣言する
-        context.closePath();
+    cur_context.lineCap = 'round'; // 丸みを帯びた線にする
+    cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
+    cur_context.lineWidth = 5; // 線の太さ
+    cur_context.strokeStyle = 'black'; // 線の色
 
-        // 描画中に記録していた値をリセットする
-        lastPosition.x = null;
-        lastPosition.y = null;
-        if (isDrag) push_current_canvasImage()
-        isDrag = false;
-    }
+    cur_context.moveTo(lastPosition.x, lastPosition.y);
+    cur_context.lineTo(x, y);
+    cur_context.stroke();
 
-    // マウス操作やボタンクリック時のイベント処理を定義する
-    function initEventHandler() {
-        const clearButton = document.getElementById('button_clearpen');
+    // 現在のマウス位置を記録して、次回線を書くときの開始点に使う
+    lastPosition.x = x;
+    lastPosition.y = y;
+}
 
-        if (clearButton) clearButton.addEventListener('click', clearCanvas);
+// canvas上に書いた絵を全部消す
+function clearCanvas() {
+    if (!cur_context) return
+    cur_context.clearRect(0, 0, textcanvas.width, textcanvas.height);
+}
 
-        canvas.addEventListener('mousedown', dragStart);
-        canvas.addEventListener('mouseup', dragEnd);
-        canvas.addEventListener('mouseout', dragEnd);
-        canvas.addEventListener('mousemove', (event) => {
-            // eventの中の値を見たい場合は以下のようにconsole.log(event)で、
-            // デベロッパーツールのコンソールに出力させると良い
-            // console.log(event);
+// マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
+// お絵かき処理が途中で止まらないようにする
+function dragStart(event) {
+    isDrag = true;
+    draw(event.layerX, event.layerY);
+}
+// マウスのドラッグが終了したら、もしくはマウスがcanvas外に移動したら
+// isDragのフラグをfalseにしてdraw関数内でお絵かき処理が中断されるようにする
+function dragEnd(event) {
+    if (!cur_context) return
+    // 線を書く処理の終了を宣言する
+    cur_context.closePath();
 
-            draw(event.layerX, event.layerY);
-        });
-    }
+    // 描画中に記録していた値をリセットする
+    lastPosition.x = null;
+    lastPosition.y = null;
+    if (isDrag) create_new_canvas(0, 0)
+    isDrag = false;
+}
 
-    // イベント処理を初期化する
-    initEventHandler();
-});
+// マウス操作やボタンクリック時のイベント処理を定義する
+function initEventHandler() {
+    const clearButton = document.getElementById('button_clearpen');
+
+    if (clearButton) clearButton.addEventListener('click', clearCanvas);
+}
