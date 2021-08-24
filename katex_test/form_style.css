@@ -55,3 +55,12 @@ input.font_size{
     padding: 10px;
     z-index: 9999;
 }
+.syntax_checker{
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    display: block;
+    width: 12%;
+    padding: 6px;
+    z-index: 10000;
+}

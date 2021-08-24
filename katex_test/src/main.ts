@@ -46,6 +46,7 @@ function set_button_option() {
     document.getElementById("button_align").onclick = () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true)
     document.getElementById("button_frac").onclick = () => add_str("\\frac{a}{b}")
     document.getElementById("button_dfrac").onclick = () => add_str("\\dfrac{a}{b}")
+    document.getElementById("syntax_checker").onclick = () => onclick(true)
 }
 function add_str(str1, str2 = "", flag = false) {
     let pos = form.text.selectionStart
@@ -60,19 +61,23 @@ function add_str(str1, str2 = "", flag = false) {
     form.text.focus()
     form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
 }
-function onclick() {
-    let text = henkan2(form.text.value) + "\\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ "
-    let flag = false
-    let html
+function onclick(error_disp = false) {
+    let text = henkan2(form.text.value)
+    let html, msg = ""
     try {
-        html = katex.renderToString(text, {});
-        document.getElementById("text").innerHTML = html
+        html = katex.renderToString(text, {}) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
     }
     catch (error) {
-        flag = true
+        msg = error.message
+    }
+    if (!msg) {
+        html_temp = html
         document.getElementById("text").innerHTML = html_temp
     }
-    if (!flag) html_temp = html
+    if (msg && error_disp) {
+        alert(msg)
+        console.log(msg)
+    }
 }
 function change_fontsize() {
     katex_rule.style.cssText = "font-size : " + font_size.value + "em"

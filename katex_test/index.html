@@ -25,6 +25,7 @@
     <button type="button" class="command_button" id="button_frac"> 小分数 </button>
     <button type="button" class="command_button" id="button_dfrac"> 大分数 </button>
   </div>
+  <button type="button" class="syntax_checker" id="syntax_checker"> 構文チェック </button>
   <div class="floating_menu" id="floating_menu">
     <input type="range" id="move" class="move" min="0" max="100">
     <select name="font_size" class="font_size">
@@ -43,7 +44,7 @@
   </div>
   <div class="textform">
     <form name="form" onsubmit="return false">
-      <textarea name="text" cols="60" rows="38"></textarea>
+      <textarea name="text" cols="60" rows="38" spellcheck="false"></textarea>
     </form>
   </div>
   <div class="text" id="text"></div>
