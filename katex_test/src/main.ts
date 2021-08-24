@@ -1,7 +1,7 @@
 import { Output } from '../../common/output'
 
 let form, text_form, katex_rule, menu, range, auto_update, font_size, error_cnt = 0
-let text_temp = ""
+let html_temp
 setTimeout(() => setup(), 200)
 
 function setup() {
@@ -53,7 +53,7 @@ function add_str(str1, str2 = "", flag = false) {
     let pre = form.text.value.slice(0, pos)
     let middle = form.text.value.slice(pos, pos2)
     let after = form.text.value.slice(pos2)
-    middle = middle.replace(/=/g, '&=')
+    middle = middle.replace(/(^|[^&])=/g, '$1&=')
     pre += str1
     middle += str2
     form.text.value = pre + middle + after
@@ -61,16 +61,18 @@ function add_str(str1, str2 = "", flag = false) {
     form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
 }
 function onclick() {
-    let text = henkan2(form.text.value)
+    let text = henkan2(form.text.value) + "\\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ \\\\ \\ "
     let flag = false
+    let html
     try {
-        katex.render(text, document.getElementById("text"), {});
+        html = katex.renderToString(text, {});
+        document.getElementById("text").innerHTML = html
     }
     catch (error) {
         flag = true
-        katex.render(text_temp, document.getElementById("text"), {});
+        document.getElementById("text").innerHTML = html_temp
     }
-    if (!flag) text_temp = text
+    if (!flag) html_temp = html
 }
 function change_fontsize() {
     katex_rule.style.cssText = "font-size : " + font_size.value + "em"
