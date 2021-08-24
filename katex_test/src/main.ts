@@ -46,7 +46,7 @@ function set_button_option() {
     document.getElementById("button_align").onclick = () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true)
     document.getElementById("button_frac").onclick = () => add_str("\\frac{a}{b}")
     document.getElementById("button_dfrac").onclick = () => add_str("\\dfrac{a}{b}")
-    document.getElementById("syntax_checker").onclick = () => onclick(true)
+    document.getElementById("syntax_checker").onclick = () => syntax_check()
 }
 function add_str(str1, str2 = "", flag = false) {
     let pos = form.text.selectionStart
@@ -61,22 +61,36 @@ function add_str(str1, str2 = "", flag = false) {
     form.text.focus()
     form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
 }
-function onclick(error_disp = false) {
+function syntax_check() {
+    let html, ok = true
+    try {
+        html = katex.renderToString(form.text.value, {})
+    }
+    catch (error) {
+        alert(error.message)
+        const list = error.message.split(':')
+        if (list[0] === "KaTeX parse error") {
+            const list2 = list[2].split(' ')
+            const len = list2[1].length
+            const pos = parseInt(list2[4], 10)
+            form.text.focus()
+            form.text.selectionStart = pos - 1
+            form.text.selectionEnd = pos + len
+        }
+    }
+}
+function onclick() {
     let text = henkan2(form.text.value)
-    let html, msg = ""
+    let html, ok = true
     try {
         html = katex.renderToString(text, {}) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
     }
     catch (error) {
-        msg = error.message
+        ok = false
     }
-    if (!msg) {
+    if (ok) {
         html_temp = html
         document.getElementById("text").innerHTML = html_temp
-    }
-    if (msg && error_disp) {
-        alert(msg)
-        console.log(msg)
     }
 }
 function change_fontsize() {
