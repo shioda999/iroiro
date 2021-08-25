@@ -37,15 +37,6 @@ input.font_size{
 .auto_update{
     margin-left:8px;
 }
-.syntax_checker{
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    display: block;
-    width: 12%;
-    padding: 6px;
-    z-index: 10000;
-}
 .syntax_checker:hover{
     cursor: pointer;
     text-decoration: underline;

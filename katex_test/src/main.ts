@@ -73,7 +73,7 @@ window.addEventListener('load', () => {
         document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
-        document.getElementById("paint_clear").addEventListener("click", () => erase_all_canvas())
+        document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) erase_all_canvas() })
     }
     function add_str(str1, str2 = "") {
         let pos = form.text.selectionStart
@@ -276,7 +276,7 @@ window.addEventListener('load', () => {
     }
 
     function round(v) {
-        return Math.round(v / 30) * 30
+        return Math.round(v / 15) * 15
     }
     // 絵を書く
     function draw(px, py) {
