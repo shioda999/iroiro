@@ -4,6 +4,7 @@ window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
     let mode: "text" | "paint" = "text"
     let shift_key_flag = false
+    const is_PC = window.ontouchstart !== null
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -233,17 +234,21 @@ window.addEventListener('load', () => {
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
-        cur_canvas.addEventListener('mousedown', dragStart);
-        cur_canvas.addEventListener('mouseup', dragEnd);
-        cur_canvas.addEventListener('mouseout', dragEnd);
-        cur_canvas.addEventListener('mousemove', (event) => {
-            draw(event.layerX, event.layerY);
-        });
-        cur_canvas.addEventListener('touchstart', dragStart);
-        cur_canvas.addEventListener('touchend', dragEnd);
-        cur_canvas.addEventListener('touchmove', (event) => {
-            draw(event.layerX, event.layerY);
-        });
+        if (is_PC) {
+            cur_canvas.addEventListener('mousedown', dragStart);
+            cur_canvas.addEventListener('mouseup', dragEnd);
+            cur_canvas.addEventListener('mouseout', dragEnd);
+            cur_canvas.addEventListener('mousemove', (event) => {
+                draw(event.layerX, event.layerY);
+            });
+        }
+        else {
+            cur_canvas.addEventListener('touchstart', dragStart);
+            cur_canvas.addEventListener('touchend', dragEnd);
+            cur_canvas.addEventListener('touchmove', (event) => {
+                draw(event.layerX, event.layerY);
+            });
+        }
     }
     function create_new_canvas() {
         if (cur_canvas) {
