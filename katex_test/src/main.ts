@@ -2,6 +2,7 @@ import html2canvas from 'html2canvas'
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = -1, line_thickness = 5, line_color = "black"
+    let mode: "text" | "paint" = "text"
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -16,8 +17,7 @@ window.addEventListener('load', () => {
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
     const textcanvas: any = document.getElementById("textcanvas")
-    setup();
-    initEventHandler();
+    setup()
 
     function setup() {
         set_button_option()
@@ -56,6 +56,7 @@ window.addEventListener('load', () => {
         document.getElementById("button_rightarrow").addEventListener("click", () => add_str("\\rightarrow "))
         document.getElementById("syntax_checker").addEventListener("click", () => syntax_check())
 
+        document.getElementById("text_mode").addEventListener("click", () => text_modeClick())
         document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
@@ -105,8 +106,18 @@ window.addEventListener('load', () => {
             text_area.innerHTML = html
         }
     }
+    function text_modeClick() {
+        if (mode == "text") return
+        mode = "text"
+        textcanvas.hidden = true
+        group.hidden = true
+        onClick()
+    }
     function paint_modeClick() {
-        if (text_area.innerHTML == "") return
+        if (mode == "paint") return
+        mode = "paint"
+        textcanvas.hidden = false
+        group.hidden = false
         window.scrollTo(0, 0);
         html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
             {
@@ -274,12 +285,6 @@ window.addEventListener('load', () => {
         lastPosition.y = y;
     }
 
-    // canvas上に書いた絵を全部消す
-    function clearCanvas() {
-        if (!cur_context) return
-        cur_context.clearRect(0, 0, textcanvas.width, textcanvas.height);
-    }
-
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
     // お絵かき処理が途中で止まらないようにする
     function dragStart(event) {
@@ -298,12 +303,5 @@ window.addEventListener('load', () => {
         lastPosition.y = null;
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
-    }
-
-    // マウス操作やボタンクリック時のイベント処理を定義する
-    function initEventHandler() {
-        const clearButton = document.getElementById('button_clearpaint');
-
-        if (clearButton) clearButton.addEventListener('click', clearCanvas);
     }
 });

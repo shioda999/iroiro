@@ -131,7 +131,7 @@ transparent;
     border-bottom-color: 
 #fff;
 }
-.add-control #tab1:checked ~ .title1 {
+.add-control #text_mode:checked ~ .title1 {
     background: 
 rgba(127, 194, 239, .5);
 }
@@ -141,7 +141,7 @@ rgba(214, 133, 176, .5);
 }
 
 /* tabs control */
-.add-control #tab1:checked ~ .tab-body > .body1 {
+.add-control #text_mode:checked ~ .tab-body > .body1 {
     display: block;
 }
 .add-control #paint_mode:checked ~ .tab-body > .body2 {
