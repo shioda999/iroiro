@@ -276,7 +276,7 @@ window.addEventListener('load', () => {
     }
 
     function round(v) {
-        return Math.round(v / 10) * 10
+        return Math.round(v / 30) * 30
     }
     // 絵を書く
     function draw(px, py) {
@@ -304,11 +304,11 @@ window.addEventListener('load', () => {
             lastlinePosition.y = round(lastlinePosition.y)
             let dx = px - lastPosition.x
             let dy = py - lastPosition.y
-            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
             if (Math.abs(dx) < Math.abs(dy)) nextlinePos.x = lastlinePosition.x
             else nextlinePos.y = lastlinePosition.y
             nextlinePos.x = round(nextlinePos.x)
             nextlinePos.y = round(nextlinePos.y)
+            if (nextlinePos.x == lastlinePosition.x && nextlinePos.y == lastlinePosition.y) return
         }
         cur_context.moveTo(lastlinePosition.x, lastlinePosition.y);
         cur_context.lineTo(nextlinePos.x, nextlinePos.y);
