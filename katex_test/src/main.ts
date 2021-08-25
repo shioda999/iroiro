@@ -248,10 +248,14 @@ window.addEventListener('load', () => {
         if (!isDrag) {
             return;
         }
+        const dx = [0, 3, 0, -3, 0], dy = [0, 0, 3, 0, -3]
         for (let i = 0; i < canvas_list.length; i++) {
             const context = canvas_list[i].getContext("2d")
-            if (context.isPointInStroke(x, y)) {
-                erase_canvas([i])
+            for (let j = 0; j < 5; j++) {
+                if (context.isPointInStroke(x + dx[j], y + dy[j])) {
+                    erase_canvas([i])
+                    break
+                }
             }
         }
     }
