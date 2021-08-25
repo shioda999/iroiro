@@ -16,11 +16,9 @@ input.font_size{
     padding-left: 50px;
     width:40px;
 }
-.floating_menu{
+.floating_menu {
     text-align: center;
     margin-bottom: 15px;
-}
-.floating_menu {
     display: block;
     width: 100%;
     position: fixed;
@@ -39,40 +37,6 @@ input.font_size{
 .auto_update{
     margin-left:8px;
 }
-.command{
-    position: fixed;
-    top: 20px;
-    right: 10px;
-    display: block;
-    width: 10%;
-    padding: 10px;
-    z-index: 9999;
-}
-.command_button{
-    top: 20px;
-    right: 10px;
-    display: block;
-    width: 100%;
-    padding: 10px;
-    z-index: 9999;
-}
-.command{
-    position: fixed;
-    top: 20px;
-    right: 10px;
-    display: block;
-    width: 10%;
-    padding: 10px;
-    z-index: 9999;
-}
-.command_button{
-    top: 20px;
-    right: 10px;
-    display: block;
-    width: 100%;
-    padding: 10px;
-    z-index: 9999;
-}
 .syntax_checker{
     position: fixed;
     right: 10px;
@@ -82,45 +46,181 @@ input.font_size{
     padding: 6px;
     z-index: 10000;
 }
-.pen_mode{
-    position: fixed;
-    left: 30px;
-    bottom: 15px;
-    width: 5%;
-    padding: 6px;
-    z-index: 10000;
-    border-radius:100%;
-    background-color: white;
-    transition: .4s;
-}
-.pen_undo{
-    position: fixed;
-    left: 80px;
-    bottom: 15px;
-    width: 5%;
-    padding: 6px;
-    z-index: 10000;
-    border-radius:100%;
-    background-color: white;
-    transition: .4s;
-}
-.pen_do{
-    position: fixed;
-    left: 130px;
-    bottom: 15px;
-    width: 5%;
-    padding: 6px;
-    z-index: 10000;
-    border-radius:100%;
-    background-color: white;
-    transition: .4s;
-}
-.pen_mode:hover {
-  background: gray;
-  color: white;
+.syntax_checker:hover{
+    cursor: pointer;
+    text-decoration: underline;
 }
 .canvas{
     position:absolute;
     left: 0px;
     top:0px;
 }
+.title1, .body1 {
+    border: 2px solid 
+rgb(127, 194, 239);
+}
+.title2, .body2 {
+    border: 2px solid 
+rgb(214, 133, 176);
+}
+.tab-title {
+    border-bottom: none;
+    padding: .3em .5em;
+    border-radius: .3em .3em 0 0;
+    text-align: center;
+    display: table; 
+    transition: .4s;
+}
+.tab-body > div {
+    width: 150px;
+    border-radius: 0 .3em .3em .3em;
+    background-color: white;
+    padding: 1em;
+}
+
+/* radio non-display */
+.container .radio {
+    display: none;
+}
+/* tabs position */
+.container {
+    display: flex;
+    justify-content:flex-end;
+    flex-wrap: wrap;
+    position: fixed;
+    z-index: 9999;
+    top: 10px;
+    right:10px;
+}
+.command_button{
+    display: block;
+    width: 100px;
+    margin: 0 auto;
+    padding: 10px;
+    z-index: 9999;
+}
+.command_button:hover{
+    cursor: pointer;
+    text-decoration: underline;
+}
+.container::after {
+    content: "";
+    width: 100%;
+}
+.container .tab-title {
+    position: relative;
+    border-bottom: 2px solid 
+transparent;
+}
+.container .tab-title:hover {
+    cursor: pointer;
+    text-decoration: underline
+}
+.container .tab-body {
+    order: 1;
+}
+/* tab's body init */
+.add-control .tab-body > div {
+    display: none;
+}
+
+/* selected tab's color change */
+.add-control .radio:checked + .tab-title {
+    color: 
+#fff;
+    border-bottom-color: 
+#fff;
+}
+.add-control #tab1:checked ~ .title1 {
+    background: 
+rgba(127, 194, 239, .5);
+}
+.add-control #paint_mode:checked ~ .title2 {
+    background: 
+rgba(214, 133, 176, .5);
+}
+
+/* tabs control */
+.add-control #tab1:checked ~ .tab-body > .body1 {
+    display: block;
+}
+.add-control #paint_mode:checked ~ .tab-body > .body2 {
+    display: block;
+}
+input[type="range"] {
+  -webkit-appearance: none; /* 🚩これ無しだとスタイルがほぼ全く反映されないので注意 */
+  appearance: none;
+  cursor: pointer; /* カーソルを分かりやすく */
+  outline: none; /* スライダーのアウトラインは見た目がキツイので消す */
+  height: 1px; /* バーの高さ */
+  width: 150px; /* バーの幅 */
+  background: #8acdff; /* バーの背景色 */
+  border: solid 1px #dff1ff; /* バー周囲の線 */
+}
+/* WebKit向けのつまみ */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /*  🚩デフォルトのつまみのスタイルを解除 */
+  background: #53aeff; /* 背景色 */
+  width: 13px; /* 幅 */
+  height: 13px; /* 高さ */
+  border-radius: 50%; /* 円形に */
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15); /* 影 */
+}
+/* Moz向けのつまみ */
+input[type="range"]::-moz-range-thumb {
+  background: #53aeff; /* 背景色 */
+  width: 13px; /* 幅 */
+  height: 13px; /* 高さ */
+  border-radius: 50%; /* 円形に */
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15); /* 影 */
+  border: none; /* デフォルトの線を消す */
+}
+/* Firefoxで点線が周りに表示されてしまう問題の解消 */
+input[type="range"]::-moz-focus-outer {
+  border: 0;
+}
+/* つまみをドラッグしているときのスタイル */
+input[type="range"]:active::-webkit-slider-thumb {
+  box-shadow: 0px 5px 10px -2px rgba(0, 0, 0, 0.3);
+}
+.thickness{
+    margin-bottom: 10px;
+}
+.colorcircle {
+   position: relative;
+   display: inline-block; 
+   margin: 12px auto;
+   padding-left: 28px;
+   cursor: pointer;
+ }
+  .colorcircle input {
+   display: none;
+ }
+ 
+ .colorcircle2 {
+   position: absolute;
+   left: 0;
+   height: 20px;
+   width: 20px;
+   box-sizing: border-box;
+   background: auto;
+   border: solid 1px gray;
+   border-radius: 50%;
+ }
+ 
+ .colorcircle2:after {
+   content: "";
+   position: absolute;
+   top: -2px;
+   bottom: -2px;
+   left: -2px;
+   right: -2px;
+   box-sizing: border-box;
+   border: solid 3px blue;
+   border-radius: 50%;
+   opacity: 0;
+ }
+ 
+  .colorcircle input:checked + .colorcircle2:after {
+   opacity: 1;
+ }

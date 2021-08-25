@@ -16,17 +16,66 @@
 
 <body>
   <div class="command" id="button_menu">
-    <button type="button" class="command_button" id="button_clear"> テキストCLEAR </button>
-    <button type="button" class="command_button" id="button_cases"> 連立{ </button>
-    <button type="button" class="command_button" id="button_align"> =でそろえる </button>
-    <button type="button" class="command_button" id="button_frac"> 小分数 </button>
-    <button type="button" class="command_button" id="button_dfrac"> 大分数 </button>
-    <button type="button" class="command_button" id="button_mathrm"> NO Italic </button>
-    <button type="button" class="command_button" id="button_rightarrow"> → </button>
   </div>
-  <button type="button" class="pen_mode" id="pen_mode"> ペン</button>
-  <button type="button" class="pen_undo" id="pen_undo"> 戻る</button>
-  <button type="button" class="pen_do" id="pen_do"> 次</button>
+  <div class="container add-control">
+    <input type="radio" id="tab1" class="radio" name="tab" checked="checked"><label class="tab-title title1"
+      for="tab1">Text</label>
+    <input type="radio" id="paint_mode" class="radio" name="tab"><label class="tab-title title2"
+      for="paint_mode">Paint</label>
+    <div class="tab-body">
+      <div class="body1">
+        <button type="button" class="command_button" id="button_clear"> 全消し </button>
+        <button type="button" class="command_button" id="button_cases"> 連立{ </button>
+        <button type="button" class="command_button" id="button_align"> 整列 </button>
+        <button type="button" class="command_button" id="button_frac"> 小分数 </button>
+        <button type="button" class="command_button" id="button_dfrac"> 大分数 </button>
+        <button type="button" class="command_button" id="button_mathrm"> NO Italic </button>
+        <button type="button" class="command_button" id="button_rightarrow"> → </button>
+      </div>
+      <div class="body2" id="paint_menu">
+        <label for="thickness" id="thickness_label">線の太さ:</label>
+        <input type="range" class="thickness" id="thickness" name="thickness" min="1" max="10">
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="black" checked>
+          <span class="colorcircle2" style="background:black;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="gray">
+          <span class="colorcircle2" style="background:gray;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="red">
+          <span class="colorcircle2" style="background:red;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="blue">
+          <span class="colorcircle2" style="background:blue;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="yellow">
+          <span class="colorcircle2" style="background:yellow;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="green">
+          <span class="colorcircle2" style="background:green;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="cyan">
+          <span class="colorcircle2" style="background:cyan;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="white">
+          <span class="colorcircle2" style="background:white;"></span>
+        </label>
+        <label class="colorcircle">
+          <input type="radio" name="colorcircle" value="erase">
+          <span class="colorcircle2" style="background:ghostwhite;"></span>消しゴム
+        </label>
+        <button type="button" class="command_button" id="paint_undo"> 戻る</button>
+        <button type="button" class="command_button" id="paint_do"> 次</button>
+      </div>
+    </div>
+  </div>
   <button type="button" class="syntax_checker" id="syntax_checker"> 構文チェック </button>
   <div class="floating_menu" id="floating_menu">
     <input type="range" id="move" class="move" min="0" max="100">
@@ -46,10 +95,10 @@
   </div>
   <div class="textform">
     <form name="form" onsubmit="return false">
-      <textarea name="text" cols="60" rows="38" spellcheck="false"></textarea>
+      <textarea name="text" cols="50" rows="39" spellcheck="false"></textarea>
     </form>
   </div>
-  <canvas class="canvas" id="textcanvas" zIndex="0"></canvas>
+  <canvas class="canvas" id="textcanvas"></canvas>
   <div class="canvas" id="draw-area"></div>
   <div class="text" id="text"></div>
 </body>
