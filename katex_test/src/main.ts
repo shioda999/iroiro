@@ -248,7 +248,8 @@ window.addEventListener('load', () => {
         if (!isDrag) {
             return;
         }
-        const dx = [0, 3, 0, -3, 0], dy = [0, 0, 3, 0, -3]
+        const k = 1
+        const dx = [0, k, 0, -k, 0], dy = [0, 0, k, 0, -k]
         for (let i = 0; i < canvas_list.length; i++) {
             const context = canvas_list[i].getContext("2d")
             for (let j = 0; j < 5; j++) {
