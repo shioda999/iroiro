@@ -116,7 +116,6 @@ window.addEventListener('load', () => {
     function paint_modeClick() {
         if (mode == "paint") return
         mode = "paint"
-        textcanvas.hidden = false
         group.hidden = false
         window.scrollTo(0, 0);
         html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
@@ -132,8 +131,9 @@ window.addEventListener('load', () => {
                 textcanvas.height = Math.max(canvas.height + y, H - 20)
                 context2.putImageData(image, x, y);
                 //if (image_list[image_id]) draw_context.putImageData(image_list[image_id], 0, 0);
-                text_area.innerHTML = ""
                 create_new_canvas()
+                text_area.innerHTML = ""
+                textcanvas.hidden = false
             });
     }
     function change_fontsize() {
