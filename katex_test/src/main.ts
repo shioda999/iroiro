@@ -235,7 +235,7 @@ window.addEventListener('load', () => {
         group.appendChild(cur_canvas)
         cur_canvas.addEventListener('pointerdown', dragStart);
         cur_canvas.addEventListener('pointerup', dragEnd);
-        cur_canvas.addEventListener('pointerout', dragEnd);
+        cur_canvas.addEventListener('mouseout', dragEnd);
         cur_canvas.addEventListener('pointermove', (event) => {
             draw(event.layerX, event.layerY);
         });
