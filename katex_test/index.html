@@ -24,13 +24,13 @@
       for="paint_mode">Paint</label>
     <div class="tab-body">
       <div class="body1">
-        <button type="button" class="command_button" id="button_clear"> 全消し </button>
-        <button type="button" class="command_button" id="button_cases"> 連立{ </button>
-        <button type="button" class="command_button" id="button_align"> 整列 </button>
-        <button type="button" class="command_button" id="button_frac"> 小分数 </button>
-        <button type="button" class="command_button" id="button_dfrac"> 大分数 </button>
-        <button type="button" class="command_button" id="button_mathrm"> NO Italic </button>
-        <button type="button" class="command_button" id="button_rightarrow"> → </button>
+        <input type="button" class="command_button" id="button_clear" value="全消し">
+        <input type="button" class="command_button" id="button_cases" value="連立{">
+        <input type="button" class="command_button" id="button_align" value="整列">
+        <input type="button" class="command_button" id="button_frac" value="小分数">
+        <input type="button" class="command_button" id="button_dfrac" value="大分数">
+        <input type="button" class="command_button" id="button_mathrm" value="NO Italic">
+        <input type="button" class="command_button" id="button_rightarrow" value="→">
       </div>
       <div class="body2" id="paint_menu">
         <label for="thickness" id="thickness_label">線の太さ:</label>
@@ -71,12 +71,13 @@
           <input type="radio" name="colorcircle" value="erase">
           <span class="colorcircle2" style="background:ghostwhite;"></span>消しゴム
         </label>
-        <button type="button" class="command_button" id="paint_undo"> 戻る</button>
-        <button type="button" class="command_button" id="paint_do"> 次</button>
+        <input type="button" class="command_button" id="paint_undo" value="戻る">
+        <input type="button" class="command_button" id="paint_do" value="次">
+        <input type="button" class="command_button" id="paint_clear" value="全消し">
       </div>
     </div>
   </div>
-  <button type="button" class="syntax_checker" id="syntax_checker"> 構文チェック </button>
+  <input type="button" class="syntax_checker" id="syntax_checker" value="構文チェック">
   <div class="floating_menu" id="floating_menu">
     <input type="range" id="move" class="move" min="0" max="100">
     <select name="font_size" class="font_size">

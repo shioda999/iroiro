@@ -1,8 +1,7 @@
 import html2canvas from 'html2canvas'
 
 window.addEventListener('load', () => {
-    let cur_canvas, cur_context, canvas_list = [], erase_canvas_data = [], line_thickness = 5, line_color = "black"
-    let operation_list = []
+    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = -1, line_thickness = 5, line_color = "black"
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -48,18 +47,19 @@ window.addEventListener('load', () => {
     }
 
     function set_button_option() {
-        document.getElementById("button_clear").onclick = () => { if (window.confirm("本当にテキストを全て削除しますか？")) form.text.value = "" }
-        document.getElementById("button_cases").onclick = () => add_str("\n\\begin{cases}\n", "\n\\end{cases}")
-        document.getElementById("button_align").onclick = () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true)
-        document.getElementById("button_frac").onclick = () => add_str("\\frac{a}{b}")
-        document.getElementById("button_dfrac").onclick = () => add_str("\\dfrac{a}{b}")
-        document.getElementById("button_mathrm").onclick = () => add_str("\\mathrm{", "}")
-        document.getElementById("button_rightarrow").onclick = () => add_str("\\rightarrow ")
-        document.getElementById("syntax_checker").onclick = () => syntax_check()
+        document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) form.text.value = "" })
+        document.getElementById("button_cases").addEventListener("click", () => add_str("\n\\begin{cases}\n", "\n\\end{cases}"))
+        document.getElementById("button_align").addEventListener("click", () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true))
+        document.getElementById("button_frac").addEventListener("click", () => add_str("\\frac{a}{b}"))
+        document.getElementById("button_dfrac").addEventListener("click", () => add_str("\\dfrac{a}{b}"))
+        document.getElementById("button_mathrm").addEventListener("click", () => add_str("\\mathrm{", "}"))
+        document.getElementById("button_rightarrow").addEventListener("click", () => add_str("\\rightarrow "))
+        document.getElementById("syntax_checker").addEventListener("click", () => syntax_check())
 
-        document.getElementById("paint_mode").addEventListener("input", () => paint_modeClick())
-        document.getElementById("paint_undo").onclick = () => paint_undo()
-        document.getElementById("paint_do").onclick = () => paint_do()
+        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
+        document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
+        document.getElementById("paint_do").addEventListener("click", () => paint_do())
+        document.getElementById("paint_clear").addEventListener("click", () => erase_all_canvas())
     }
     function add_str(str1, str2 = "") {
         let pos = form.text.selectionStart
@@ -176,43 +176,48 @@ window.addEventListener('load', () => {
         thickness_label.innerHTML = "線の太さ：" + line_thickness
     }
     function change_color(color) {
-        console.log(color)
         line_color = color
     }
-    function erase_canvas(index: number[]) {
-        const data = []
-        index.forEach((i) => {
-            data.push({ index: i, canvas: canvas_list[i] })
-            group.removeChild(canvas_list[i])
-            canvas_list.splice(i, 1)
-        })
-        erase_canvas_data.push(data)
+    function erase_all_canvas() {
+        set_canvases([])
+        canvas_history.push(canvas_list.concat())
+        history_id++
+    }
+    function erase_canvas(i) {
+        group.removeChild(canvas_list[i])
+        canvas_list.splice(i, 1)
+        canvas_history.push(canvas_list.concat())
+        history_id++
+    }
+    function set_canvases(new_a) {
+        let rm = canvas_list.filter(i => new_a.indexOf(i) == -1)
+        let ad = new_a.filter(i => canvas_list.indexOf(i) == -1)
+        rm.forEach((e) => group.removeChild(e))
+        ad.forEach((e) => group.appendChild(e))
+        canvas_list = new_a.concat()
     }
     function paint_undo() {
-        if (canvas_list.length > 0) {
-            erase_canvas([canvas_list.length - 1])
-        }
+        if (history_id <= 0) return
+        set_canvases(canvas_history[history_id - 1])
+        history_id--
     }
     function paint_do() {
-        if (erase_canvas_data.length > 0) {
-            const target = erase_canvas_data.pop()
-            target.forEach((e) => {
-                group.appendChild(e.canvas)
-                canvas_list.splice(e.index, 0, e.canvas)
-            })
-        }
+        if (history_id >= canvas_history.length - 1) return
+        set_canvases(canvas_history[history_id + 1])
+        history_id++
     }
     function create_new_canvas() {
         if (cur_canvas) {
             canvas_list.push(cur_canvas)
-            erase_canvas_data.length = 0
         }
+        history_id++
+        canvas_history.length = history_id + 1
+        canvas_history[history_id] = canvas_list.concat()
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
         cur_canvas.width = textcanvas.width;
         cur_canvas.height = textcanvas.height;
         cur_canvas.style.zIndex = 1;
-        cur_canvas.style.border = "4px solid";
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
         cur_canvas.addEventListener('mousedown', dragStart);
