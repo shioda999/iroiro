@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas'
 
 window.addEventListener('load', () => {
-    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = -1, line_thickness = 5, line_color = "black"
+    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
     let mode: "text" | "paint" = "text"
     let shift_key_flag = false
     const form = document["form"]
@@ -17,7 +17,6 @@ window.addEventListener('load', () => {
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
-    const textcanvas: any = document.getElementById("textcanvas")
     setup()
 
     function setup() {
@@ -44,6 +43,7 @@ window.addEventListener('load', () => {
             if (auto_update.checked) onClick()
         }
         form.text.value = "a+b+c"
+        window.onresize = () => set_cur_canvas()
         set_keyEvent()
         onClick()
     }
@@ -75,13 +75,13 @@ window.addEventListener('load', () => {
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
         document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) erase_all_canvas() })
     }
-    function add_str(str1, str2 = "") {
+    function add_str(str1, str2 = "", flag = false) {
         let pos = form.text.selectionStart
         let pos2 = form.text.selectionEnd
         let pre = form.text.value.slice(0, pos)
         let middle = form.text.value.slice(pos, pos2)
         let after = form.text.value.slice(pos2)
-        middle = middle.replace(/(^|[^&])=/g, '$1&=')
+        if (flag) middle = middle.replace(/(^|[^&])=/g, '$1&=')
         pre += str1
         middle += str2
         form.text.value = pre + middle + after
@@ -122,7 +122,7 @@ window.addEventListener('load', () => {
     function text_modeClick() {
         if (mode == "text") return
         mode = "text"
-        textcanvas.hidden = true
+        document.getElementById("text_canvas").hidden = true
         group.hidden = true
         onClick()
     }
@@ -133,20 +133,15 @@ window.addEventListener('load', () => {
         window.scrollTo(0, 0);
         html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
             {
-                const context = canvas.getContext("2d")
-                const context2 = textcanvas.getContext("2d")
-                const image = context.getImageData(0, 0, canvas.width, canvas.height);
                 const x = text_area.getBoundingClientRect().left
                 const y = text_area.getBoundingClientRect().top
-                const W = window.innerWidth
-                const H = window.innerHeight
-                textcanvas.width = Math.max(canvas.width + x + 200, W - 40)
-                textcanvas.height = Math.max(canvas.height + y, H - 20)
-                context2.putImageData(image, x, y);
-                //if (image_list[image_id]) draw_context.putImageData(image_list[image_id], 0, 0);
+                const prev_canvas = document.getElementById("text_canvas")
+                if (prev_canvas) document.body.removeChild(prev_canvas)
+                document.body.appendChild(canvas)
+                canvas.setAttribute("style", "position: absolute;left:" + round(x) + "px;top:" + round(y) + "px;")
+                canvas.setAttribute("id", "text_canvas")
                 create_new_canvas()
                 text_area.innerHTML = ""
-                textcanvas.hidden = false
             });
     }
     function change_fontsize() {
@@ -230,17 +225,11 @@ window.addEventListener('load', () => {
         set_canvases(canvas_history[history_id + 1])
         history_id++
     }
-    function create_new_canvas() {
-        if (cur_canvas) {
-            canvas_list.push(cur_canvas)
-        }
-        history_id++
-        canvas_history.length = history_id + 1
-        canvas_history[history_id] = canvas_list.concat()
+    function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
-        cur_canvas.width = textcanvas.width;
-        cur_canvas.height = textcanvas.height;
+        cur_canvas.width = window.innerWidth;
+        cur_canvas.height = window.innerHeight;
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
@@ -250,6 +239,20 @@ window.addEventListener('load', () => {
         cur_canvas.addEventListener('mousemove', (event) => {
             draw(event.layerX, event.layerY);
         });
+        cur_canvas.addEventListener('touchstart', dragStart);
+        cur_canvas.addEventListener('touchend', dragEnd);
+        cur_canvas.addEventListener('touchmove', (event) => {
+            draw(event.layerX, event.layerY);
+        });
+    }
+    function create_new_canvas() {
+        if (cur_canvas) {
+            canvas_list.push(cur_canvas)
+            history_id++
+        }
+        canvas_history.length = history_id + 1
+        canvas_history[history_id] = canvas_list.concat()
+        set_cur_canvas()
     }
     // 直前のマウスのcanvas上のx座標とy座標を記録する
     const lastPosition = { x: null, y: null };
