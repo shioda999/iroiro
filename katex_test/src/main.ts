@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas'
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = -1, line_thickness = 5, line_color = "black"
     let mode: "text" | "paint" = "text"
+    let shift_key_flag = false
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -43,7 +44,19 @@ window.addEventListener('load', () => {
             if (auto_update.checked) onClick()
         }
         form.text.value = "a+b+c"
+        set_keyEvent()
         onClick()
+    }
+
+    function set_keyEvent() {
+        document.addEventListener("keydown", event => {
+            //console.log(event.key)
+            if (event.key == "Shift") shift_key_flag = true
+        })
+        document.addEventListener("keyup", event => {
+            //console.log(event.key)
+            if (event.key == "Shift") shift_key_flag = false
+        })
     }
 
     function set_button_option() {
@@ -240,6 +253,7 @@ window.addEventListener('load', () => {
     }
     // 直前のマウスのcanvas上のx座標とy座標を記録する
     const lastPosition = { x: null, y: null };
+    const lastlinePosition = { x: null, y: null };
 
     // マウスがドラッグされているか(クリックされたままか)判断するためのフラグ
     let isDrag = false;
@@ -261,33 +275,50 @@ window.addEventListener('load', () => {
         }
     }
 
+    function round(v) {
+        return Math.round(v / 10) * 10
+    }
     // 絵を書く
-    function draw(x, y) {
+    function draw(px, py) {
         if (!isDrag) {
             return;
         }
         if (line_color == "erase") {
-            erase(x, y)
+            erase(px, py)
             return
         }
         if (lastPosition.x === null || lastPosition.y === null) {
             // ドラッグ開始時の線の開始位置
             cur_context.beginPath();
-            lastPosition.x = x
-            lastPosition.y = y
+            lastlinePosition.x = lastPosition.x = px
+            lastlinePosition.y = lastPosition.y = py
         }
         cur_context.lineCap = 'round'; // 丸みを帯びた線にする
         cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
         cur_context.lineWidth = line_thickness; // 線の太さ
         cur_context.strokeStyle = line_color; // 線の色
 
-        cur_context.moveTo(lastPosition.x, lastPosition.y);
-        cur_context.lineTo(x, y);
+        const nextlinePos = { x: px, y: py }
+        if (shift_key_flag) {
+            lastlinePosition.x = round(lastlinePosition.x)
+            lastlinePosition.y = round(lastlinePosition.y)
+            let dx = px - lastPosition.x
+            let dy = py - lastPosition.y
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+            if (Math.abs(dx) < Math.abs(dy)) nextlinePos.x = lastlinePosition.x
+            else nextlinePos.y = lastlinePosition.y
+            nextlinePos.x = round(nextlinePos.x)
+            nextlinePos.y = round(nextlinePos.y)
+        }
+        cur_context.moveTo(lastlinePosition.x, lastlinePosition.y);
+        cur_context.lineTo(nextlinePos.x, nextlinePos.y);
         cur_context.stroke();
 
         // 現在のマウス位置を記録して、次回線を書くときの開始点に使う
-        lastPosition.x = x;
-        lastPosition.y = y;
+        lastPosition.x = px;
+        lastPosition.y = py;
+        lastlinePosition.x = nextlinePos.x
+        lastlinePosition.y = nextlinePos.y
     }
 
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
