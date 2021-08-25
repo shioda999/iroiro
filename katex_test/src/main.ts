@@ -60,7 +60,7 @@ window.addEventListener('load', () => {
     }
 
     function set_button_option() {
-        document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) form.text.value = "" })
+        document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) { form.text.value = ""; onClick() } })
         document.getElementById("button_cases").addEventListener("click", () => add_str("\n\\begin{cases}\n", "\n\\end{cases}"))
         document.getElementById("button_align").addEventListener("click", () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true))
         document.getElementById("button_frac").addEventListener("click", () => add_str("\\frac{a}{b}"))
@@ -87,6 +87,7 @@ window.addEventListener('load', () => {
         form.text.value = pre + middle + after
         form.text.focus()
         form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
+        onClick()
     }
     function syntax_check() {
         let html, ok = true
@@ -95,6 +96,7 @@ window.addEventListener('load', () => {
         }
         catch (error) {
             alert(error.message)
+            ok = false
             const list = error.message.split(':')
             if (list[0] === "KaTeX parse error") {
                 const list2 = list[2].split(' ')
@@ -105,6 +107,7 @@ window.addEventListener('load', () => {
                 form.text.selectionEnd = pos + len
             }
         }
+        if (ok) alert("構文エラーはありませんでした。")
     }
     function onClick() {
         let text = henkan2(form.text.value)
@@ -235,7 +238,7 @@ window.addEventListener('load', () => {
         group.appendChild(cur_canvas)
         cur_canvas.addEventListener('pointerdown', dragStart);
         cur_canvas.addEventListener('pointerup', dragEnd);
-        cur_canvas.addEventListener('mouseout', dragEnd);
+        cur_canvas.addEventListener('pointerout', dragEnd);
         cur_canvas.addEventListener('pointermove', (event) => {
             draw(event.layerX, event.layerY);
         });
