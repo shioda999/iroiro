@@ -355,8 +355,13 @@ window.addEventListener('load', () => {
                 cur_context.closePath();
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
                 cur_context.beginPath();
-                if (line_mode == "rectangle") cur_context.strokeRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                cur_context.moveTo(prev_x, prev_y)
+                cur_context.lineTo(prev_x, next_y)
+                cur_context.lineTo(next_x, next_y)
+                cur_context.lineTo(next_x, prev_y)
+                cur_context.lineTo(prev_x, prev_y)
                 if (line_mode == "fill_rectangle") cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                cur_context.stroke()
                 break
             case "circle":
             case "fill_circle":
