@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas'
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
     let mode: "text" | "paint" = "text"
-    let line_mode = "normal"
+    let line_mode = "default"
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -17,6 +17,7 @@ window.addEventListener('load', () => {
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
+    const line_mode_button = document.getElementById("line_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
     let sub_ctx = sub_canvas.getContext("2d")
     setup()
@@ -30,6 +31,9 @@ window.addEventListener('load', () => {
         colorcircle2.forEach((e) => {
             e.addEventListener('input', () => change_color(e.value))
         })
+        line_mode_button.onchange = function () {
+            line_mode = this.options[this.selectedIndex].value
+        }
 
         thickness.value = 3
         change_fontsize()
@@ -58,7 +62,7 @@ window.addEventListener('load', () => {
         })
         document.addEventListener("keyup", event => {
             //console.log(event.key)
-            if (event.key == "Shift") line_mode = "normal"
+            if (event.key == "Shift") line_mode = "default"
         })
     }
 
@@ -295,6 +299,7 @@ window.addEventListener('load', () => {
     }
     // 絵を書く
     function draw(px, py) {
+        let prev_x, prev_y, next_x, next_y
         if (!isDrag) {
             return;
         }
@@ -311,9 +316,10 @@ window.addEventListener('load', () => {
             cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
             cur_context.lineWidth = line_thickness; // 線の太さ
             cur_context.strokeStyle = line_color; // 線の色
+            cur_context.fillStyle = line_color; // 線の色
         }
         switch (line_mode) {
-            case "normal":
+            case "default":
                 cur_context.moveTo(lastPosition.x, lastPosition.y);
                 cur_context.lineTo(px, py);
                 cur_context.stroke();
@@ -321,8 +327,8 @@ window.addEventListener('load', () => {
                 lastPosition.y = py;
                 break
             case "straight":
-                const prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                const next_x = round(px), next_y = round(py)
+                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
+                next_x = round(px), next_y = round(py)
                 if (prev_x == next_x && prev_y == next_y) return
                 cur_context.closePath();
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
@@ -340,6 +346,18 @@ window.addEventListener('load', () => {
                     sub_ctx.stroke();
                     sub_ctx.closePath();
                 }
+                break
+            case "rectangle":
+            case "fill_rectangle":
+                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
+                next_x = round(px), next_y = round(py)
+                if (prev_x == next_x && prev_y == next_y) return
+                cur_context.closePath();
+                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                cur_context.beginPath();
+                if (line_mode == "rectangle") cur_context.strokeRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                if (line_mode == "fill_rectangle") cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                cur_context.stroke();
                 break
         }
     }

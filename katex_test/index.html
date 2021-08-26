@@ -68,10 +68,18 @@
           <input type="radio" name="colorcircle" value="white">
           <span class="colorcircle2" style="background:white;"></span>
         </label>
-        <label class="colorcircle">
+        <label class="colorcircle" style="flex-wrap:wrap;">
           <input type="radio" name="colorcircle" value="erase">
           <span class="colorcircle2" style="background:ghostwhite;"></span>消しゴム
         </label>
+        <select name="line_mode_button" id="line_mode_button" style="margin-bottom: 20px;">
+          <option value="default" selected>デフォルト</option>
+          <option value="straight">直線</option>
+          <option value="rectangle">長方形</option>
+          <option value="fill_rectangle">長方形(塗りつぶし)</option>
+          <option value="circle"> 円</option>
+          <option value="fill_circle">円(塗りつぶし)</option>
+        </select>
         <input type="button" class="command_button" id="paint_undo" value="戻る">
         <input type="button" class="command_button" id="paint_do" value="次">
         <input type="button" class="command_button" id="paint_aaa" value="工事中">
