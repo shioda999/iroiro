@@ -309,7 +309,9 @@ window.addEventListener('load', () => {
             return
         }
         if (line_mode == "fill") {
-            my_fill(px, py)
+            if (lastPosition.x === null || lastPosition.y === null) my_fill(px, py)
+            lastPosition.x = px
+            lastPosition.y = py
             return
         }
         if (lastPosition.x === null || lastPosition.y === null) {
@@ -412,6 +414,7 @@ window.addEventListener('load', () => {
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
+        if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return
         px = Math.round(px), py = Math.round(py)
         let cell = [W * py + px]
         while (cell.length) {
@@ -436,15 +439,11 @@ window.addEventListener('load', () => {
         flood_fill(img, px, py, RGBColor(line_color))
         cur_context.putImageData(img, 0, 0)
         set_canvases([cur_canvas])
-        canvas_history.push(canvas_list.concat())
-        history_id++
-        cur_canvas = null
+        canvas_list = []
     }
     function join_canvases() {
         canvas_history[history_id].forEach((c) => {
-            const ctx = c.getContext("2d")
-            const img = ctx.getImageData(0, 0, c.width, c.height)
-            cur_context.putImageData(img, 0, 0)
+            cur_context.drawImage(c, 0, 0, c.width, c.height);
         })
     }
 });
