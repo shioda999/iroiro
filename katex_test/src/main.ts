@@ -335,7 +335,7 @@ window.addEventListener('load', () => {
                 if (prev_x == next_x || prev_y == next_y || Math.abs(prev_x - next_x) == Math.abs(prev_y - next_y)) {
                     const k = Math.max(sub_canvas.width, sub_canvas.height)
                     sub_ctx.beginPath();
-                    sub_ctx.moveTo(prev_x, prev_y);
+                    sub_ctx.moveTo(next_x, next_y);
                     sub_ctx.lineTo((next_x - prev_x) * k + prev_x, (next_y - prev_y) * k + prev_y);
                     sub_ctx.stroke();
                     sub_ctx.closePath();
