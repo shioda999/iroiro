@@ -406,7 +406,7 @@ window.addEventListener('load', () => {
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
-    function flood_fill(img, px, py, rep_color) {
+    function flood_fill(img, dist, px, py, rep_color) {
         const W = img.width
         const H = img.height
         const tr = img.data[(W * py + px) * 4]
@@ -414,37 +414,46 @@ window.addEventListener('load', () => {
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
+        console.log(img.data)
+        const pixel = img.data
         if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return
         px = Math.round(px), py = Math.round(py)
         let cell = [W * py + px]
         while (cell.length) {
             let p = cell.pop()
-            img.data[p * 4] = rep_color[0]
-            img.data[p * 4 + 1] = rep_color[1]
-            img.data[p * 4 + 2] = rep_color[2]
-            img.data[p * 4 + 3] = rep_color[3]
+            pixel[p * 4] = rep_color[0]
+            pixel[p * 4 + 1] = rep_color[1]
+            pixel[p * 4 + 2] = rep_color[2]
+            pixel[p * 4 + 3] = rep_color[3]
+            dist.data[p * 4] = rep_color[0]
+            dist.data[p * 4 + 1] = rep_color[1]
+            dist.data[p * 4 + 2] = rep_color[2]
+            dist.data[p * 4 + 3] = rep_color[3]
             for (let i = 0; i < 4; i++) {
                 let ty = Math.floor(p / W) + dy[i], tx = p % W + dx[i]
                 if (ty < 0 || ty >= H || tx < 0 || tx >= W) continue
                 let nxp = W * ty + tx
-                if (img.data[nxp * 4] != tr || img.data[nxp * 4 + 1] != tg
-                    || img.data[nxp * 4 + 2] != tb || img.data[nxp * 4 + 3] != ta) continue
+                if (pixel[nxp * 4] != tr || pixel[nxp * 4 + 1] != tg
+                    || pixel[nxp * 4 + 2] != tb || pixel[nxp * 4 + 3] != ta) continue
                 cell.push(nxp)
             }
         }
     }
     function my_fill(px, py) {
-        join_canvases()
-        const img = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
-        flood_fill(img, px, py, RGBColor(line_color))
-        cur_context.putImageData(img, 0, 0)
-        set_canvases([cur_canvas])
-        canvas_list = []
+        const img = get_current_img()
+        const dist = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
+        flood_fill(img, dist, px, py, RGBColor(line_color))
+        cur_context.putImageData(dist, 0, 0)
     }
-    function join_canvases() {
+    function get_current_img() {
+        let new_canvas = document.createElement("canvas")
+        new_canvas.width = cur_canvas.width;
+        new_canvas.height = cur_canvas.height;
+        let ctx = new_canvas.getContext("2d")
         canvas_history[history_id].forEach((c) => {
-            cur_context.drawImage(c, 0, 0, c.width, c.height);
+            ctx.drawImage(c, 0, 0, c.width, c.height);
         })
+        return ctx.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
     }
 });
 
