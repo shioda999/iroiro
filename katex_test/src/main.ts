@@ -357,7 +357,19 @@ window.addEventListener('load', () => {
                 cur_context.beginPath();
                 if (line_mode == "rectangle") cur_context.strokeRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
                 if (line_mode == "fill_rectangle") cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                break
+            case "circle":
+            case "fill_circle":
+                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
+                next_x = round(px), next_y = round(py)
+                if (prev_x == next_x && prev_y == next_y) return
+                cur_context.closePath();
+                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                cur_context.beginPath();
+                cur_context.arc(prev_x, prev_y, Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)),
+                    0, 2 * Math.PI, false)
                 cur_context.stroke();
+                if (line_mode == "fill_circle") cur_context.fill();
                 break
         }
     }
@@ -374,8 +386,6 @@ window.addEventListener('load', () => {
         if (!cur_context) return
         // 線を書く処理の終了を宣言する
         cur_context.closePath();
-        cur_context.fillStyle = "rgb(0, 141, 213)";
-        cur_context.fill()
         sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
 
         // 描画中に記録していた値をリセットする
