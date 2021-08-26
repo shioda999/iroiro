@@ -3,12 +3,12 @@ import html2canvas from 'html2canvas'
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
     let mode: "text" | "paint" = "text"
-    let shift_key_flag = false
+    let line_mode = "normal"
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
 
-    const group = document.getElementById("draw-area")
+    const group = document.getElementById("draw_canvas")
     const text_area = document.getElementById("text")
     const menu = document.getElementById("floating_menu")
     const range = menu.children["move"]
@@ -17,6 +17,8 @@ window.addEventListener('load', () => {
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
+    const sub_canvas: any = document.getElementById("sub_canvas")
+    let sub_ctx = sub_canvas.getContext("2d")
     setup()
 
     function setup() {
@@ -43,7 +45,8 @@ window.addEventListener('load', () => {
             if (auto_update.checked) onClick()
         }
         form.text.value = "a+b+c"
-        window.onresize = () => set_cur_canvas()
+        window.onresize = () => { set_cur_canvas(); resize_sub_canvas(); }
+        resize_sub_canvas()
         set_keyEvent()
         onClick()
     }
@@ -51,11 +54,11 @@ window.addEventListener('load', () => {
     function set_keyEvent() {
         document.addEventListener("keydown", event => {
             //console.log(event.key)
-            if (event.key == "Shift") shift_key_flag = true
+            if (event.key == "Shift") line_mode = "straight"
         })
         document.addEventListener("keyup", event => {
             //console.log(event.key)
-            if (event.key == "Shift") shift_key_flag = false
+            if (event.key == "Shift") line_mode = "normal"
         })
     }
 
@@ -70,7 +73,7 @@ window.addEventListener('load', () => {
         document.getElementById("syntax_checker").addEventListener("click", () => syntax_check())
 
         document.getElementById("text_mode").addEventListener("click", () => text_modeClick())
-        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick(), false)
+        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
         document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) erase_all_canvas() })
@@ -145,7 +148,6 @@ window.addEventListener('load', () => {
                 canvas.setAttribute("id", "text_canvas")
                 create_new_canvas()
                 text_area.innerHTML = ""
-                document.getElementById("paint_mode").click()
             });
     }
     function change_fontsize() {
@@ -229,6 +231,18 @@ window.addEventListener('load', () => {
         set_canvases(canvas_history[history_id + 1])
         history_id++
     }
+    function resize_sub_canvas() {
+        sub_canvas.width = window.innerWidth;
+        sub_canvas.height = window.innerHeight;
+        sub_canvas.style.zIndex = 10;
+        sub_canvas.style["pointer-events"] = "none"
+        sub_ctx = sub_canvas.getContext("2d")
+        sub_ctx.setLineDash([3, 3]);
+        sub_ctx.lineCap = 'round'; // 丸みを帯びた線にする
+        sub_ctx.lineJoin = 'round'; // 丸みを帯びた線にする
+        sub_ctx.lineWidth = 1; // 線の太さ
+        sub_ctx.strokeStyle = "black"; // 線の色
+    }
     function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
@@ -255,7 +269,6 @@ window.addEventListener('load', () => {
     }
     // 直前のマウスのcanvas上のx座標とy座標を記録する
     const lastPosition = { x: null, y: null };
-    const lastlinePosition = { x: null, y: null };
 
     // マウスがドラッグされているか(クリックされたままか)判断するためのフラグ
     let isDrag = false;
@@ -264,7 +277,7 @@ window.addEventListener('load', () => {
         if (!isDrag) {
             return;
         }
-        const k = 1
+        const k = 2
         const dx = [0, k, 0, -k, 0], dy = [0, 0, k, 0, -k]
         for (let i = 0; i < canvas_list.length; i++) {
             const context = canvas_list[i].getContext("2d")
@@ -278,7 +291,7 @@ window.addEventListener('load', () => {
     }
 
     function round(v) {
-        return Math.round(v / 15) * 15
+        return Math.round(v / 20) * 20
     }
     // 絵を書く
     function draw(px, py) {
@@ -292,35 +305,43 @@ window.addEventListener('load', () => {
         if (lastPosition.x === null || lastPosition.y === null) {
             // ドラッグ開始時の線の開始位置
             cur_context.beginPath();
-            lastlinePosition.x = lastPosition.x = px
-            lastlinePosition.y = lastPosition.y = py
+            lastPosition.x = px
+            lastPosition.y = py
+            cur_context.lineCap = 'round'; // 丸みを帯びた線にする
+            cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
+            cur_context.lineWidth = line_thickness; // 線の太さ
+            cur_context.strokeStyle = line_color; // 線の色
         }
-        cur_context.lineCap = 'round'; // 丸みを帯びた線にする
-        cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
-        cur_context.lineWidth = line_thickness; // 線の太さ
-        cur_context.strokeStyle = line_color; // 線の色
+        switch (line_mode) {
+            case "normal":
+                cur_context.moveTo(lastPosition.x, lastPosition.y);
+                cur_context.lineTo(px, py);
+                cur_context.stroke();
+                lastPosition.x = px;
+                lastPosition.y = py;
+                break
+            case "straight":
+                const prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
+                const next_x = round(px), next_y = round(py)
+                if (prev_x == next_x && prev_y == next_y) return
+                cur_context.closePath();
+                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                cur_context.beginPath();
+                cur_context.moveTo(prev_x, prev_y);
+                cur_context.lineTo(next_x, next_y);
+                cur_context.stroke();
 
-        const nextlinePos = { x: px, y: py }
-        if (shift_key_flag) {
-            lastlinePosition.x = round(lastlinePosition.x)
-            lastlinePosition.y = round(lastlinePosition.y)
-            let dx = px - lastPosition.x
-            let dy = py - lastPosition.y
-            if (Math.abs(dx) < Math.abs(dy)) nextlinePos.x = lastlinePosition.x
-            else nextlinePos.y = lastlinePosition.y
-            nextlinePos.x = round(nextlinePos.x)
-            nextlinePos.y = round(nextlinePos.y)
-            if (nextlinePos.x == lastlinePosition.x && nextlinePos.y == lastlinePosition.y) return
+                sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
+                if (prev_x == next_x || prev_y == next_y || Math.abs(prev_x - next_x) == Math.abs(prev_y - next_y)) {
+                    const k = Math.max(sub_canvas.width, sub_canvas.height)
+                    sub_ctx.beginPath();
+                    sub_ctx.moveTo(prev_x, prev_y);
+                    sub_ctx.lineTo((next_x - prev_x) * k + prev_x, (next_y - prev_y) * k + prev_y);
+                    sub_ctx.stroke();
+                    sub_ctx.closePath();
+                }
+                break
         }
-        cur_context.moveTo(lastlinePosition.x, lastlinePosition.y);
-        cur_context.lineTo(nextlinePos.x, nextlinePos.y);
-        cur_context.stroke();
-
-        // 現在のマウス位置を記録して、次回線を書くときの開始点に使う
-        lastPosition.x = px;
-        lastPosition.y = py;
-        lastlinePosition.x = nextlinePos.x
-        lastlinePosition.y = nextlinePos.y
     }
 
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
@@ -337,6 +358,7 @@ window.addEventListener('load', () => {
         cur_context.closePath();
         cur_context.fillStyle = "rgb(0, 141, 213)";
         cur_context.fill()
+        sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
 
         // 描画中に記録していた値をリセットする
         lastPosition.x = null;
