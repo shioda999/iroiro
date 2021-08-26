@@ -70,7 +70,7 @@ window.addEventListener('load', () => {
         document.getElementById("syntax_checker").addEventListener("click", () => syntax_check())
 
         document.getElementById("text_mode").addEventListener("click", () => text_modeClick())
-        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
+        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick(), false)
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
         document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) erase_all_canvas() })
@@ -145,6 +145,7 @@ window.addEventListener('load', () => {
                 canvas.setAttribute("id", "text_canvas")
                 create_new_canvas()
                 text_area.innerHTML = ""
+                document.getElementById("paint_mode").click()
             });
     }
     function change_fontsize() {
@@ -334,6 +335,8 @@ window.addEventListener('load', () => {
         if (!cur_context) return
         // 線を書く処理の終了を宣言する
         cur_context.closePath();
+        cur_context.fillStyle = "rgb(0, 141, 213)";
+        cur_context.fill()
 
         // 描画中に記録していた値をリセットする
         lastPosition.x = null;
