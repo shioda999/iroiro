@@ -287,7 +287,8 @@ window.addEventListener('load', () => {
         for (let i = 0; i < canvas_list.length; i++) {
             const context = canvas_list[i].getContext("2d")
             for (let j = 0; j < 5; j++) {
-                if (context.isPointInStroke(x + dx[j], y + dy[j])) {
+                const color = context.getImageData(x + dx[j], y + dy[j], 1, 1).data
+                if (color[0] != 0 || color[1] != 0 || color[2] != 0 || color[3] != 0) {
                     erase_canvas([i])
                     break
                 }
@@ -414,10 +415,9 @@ window.addEventListener('load', () => {
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
-        console.log(img.data)
         const pixel = img.data
+        console.log(pixel)
         if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return
-        px = Math.round(px), py = Math.round(py)
         let cell = [W * py + px]
         while (cell.length) {
             let p = cell.pop()
@@ -440,6 +440,7 @@ window.addEventListener('load', () => {
         }
     }
     function my_fill(px, py) {
+        px = Math.round(px), py = Math.round(py)
         const img = get_current_img()
         const dist = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
         flood_fill(img, dist, px, py, RGBColor(line_color))
