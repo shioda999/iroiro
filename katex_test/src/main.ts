@@ -1,4 +1,5 @@
 import html2canvas from 'html2canvas'
+import { RGBColor } from './rgbcolor';
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
@@ -307,6 +308,10 @@ window.addEventListener('load', () => {
             erase(px, py)
             return
         }
+        if (line_mode == "fill") {
+            my_fill(px, py)
+            return
+        }
         if (lastPosition.x === null || lastPosition.y === null) {
             // ドラッグ開始時の線の開始位置
             cur_context.beginPath();
@@ -399,4 +404,48 @@ window.addEventListener('load', () => {
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
+    function flood_fill(img, px, py, rep_color) {
+        const W = img.width
+        const H = img.height
+        const tr = img.data[(W * py + px) * 4]
+        const tg = img.data[(W * py + px) * 4 + 1]
+        const tb = img.data[(W * py + px) * 4 + 2]
+        const ta = img.data[(W * py + px) * 4 + 3]
+        const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
+        px = Math.round(px), py = Math.round(py)
+        let cell = [W * py + px]
+        while (cell.length) {
+            let p = cell.pop()
+            img.data[p * 4] = rep_color[0]
+            img.data[p * 4 + 1] = rep_color[1]
+            img.data[p * 4 + 2] = rep_color[2]
+            img.data[p * 4 + 3] = rep_color[3]
+            for (let i = 0; i < 4; i++) {
+                let ty = Math.floor(p / W) + dy[i], tx = p % W + dx[i]
+                if (ty < 0 || ty >= H || tx < 0 || tx >= W) continue
+                let nxp = W * ty + tx
+                if (img.data[nxp * 4] != tr || img.data[nxp * 4 + 1] != tg
+                    || img.data[nxp * 4 + 2] != tb || img.data[nxp * 4 + 3] != ta) continue
+                cell.push(nxp)
+            }
+        }
+    }
+    function my_fill(px, py) {
+        join_canvases()
+        const img = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
+        flood_fill(img, px, py, RGBColor(line_color))
+        cur_context.putImageData(img, 0, 0)
+        set_canvases([cur_canvas])
+        canvas_history.push(canvas_list.concat())
+        history_id++
+        cur_canvas = null
+    }
+    function join_canvases() {
+        canvas_history[history_id].forEach((c) => {
+            const ctx = c.getContext("2d")
+            const img = ctx.getImageData(0, 0, c.width, c.height)
+            cur_context.putImageData(img, 0, 0)
+        })
+    }
 });
+
