@@ -361,7 +361,7 @@ window.addEventListener('load', () => {
             case "circle":
             case "fill_circle":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                next_x = round(px), next_y = round(py)
+                next_x = px, next_y = py
                 if (prev_x == next_x && prev_y == next_y) return
                 cur_context.closePath();
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
