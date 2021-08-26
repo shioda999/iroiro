@@ -2,7 +2,8 @@ import html2canvas from 'html2canvas'
 import { RGBColor } from './rgbcolor';
 
 window.addEventListener('load', () => {
-    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0, line_thickness = 5, line_color = "black"
+    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0
+    let line_thickness = 5, line_color = "black", base_color = "black", line_shading = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default"
     const form = document["form"]
@@ -15,6 +16,10 @@ window.addEventListener('load', () => {
     const range = menu.children["move"]
     const thickness: any = document.getElementById("thickness")
     const thickness_label: any = document.getElementById("thickness_label")
+    const shading: any = document.getElementById("shading")
+    const shading_label: any = document.getElementById("shading_label")
+    const alpha: any = document.getElementById("alpha")
+    const alpha_label: any = document.getElementById("alpha_label")
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
@@ -29,6 +34,8 @@ window.addEventListener('load', () => {
         font_size.addEventListener('change', () => { change_fontsize(), onClick() })
         range.addEventListener('input', () => change_range())
         thickness.addEventListener('input', () => change_thickness())
+        shading.addEventListener('input', () => change_shading())
+        alpha.addEventListener('input', () => change_alpha())
         colorcircle2.forEach((e) => {
             e.addEventListener('input', () => change_color(e.value))
         })
@@ -205,8 +212,38 @@ window.addEventListener('load', () => {
         line_thickness = thick_table[thickness.value - 1]
         thickness_label.innerHTML = "線の太さ：" + line_thickness
     }
+    function change_shading() {
+        line_shading = shading.value / 10
+        shading_label.innerHTML = "濃淡：" + line_shading
+        update_linecolor()
+    }
+    function change_alpha() {
+        line_alpha = alpha.value / 10
+        alpha_label.innerHTML = "透明度：" + line_alpha
+        update_linecolor()
+    }
     function change_color(color) {
-        line_color = color
+        base_color = color
+        update_linecolor()
+    }
+    function toHex(val) {
+        val = Math.round(val)
+        return ("0" + val.toString(16)).slice(-2)
+    }
+    function calc_color(val, k) {
+        if (k <= 1) return Math.round(val * k)
+        else return Math.round(255 * k + val * (1 - k))
+    }
+    function update_linecolor() {
+        if (base_color == "erase") {
+            line_color = "erase"
+            return
+        }
+        let c = RGBColor(base_color)
+        c[0] = calc_color(c[0], line_shading)
+        c[1] = calc_color(c[1], line_shading)
+        c[2] = calc_color(c[2], line_shading)
+        line_color = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]) + toHex(line_alpha * 255)
     }
     function erase_all_canvas() {
         set_canvases([])
@@ -369,7 +406,7 @@ window.addEventListener('load', () => {
                 cur_context.lineTo(next_x, prev_y)
                 cur_context.lineTo(prev_x, prev_y)
                 if (line_mode == "fill_rectangle") cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
-                cur_context.stroke()
+                else cur_context.stroke()
                 break
             case "circle":
             case "fill_circle":
@@ -381,8 +418,8 @@ window.addEventListener('load', () => {
                 cur_context.beginPath();
                 cur_context.arc(prev_x, prev_y, Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)),
                     0, 2 * Math.PI, false)
-                cur_context.stroke();
-                if (line_mode == "fill_circle") cur_context.fill();
+                if (line_mode == "fill_circle") cur_context.fill()
+                else cur_context.stroke()
                 break
         }
     }
@@ -408,6 +445,7 @@ window.addEventListener('load', () => {
         isDrag = false;
     }
     function flood_fill(img, dist, px, py, rep_color) {
+        console.log(rep_color)
         const W = img.width
         const H = img.height
         const tr = img.data[(W * py + px) * 4]
@@ -439,11 +477,16 @@ window.addEventListener('load', () => {
             }
         }
     }
+    function get_colorValue() {
+        return [line_color.slice(1, 3), line_color.slice(3, 5), line_color.slice(5, 7), line_color.slice(7, 8)].map(function (str) {
+            return parseInt(str, 16);
+        });
+    }
     function my_fill(px, py) {
         px = Math.round(px), py = Math.round(py)
         const img = get_current_img()
         const dist = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
-        flood_fill(img, dist, px, py, RGBColor(line_color))
+        flood_fill(img, dist, px, py, get_colorValue())
         cur_context.putImageData(dist, 0, 0)
     }
     function get_current_img() {

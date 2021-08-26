@@ -34,8 +34,12 @@
         <input type="button" class="command_button" id="button_clear" value="全消し">
       </div>
       <div class="body2" id="paint_menu">
-        <label for="thickness" id="thickness_label">線の太さ:</label>
-        <input type="range" class="thickness" id="thickness" name="thickness" min="1" max="10">
+        <label for="thickness" id="thickness_label">線の太さ：</label>
+        <input type="range" id="thickness" name="thickness" min="1" max="10" style="margin-bottom: 15px;">
+        <label for="shading" id="shading_label">濃淡：1</label>
+        <input type="range" id="shading" name="shading" min="1" max="20" value="10">
+        <label for="alpha" id="alpha_label">透明度：1</label>
+        <input type="range" id="alpha" name="alpha" min="1" max="10" value="10">
         <label class="colorcircle">
           <input type="radio" name="colorcircle" value="black" checked>
           <span class="colorcircle2" style="background:black;"></span>
@@ -84,8 +88,6 @@
         </select>
         <input type="button" class="command_button" id="paint_undo" value="戻る">
         <input type="button" class="command_button" id="paint_do" value="次">
-        <input type="button" class="command_button" id="paint_aaa" value="工事中">
-        <input type="button" class="command_button" id="paint_aaa" value="工事中">
         <input type="button" class="command_button" id="paint_clear" value="全消し">
       </div>
     </div>
