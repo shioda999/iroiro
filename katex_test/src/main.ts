@@ -23,6 +23,7 @@ window.addEventListener('load', () => {
     const colorcircle2 = document.getElementsByName("colorcircle")
     const line_mode_button = document.getElementById("line_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
+    const upload_form: any = document.getElementById("upload_button")
     let sub_ctx = sub_canvas.getContext("2d")
     setup()
 
@@ -83,6 +84,7 @@ window.addEventListener('load', () => {
 
         document.getElementById("text_mode").addEventListener("click", () => text_modeClick())
         document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
+        document.getElementById("paint_upload").addEventListener("click", () => paint_upload())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
         document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) erase_all_canvas() })
@@ -224,7 +226,7 @@ window.addEventListener('load', () => {
     }
     function calc_color(val, k) {
         if (k <= 1) return Math.round(val * k)
-        else return Math.round(255 * (k - 1) + val * (1 - k))
+        else return Math.round(255 * (k - 1) + val * (k - 1))
     }
     function update_linecolor() {
         if (base_color == "erase") {
@@ -254,6 +256,9 @@ window.addEventListener('load', () => {
         rm.forEach((e) => group.removeChild(e))
         ad.forEach((e) => group.appendChild(e))
         canvas_list = new_a.concat()
+    }
+    function paint_upload() {
+        upload_form.click()
     }
     function paint_undo() {
         if (history_id <= 0) return
@@ -477,7 +482,7 @@ window.addEventListener('load', () => {
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
-    function flood_fill(img, dist, px, py, rep_color) {
+    function flood_fill(img, dist, px, py, rep_color): boolean {
         const W = img.width
         const H = img.height
         const tr = img.data[(W * py + px) * 4]
@@ -486,7 +491,7 @@ window.addEventListener('load', () => {
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
         const pixel = img.data
-        if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return
+        if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return false
         let cell = [W * py + px]
         while (cell.length) {
             let p = cell.pop()
@@ -507,6 +512,7 @@ window.addEventListener('load', () => {
                 cell.push(nxp)
             }
         }
+        return true
     }
     function get_colorValue() {
         return [line_color.slice(1, 3), line_color.slice(3, 5), line_color.slice(5, 7), line_color.slice(7, 9)].map(function (str) {
@@ -517,8 +523,9 @@ window.addEventListener('load', () => {
         px = Math.round(px), py = Math.round(py)
         const img = get_current_img()
         const dist = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
-        flood_fill(img, dist, px, py, get_colorValue())
-        cur_context.putImageData(dist, 0, 0)
+        const r: boolean = flood_fill(img, dist, px, py, get_colorValue())
+        if (r) cur_context.putImageData(dist, 0, 0)
+        else cur_canvas = null
     }
     function get_current_img() {
         let new_canvas = document.createElement("canvas")
