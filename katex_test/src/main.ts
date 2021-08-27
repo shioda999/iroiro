@@ -301,8 +301,9 @@ window.addEventListener('load', () => {
         history_id++
     }
     function resize_sub_canvas() {
-        sub_canvas.width = document.body.scrollWidth;
-        sub_canvas.height = document.body.scrollHeight;
+        sub_canvas.width = document.documentElement.scrollWidth;
+        sub_canvas.height = document.documentElement.scrollHeight;
+        console.log(sub_canvas.width, sub_canvas.height)
         sub_canvas.style.zIndex = 10;
         sub_canvas.style["pointer-events"] = "none"
         sub_ctx = sub_canvas.getContext("2d")
@@ -315,8 +316,8 @@ window.addEventListener('load', () => {
     function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
-        cur_canvas.width = document.body.scrollWidth;
-        cur_canvas.height = document.body.scrollHeight;
+        cur_canvas.width = document.documentElement.scrollWidth;
+        cur_canvas.height = document.documentElement.scrollHeight;
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
