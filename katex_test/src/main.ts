@@ -18,8 +18,6 @@ window.addEventListener('load', () => {
     const thickness_label: any = document.getElementById("thickness_label")
     const shading: any = document.getElementById("shading")
     const shading_label: any = document.getElementById("shading_label")
-    const alpha: any = document.getElementById("alpha")
-    const alpha_label: any = document.getElementById("alpha_label")
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
@@ -35,7 +33,6 @@ window.addEventListener('load', () => {
         range.addEventListener('input', () => change_range())
         thickness.addEventListener('input', () => change_thickness())
         shading.addEventListener('input', () => change_shading())
-        alpha.addEventListener('input', () => change_alpha())
         colorcircle2.forEach((e) => {
             e.addEventListener('input', () => change_color(e.value))
         })
@@ -217,11 +214,6 @@ window.addEventListener('load', () => {
         shading_label.innerHTML = "濃淡：" + line_shading
         update_linecolor()
     }
-    function change_alpha() {
-        line_alpha = alpha.value / 10
-        alpha_label.innerHTML = "透明度：" + line_alpha
-        update_linecolor()
-    }
     function change_color(color) {
         base_color = color
         update_linecolor()
@@ -243,7 +235,7 @@ window.addEventListener('load', () => {
         c[0] = calc_color(c[0], line_shading)
         c[1] = calc_color(c[1], line_shading)
         c[2] = calc_color(c[2], line_shading)
-        line_color = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]) + toHex(line_alpha * 255)
+        line_color = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]) + toHex(255)
     }
     function erase_all_canvas() {
         set_canvases([])
@@ -362,6 +354,10 @@ window.addEventListener('load', () => {
             cur_context.lineWidth = line_thickness; // 線の太さ
             cur_context.strokeStyle = line_color; // 線の色
             cur_context.fillStyle = line_color; // 線の色
+            if (line_mode == "alpha_rectangle") {
+                cur_context.fillStyle = cur_context.fillStyle.substring(0, 7) + "50"
+                console.log(cur_context.fillStyle)
+            }
         }
         switch (line_mode) {
             case "default":
@@ -394,6 +390,7 @@ window.addEventListener('load', () => {
                 break
             case "rectangle":
             case "fill_rectangle":
+            case "alpha_rectangle":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
                 if (prev_x == next_x && prev_y == next_y) return
@@ -405,8 +402,8 @@ window.addEventListener('load', () => {
                 cur_context.lineTo(next_x, next_y)
                 cur_context.lineTo(next_x, prev_y)
                 cur_context.lineTo(prev_x, prev_y)
-                if (line_mode == "fill_rectangle") cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
-                else cur_context.stroke()
+                if (line_mode == "rectangle") cur_context.stroke()
+                else cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
                 break
             case "circle":
             case "fill_circle":
@@ -454,7 +451,6 @@ window.addEventListener('load', () => {
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
         const pixel = img.data
-        console.log(pixel)
         if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return
         let cell = [W * py + px]
         while (cell.length) {
@@ -478,7 +474,7 @@ window.addEventListener('load', () => {
         }
     }
     function get_colorValue() {
-        return [line_color.slice(1, 3), line_color.slice(3, 5), line_color.slice(5, 7), line_color.slice(7, 8)].map(function (str) {
+        return [line_color.slice(1, 3), line_color.slice(3, 5), line_color.slice(5, 7), line_color.slice(7, 9)].map(function (str) {
             return parseInt(str, 16);
         });
     }
