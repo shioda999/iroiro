@@ -227,7 +227,7 @@ window.addEventListener('load', () => {
     }
     function calc_color(val, k) {
         if (k <= 1) return Math.round(val * k)
-        else return Math.round(255 * (k - 1) + val * (k - 1))
+        else return Math.round(255 * (k - 1) + val * (2 - k))
     }
     function update_linecolor() {
         if (base_color == "erase") {
