@@ -162,6 +162,9 @@ window.addEventListener('load', () => {
     function change_fontsize() {
         katex_rule.style.cssText = "font-size : " + font_size.value + "em"
     }
+    function henkan(str) {
+
+    }
     function henkan2(str) {
         str = str.replace(/\\$/, '')
         str = str.replace(/\*/g, '\\times ')
