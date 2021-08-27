@@ -346,7 +346,6 @@ window.addEventListener('load', () => {
         }
         if (lastPosition.x === null || lastPosition.y === null) {
             // ドラッグ開始時の線の開始位置
-            cur_context.beginPath();
             lastPosition.x = px
             lastPosition.y = py
             cur_context.lineCap = 'round'; // 丸みを帯びた線にする
@@ -354,9 +353,11 @@ window.addEventListener('load', () => {
             cur_context.lineWidth = line_thickness; // 線の太さ
             cur_context.strokeStyle = line_color; // 線の色
             cur_context.fillStyle = line_color; // 線の色
+            if (line_mode == "default") {
+                cur_context.beginPath();
+            }
             if (line_mode == "alpha_rectangle") {
                 cur_context.fillStyle = cur_context.fillStyle.substring(0, 7) + "50"
-                console.log(cur_context.fillStyle)
             }
         }
         switch (line_mode) {
@@ -371,12 +372,12 @@ window.addEventListener('load', () => {
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
                 if (prev_x == next_x && prev_y == next_y) return
-                cur_context.closePath();
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
                 cur_context.beginPath();
                 cur_context.moveTo(prev_x, prev_y);
                 cur_context.lineTo(next_x, next_y);
                 cur_context.stroke();
+                cur_context.closePath();
 
                 sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
                 if (prev_x == next_x || prev_y == next_y || Math.abs(prev_x - next_x) == Math.abs(prev_y - next_y)) {
@@ -394,7 +395,6 @@ window.addEventListener('load', () => {
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
                 if (prev_x == next_x && prev_y == next_y) return
-                cur_context.closePath();
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
                 cur_context.beginPath();
                 cur_context.moveTo(prev_x, prev_y)
@@ -404,19 +404,57 @@ window.addEventListener('load', () => {
                 cur_context.lineTo(prev_x, prev_y)
                 if (line_mode == "rectangle") cur_context.stroke()
                 else cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
+                cur_context.closePath();
                 break
             case "circle":
             case "fill_circle":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = px, next_y = py
                 if (prev_x == next_x && prev_y == next_y) return
-                cur_context.closePath();
+                let radius = round(Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)))
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
                 cur_context.beginPath();
-                cur_context.arc(prev_x, prev_y, Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)),
+                cur_context.arc(prev_x, prev_y, radius,
                     0, 2 * Math.PI, false)
                 if (line_mode == "fill_circle") cur_context.fill()
                 else cur_context.stroke()
+                cur_context.closePath();
+                break
+            case "arrow":
+                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
+                next_x = round(px), next_y = round(py)
+                if (prev_x == next_x && prev_y == next_y) return
+                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                cur_context.beginPath();
+                let w = next_x - prev_x + 2, h = next_y - prev_y + 2, aw = 0, ah = 0
+                if (Math.abs(prev_x - next_x) > Math.abs(prev_y - next_y)) {
+                    h = Math.min(Math.abs(h), 37) * (h / Math.abs(h))
+                    aw = (Math.abs(h) + 10) * (h / Math.abs(h))
+                    ah = (Math.abs(aw) + 10) * (w / Math.abs(w))
+                    cur_context.moveTo(prev_x + w, prev_y)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - aw / 2)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - h / 4)
+                    cur_context.lineTo(prev_x - ah / 2, prev_y - h / 4)
+                    cur_context.lineTo(prev_x - ah / 2, prev_y + h / 4)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + h / 4)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + aw / 2)
+                    cur_context.lineTo(prev_x + w, prev_y)
+                }
+                else {
+                    w = Math.min(Math.abs(w), 37) * (w / Math.abs(w))
+                    aw = (Math.abs(w) + 10) * (w / Math.abs(w))
+                    ah = (Math.abs(aw) + 10) * (h / Math.abs(h))
+                    cur_context.moveTo(prev_x, prev_y + h)
+                    cur_context.lineTo(prev_x - aw / 2, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x - w / 4, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x - w / 4, prev_y - ah / 2)
+                    cur_context.lineTo(prev_x + w / 4, prev_y - ah / 2)
+                    cur_context.lineTo(prev_x + w / 4, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x + aw / 2, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x, prev_y + h)
+                }
+                cur_context.fill()
+                cur_context.closePath();
                 break
         }
     }
@@ -431,18 +469,15 @@ window.addEventListener('load', () => {
     // isDragのフラグをfalseにしてdraw関数内でお絵かき処理が中断されるようにする
     function dragEnd(event) {
         if (!cur_context) return
-        // 線を書く処理の終了を宣言する
-        cur_context.closePath();
+        if (line_mode == "default") cur_context.closePath();
         sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
 
-        // 描画中に記録していた値をリセットする
         lastPosition.x = null;
         lastPosition.y = null;
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
     function flood_fill(img, dist, px, py, rep_color) {
-        console.log(rep_color)
         const W = img.width
         const H = img.height
         const tr = img.data[(W * py + px) * 4]
