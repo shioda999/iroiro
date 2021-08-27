@@ -3,7 +3,7 @@ import { RGBColor } from './rgbcolor';
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0
-    let line_thickness = 5, line_color = "black", base_color = "black", line_shading = 1, line_alpha = 1
+    let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default"
     const form = document["form"]
@@ -16,8 +16,8 @@ window.addEventListener('load', () => {
     const range = menu.children["move"]
     const thickness: any = document.getElementById("thickness")
     const thickness_label: any = document.getElementById("thickness_label")
-    const shading: any = document.getElementById("shading")
-    const shading_label: any = document.getElementById("shading_label")
+    const bright: any = document.getElementById("bright")
+    const bright_label: any = document.getElementById("bright_label")
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
@@ -32,7 +32,7 @@ window.addEventListener('load', () => {
         font_size.addEventListener('change', () => { change_fontsize(), onClick() })
         range.addEventListener('input', () => change_range())
         thickness.addEventListener('input', () => change_thickness())
-        shading.addEventListener('input', () => change_shading())
+        bright.addEventListener('input', () => change_bright())
         colorcircle2.forEach((e) => {
             e.addEventListener('input', () => change_color(e.value))
         })
@@ -162,9 +162,6 @@ window.addEventListener('load', () => {
     function change_fontsize() {
         katex_rule.style.cssText = "font-size : " + font_size.value + "em"
     }
-    function henkan(str) {
-
-    }
     function henkan2(str) {
         str = str.replace(/\\$/, '')
         str = str.replace(/\*/g, '\\times ')
@@ -212,9 +209,9 @@ window.addEventListener('load', () => {
         line_thickness = thick_table[thickness.value - 1]
         thickness_label.innerHTML = "線の太さ：" + line_thickness
     }
-    function change_shading() {
-        line_shading = shading.value / 10
-        shading_label.innerHTML = "濃淡：" + line_shading
+    function change_bright() {
+        line_bright = bright.value / 10
+        bright_label.innerHTML = "明度：" + line_bright
         update_linecolor()
     }
     function change_color(color) {
@@ -227,7 +224,7 @@ window.addEventListener('load', () => {
     }
     function calc_color(val, k) {
         if (k <= 1) return Math.round(val * k)
-        else return Math.round(255 * k + val * (1 - k))
+        else return Math.round(255 * (k - 1) + val * (1 - k))
     }
     function update_linecolor() {
         if (base_color == "erase") {
@@ -235,9 +232,9 @@ window.addEventListener('load', () => {
             return
         }
         let c = RGBColor(base_color)
-        c[0] = calc_color(c[0], line_shading)
-        c[1] = calc_color(c[1], line_shading)
-        c[2] = calc_color(c[2], line_shading)
+        c[0] = calc_color(c[0], line_bright)
+        c[1] = calc_color(c[1], line_bright)
+        c[2] = calc_color(c[2], line_bright)
         line_color = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]) + toHex(255)
     }
     function erase_all_canvas() {
