@@ -6,6 +6,8 @@ window.addEventListener('load', () => {
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default"
+
+    const reader = new FileReader()
     const form = document["form"]
     const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
@@ -39,6 +41,13 @@ window.addEventListener('load', () => {
         })
         line_mode_button.onchange = function () {
             line_mode = this.options[this.selectedIndex].value
+        }
+        upload_form.onchange = function () {
+            console.log(upload_form.files[0])
+            reader.readAsDataURL(upload_form.files[0])
+        }
+        reader.onload = () => {
+            create_image_canvas(reader.result)
         }
 
         thickness.value = 3
@@ -104,6 +113,26 @@ window.addEventListener('load', () => {
         form.text.focus()
         form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
         onClick()
+    }
+    function create_image_canvas(url) {
+        const img = new Image()
+        img.src = url
+        img.onload = () => {
+            let canvas = document.createElement("canvas")
+            canvas.classList.add("canvas");
+            canvas.width = 300;
+            canvas.height = canvas.width * img.height / img.width;
+            canvas.style.zIndex = "1";
+            let context = canvas.getContext("2d")
+            context.drawImage(img, 0, 0, canvas.width + 20, canvas.height + 20, 0, 0, canvas.width, canvas.height)
+            group.appendChild(canvas)
+            /*canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
+            canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
+            canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
+            canvas.addEventListener('pointermove', (event) => {
+                mobile_canvas_move(event.layerX, event.layerY);
+            });*/
+        }
     }
     function syntax_check() {
         let html, ok = true
@@ -272,8 +301,8 @@ window.addEventListener('load', () => {
         history_id++
     }
     function resize_sub_canvas() {
-        sub_canvas.width = window.innerWidth;
-        sub_canvas.height = window.innerHeight;
+        sub_canvas.width = document.body.scrollWidth;
+        sub_canvas.height = document.body.scrollHeight;
         sub_canvas.style.zIndex = 10;
         sub_canvas.style["pointer-events"] = "none"
         sub_ctx = sub_canvas.getContext("2d")
@@ -286,8 +315,8 @@ window.addEventListener('load', () => {
     function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
-        cur_canvas.width = window.innerWidth;
-        cur_canvas.height = window.innerHeight;
+        cur_canvas.width = document.body.scrollWidth;
+        cur_canvas.height = document.body.scrollHeight;
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
