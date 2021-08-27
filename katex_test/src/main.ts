@@ -2,7 +2,7 @@ import html2canvas from 'html2canvas'
 import { RGBColor } from './rgbcolor';
 
 window.addEventListener('load', () => {
-    let cur_canvas, cur_context, canvas_list = [], canvas_history = [], history_id = 0
+    let cur_canvas, cur_context, canvas_list = [], canvas_history = [[]], history_id = 0, canvas_written = false
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default"
@@ -58,6 +58,8 @@ window.addEventListener('load', () => {
         window.onresize = () => { set_cur_canvas(); resize_sub_canvas(); }
         resize_sub_canvas()
         set_keyEvent()
+        set_cur_canvas()
+        group.hidden = true
         onClick()
     }
 
@@ -157,7 +159,6 @@ window.addEventListener('load', () => {
                 document.body.appendChild(canvas)
                 canvas.setAttribute("style", "position: absolute;left:" + round(x) + "px;top:" + round(y) + "px;")
                 canvas.setAttribute("id", "text_canvas")
-                create_new_canvas()
                 text_area.innerHTML = ""
             });
     }
@@ -298,10 +299,10 @@ window.addEventListener('load', () => {
         });
     }
     function create_new_canvas() {
-        if (cur_canvas) {
-            canvas_list.push(cur_canvas)
-            history_id++
-        }
+        if (!canvas_written) return
+        canvas_list.push(cur_canvas)
+        history_id++
+        canvas_written = false
         canvas_history.length = history_id + 1
         canvas_history[history_id] = canvas_list.concat()
         set_cur_canvas()
@@ -331,7 +332,7 @@ window.addEventListener('load', () => {
     }
 
     function round(v) {
-        return Math.round(v / 20) * 20
+        return Math.floor((v + 10) / 20) * 20
     }
     // 絵を書く
     function draw(px, py) {
@@ -370,14 +371,16 @@ window.addEventListener('load', () => {
                 cur_context.moveTo(lastPosition.x, lastPosition.y);
                 cur_context.lineTo(px, py);
                 cur_context.stroke();
+                canvas_written = true
                 lastPosition.x = px;
                 lastPosition.y = py;
                 break
             case "straight":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
-                if (prev_x == next_x && prev_y == next_y) return
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
+                else canvas_written = true
                 cur_context.beginPath();
                 cur_context.moveTo(prev_x, prev_y);
                 cur_context.lineTo(next_x, next_y);
@@ -399,8 +402,9 @@ window.addEventListener('load', () => {
             case "alpha_rectangle":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
-                if (prev_x == next_x && prev_y == next_y) return
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                if (prev_x == next_x || prev_y == next_y) { canvas_written = false; console.log("a"); return }
+                else canvas_written = true
                 cur_context.beginPath();
                 cur_context.moveTo(prev_x, prev_y)
                 cur_context.lineTo(prev_x, next_y)
@@ -415,9 +419,10 @@ window.addEventListener('load', () => {
             case "fill_circle":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = px, next_y = py
-                if (prev_x == next_x && prev_y == next_y) return
-                let radius = round(Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)))
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
+                else canvas_written = true
+                let radius = round(Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)))
                 cur_context.beginPath();
                 cur_context.arc(prev_x, prev_y, radius,
                     0, 2 * Math.PI, false)
@@ -428,33 +433,35 @@ window.addEventListener('load', () => {
             case "arrow":
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
-                if (prev_x == next_x && prev_y == next_y) return
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
+                else canvas_written = true
                 cur_context.beginPath();
-                let w = next_x - prev_x + 2, h = next_y - prev_y + 2, aw = 0, ah = 0
-                if (Math.abs(prev_x - next_x) > Math.abs(prev_y - next_y)) {
-                    h = Math.min(Math.abs(h), 37) * (h / Math.abs(h))
-                    aw = (Math.abs(h) + 10) * (h / Math.abs(h))
+                let w = next_x - prev_x, h = next_y - prev_y, aw = 0, ah = 0
+                const k = [3, 8, 13, 25, 50, 80]
+                if (Math.abs(prev_x - next_x) >= Math.abs(prev_y - next_y)) {
+                    h = k[Math.min(Math.floor(Math.abs(h) / 10), k.length - 1)]
+                    aw = h + 10
                     ah = (Math.abs(aw) + 10) * (w / Math.abs(w))
                     cur_context.moveTo(prev_x + w, prev_y)
                     cur_context.lineTo(prev_x + w - ah / 2, prev_y - aw / 2)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - h / 4)
-                    cur_context.lineTo(prev_x - ah / 2, prev_y - h / 4)
-                    cur_context.lineTo(prev_x - ah / 2, prev_y + h / 4)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + h / 4)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - h / 3)
+                    cur_context.lineTo(prev_x, prev_y - h / 3)
+                    cur_context.lineTo(prev_x, prev_y + h / 3)
+                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + h / 3)
                     cur_context.lineTo(prev_x + w - ah / 2, prev_y + aw / 2)
                     cur_context.lineTo(prev_x + w, prev_y)
                 }
                 else {
-                    w = Math.min(Math.abs(w), 37) * (w / Math.abs(w))
-                    aw = (Math.abs(w) + 10) * (w / Math.abs(w))
+                    w = k[Math.min(Math.floor(Math.abs(w) / 10), k.length - 1)]
+                    aw = w + 10
                     ah = (Math.abs(aw) + 10) * (h / Math.abs(h))
                     cur_context.moveTo(prev_x, prev_y + h)
                     cur_context.lineTo(prev_x - aw / 2, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x - w / 4, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x - w / 4, prev_y - ah / 2)
-                    cur_context.lineTo(prev_x + w / 4, prev_y - ah / 2)
-                    cur_context.lineTo(prev_x + w / 4, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x - w / 3, prev_y + h - ah / 2)
+                    cur_context.lineTo(prev_x - w / 3, prev_y)
+                    cur_context.lineTo(prev_x + w / 3, prev_y)
+                    cur_context.lineTo(prev_x + w / 3, prev_y + h - ah / 2)
                     cur_context.lineTo(prev_x + aw / 2, prev_y + h - ah / 2)
                     cur_context.lineTo(prev_x, prev_y + h)
                 }
@@ -482,7 +489,7 @@ window.addEventListener('load', () => {
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
-    function flood_fill(img, dist, px, py, rep_color): boolean {
+    function flood_fill(img, dist, px, py, rep_color) {
         const W = img.width
         const H = img.height
         const tr = img.data[(W * py + px) * 4]
@@ -491,7 +498,11 @@ window.addEventListener('load', () => {
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [1, 0, -1, 0], dy = [0, 1, 0, -1]
         const pixel = img.data
-        if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) return false
+        if (tr == rep_color[0] && tg == rep_color[1] && tb == rep_color[2] && ta == rep_color[3]) {
+            canvas_written = false
+            return
+        }
+        canvas_written = true
         let cell = [W * py + px]
         while (cell.length) {
             let p = cell.pop()
@@ -512,7 +523,6 @@ window.addEventListener('load', () => {
                 cell.push(nxp)
             }
         }
-        return true
     }
     function get_colorValue() {
         return [line_color.slice(1, 3), line_color.slice(3, 5), line_color.slice(5, 7), line_color.slice(7, 9)].map(function (str) {
@@ -523,9 +533,8 @@ window.addEventListener('load', () => {
         px = Math.round(px), py = Math.round(py)
         const img = get_current_img()
         const dist = cur_context.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
-        const r: boolean = flood_fill(img, dist, px, py, get_colorValue())
-        if (r) cur_context.putImageData(dist, 0, 0)
-        else cur_canvas = null
+        flood_fill(img, dist, px, py, get_colorValue())
+        cur_context.putImageData(dist, 0, 0)
     }
     function get_current_img() {
         let new_canvas = document.createElement("canvas")

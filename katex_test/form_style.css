@@ -22,7 +22,6 @@ input.font_size{
     width: 100%;
     position: fixed;
     bottom: 0px;
-    z-index: 9999;
 }
 .move{
     margin:5px;
