@@ -6,6 +6,7 @@ window.addEventListener('load', () => {
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default"
+    let mobile_canvas, mobile_ctx, mobile_canvas_ope, mobile_canvas_img, prev_img_w, mobile_img_x, mobile_img_y
 
     const reader = new FileReader()
     const form = document["form"]
@@ -43,7 +44,6 @@ window.addEventListener('load', () => {
             line_mode = this.options[this.selectedIndex].value
         }
         upload_form.onchange = function () {
-            console.log(upload_form.files[0])
             reader.readAsDataURL(upload_form.files[0])
         }
         reader.onload = () => {
@@ -120,18 +120,21 @@ window.addEventListener('load', () => {
         img.onload = () => {
             let canvas = document.createElement("canvas")
             canvas.classList.add("canvas");
-            canvas.width = 300;
-            canvas.height = canvas.width * img.height / img.width;
+            canvas.width = document.documentElement.scrollWidth - 30
+            canvas.height = document.documentElement.scrollHeight
             canvas.style.zIndex = "1";
             let context = canvas.getContext("2d")
-            context.drawImage(img, 0, 0, canvas.width + 20, canvas.height + 20, 0, 0, canvas.width, canvas.height)
+            prev_img_w = 300
+            let scale = prev_img_w / img.width
+            context.drawImage(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
             group.appendChild(canvas)
-            /*canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
+            canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
             canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
             canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
-            canvas.addEventListener('pointermove', (event) => {
-                mobile_canvas_move(event.layerX, event.layerY);
-            });*/
+            canvas.addEventListener('pointermove', mobile_canvas_move);
+            mobile_canvas = canvas
+            mobile_ctx = context
+            mobile_canvas_img = img
         }
     }
     function syntax_check() {
@@ -178,6 +181,8 @@ window.addEventListener('load', () => {
         if (mode == "paint") return
         mode = "paint"
         group.hidden = false
+        let scr_x = window.scrollX
+        let scr_y = window.scrollY
         window.scrollTo(0, 0);
         html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
             {
@@ -189,6 +194,7 @@ window.addEventListener('load', () => {
                 canvas.setAttribute("style", "position: absolute;left:" + round(x) + "px;top:" + round(y) + "px;")
                 canvas.setAttribute("id", "text_canvas")
                 text_area.innerHTML = ""
+                window.scroll(scr_x, scr_y)
             });
     }
     function change_fontsize() {
@@ -301,9 +307,8 @@ window.addEventListener('load', () => {
         history_id++
     }
     function resize_sub_canvas() {
-        sub_canvas.width = document.documentElement.scrollWidth;
+        sub_canvas.width = document.documentElement.scrollWidth - 30;
         sub_canvas.height = document.documentElement.scrollHeight;
-        console.log(sub_canvas.width, sub_canvas.height)
         sub_canvas.style.zIndex = 10;
         sub_canvas.style["pointer-events"] = "none"
         sub_ctx = sub_canvas.getContext("2d")
@@ -316,7 +321,7 @@ window.addEventListener('load', () => {
     function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
         cur_canvas.classList.add("canvas");
-        cur_canvas.width = document.documentElement.scrollWidth;
+        cur_canvas.width = document.documentElement.scrollWidth - 30;
         cur_canvas.height = document.documentElement.scrollHeight;
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
@@ -433,7 +438,7 @@ window.addEventListener('load', () => {
                 prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
                 next_x = round(px), next_y = round(py)
                 cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
-                if (prev_x == next_x || prev_y == next_y) { canvas_written = false; console.log("a"); return }
+                if (prev_x == next_x || prev_y == next_y) { canvas_written = false; return }
                 else canvas_written = true
                 cur_context.beginPath();
                 cur_context.moveTo(prev_x, prev_y)
@@ -575,6 +580,71 @@ window.addEventListener('load', () => {
             ctx.drawImage(c, 0, 0, c.width, c.height);
         })
         return ctx.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
+    }
+    function mobile_canvas_dragStart(event) {
+        isDrag = true
+        let img = mobile_canvas_img
+        if (Math.abs(prev_img_w + mobile_img_x - event.layerX) <= 30
+            && Math.abs(img.height * prev_img_w / img.width + mobile_img_y - event.layerY) <= 30) {
+            mobile_canvas_ope = "ch_scale"
+        }
+        else if (mobile_img_x - 30 < event.layerX && event.layerX < prev_img_w + mobile_img_x + 30
+            && mobile_img_y - 30 < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + 30) {
+            mobile_canvas_ope = "move"
+        }
+        else {
+            mobile_canvas_ope = "set"
+            console.log("set")
+        }
+        lastPosition.x = event.layerX
+        lastPosition.y = event.layerY
+    }
+    function mobile_canvas_dragEnd(event) {
+        if (!isDrag) return
+        isDrag = false
+        let dx = event.layerX - lastPosition.x
+        let dy = event.layerY - lastPosition.y
+        switch (mobile_canvas_ope) {
+            case "ch_scale":
+                prev_img_w += dx
+                break
+            case "move":
+                mobile_img_x += dx
+                mobile_img_y += dy
+                break
+            case "set":
+                let img = mobile_canvas_img
+                cur_context.drawImage(img, mobile_img_x, mobile_img_y,
+                    prev_img_w, img.height * prev_img_w / img.width)
+                group.removeChild(mobile_canvas)
+                mobile_canvas = null
+                mobile_ctx = null
+                mobile_canvas_img = null
+                canvas_written = true
+                create_new_canvas()
+                break
+        }
+        lastPosition.x = null;
+        lastPosition.y = null;
+    }
+    function mobile_canvas_move(event) {
+        if (!isDrag) return
+        let img = mobile_canvas_img
+        let dx = event.layerX - lastPosition.x
+        let dy = event.layerY - lastPosition.y
+        switch (mobile_canvas_ope) {
+            case "ch_scale":
+                let scale = (prev_img_w + dx) / img.width
+                mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
+                mobile_ctx.drawImage(img, mobile_img_x, mobile_img_y,
+                    img.width * scale, img.height * scale)
+                break
+            case "move":
+                mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
+                mobile_ctx.drawImage(img, mobile_img_x + dx, mobile_img_y + dy,
+                    prev_img_w, img.height * prev_img_w / img.width)
+                break
+        }
     }
 });
 
