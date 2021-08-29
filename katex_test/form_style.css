@@ -23,15 +23,25 @@ input.font_size{
     position: fixed;
     bottom: 0px;
     z-index: 10;
+    pointer-events: none;
 }
 .move{
     margin:5px;
+    pointer-events: auto;
 }
 .font_size{
     margin:5px;
+    pointer-events: auto;
 }
 .auto_update{
+    pointer-events: auto;
     margin-left:8px;
+}
+.link{
+    pointer-events: auto;
+    right: 10px;
+    bottom: 10px;
+    position: fixed;
 }
 .syntax_checker:hover{
     cursor: pointer;
@@ -76,6 +86,7 @@ rgb(214, 133, 176);
     flex-wrap: wrap;
     position: fixed;
     z-index: 9999;
+    width: 150px;
     top: 10px;
     right:10px;
 }
@@ -95,6 +106,7 @@ rgb(214, 133, 176);
     width: 100%;
 }
 .container .tab-title {
+    background:white;
     position: relative;
     border-bottom: 2px solid 
 transparent;
@@ -120,11 +132,11 @@ transparent;
 }
 .add-control #text_mode:checked ~ .title1 {
     background: 
-rgba(127, 194, 239, .5);
+rgba(190, 224, 245);
 }
 .add-control #paint_mode:checked ~ .title2 {
     background: 
-rgba(214, 133, 176, .5);
+rgba(235, 194, 215);
 }
 
 /* tabs control */

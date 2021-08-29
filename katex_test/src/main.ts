@@ -118,6 +118,7 @@ window.addEventListener('load', () => {
         const img = new Image()
         img.src = url
         img.onload = () => {
+            if (mobile_canvas) transfer_mobile_canvase_to_cur_canvas()
             let canvas = document.createElement("canvas")
             canvas.classList.add("canvas");
             canvas.width = document.documentElement.scrollWidth - 30
@@ -615,6 +616,7 @@ window.addEventListener('load', () => {
         }
         else {
             mobile_canvas_ope = "set"
+            transfer_mobile_canvase_to_cur_canvas()
         }
         lastPosition.x = event.layerX
         lastPosition.y = event.layerY
@@ -645,14 +647,6 @@ window.addEventListener('load', () => {
                 mobile_img_y += dy
                 break
             case "set":
-                cur_context.drawImage(img, mobile_img_x, mobile_img_y,
-                    prev_img_w, img.height * prev_img_w / img.width)
-                group.removeChild(mobile_canvas)
-                mobile_canvas = null
-                mobile_ctx = null
-                mobile_canvas_img = null
-                canvas_written = true
-                create_new_canvas()
                 break
         }
         lastPosition.x = null;
@@ -720,6 +714,17 @@ window.addEventListener('load', () => {
                     break
             }
         }
+    }
+    function transfer_mobile_canvase_to_cur_canvas() {
+        let img = mobile_canvas_img
+        cur_context.drawImage(img, mobile_img_x, mobile_img_y,
+            prev_img_w, img.height * prev_img_w / img.width)
+        group.removeChild(mobile_canvas)
+        mobile_canvas = null
+        mobile_ctx = null
+        mobile_canvas_img = null
+        canvas_written = true
+        create_new_canvas()
     }
     function disp_mobile_img(img, x, y, sw, sh) {
         mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
