@@ -292,7 +292,14 @@ window.addEventListener('load', () => {
     function paint_chara() {
         const ret = window.prompt("表示したい文字を入力してください。")
         if (ret == "" || ret == null) return
-        const html = katex.renderToString(ret)
+        let html
+        try {
+            html = katex.renderToString(ret)
+        }
+        catch (error) {
+            alert(error.message)
+            return
+        }
         const element = document.createElement("div")
         element.innerHTML = html
         group.appendChild(element)
