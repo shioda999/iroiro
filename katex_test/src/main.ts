@@ -124,17 +124,24 @@ window.addEventListener('load', () => {
             canvas.height = document.documentElement.scrollHeight
             canvas.style.zIndex = "1";
             let context = canvas.getContext("2d")
-            prev_img_w = 300
-            let scale = prev_img_w / img.width
-            context.drawImage(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
+
             group.appendChild(canvas)
             canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
             canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
             canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
             canvas.addEventListener('pointermove', mobile_canvas_move);
+            context.setLineDash([3, 3]);
+            context.lineCap = 'round'; // 丸みを帯びた線にする
+            context.lineJoin = 'round'; // 丸みを帯びた線にする
+            context.lineWidth = 1; // 線の太さ
+            context.strokeStyle = "black"; // 線の色
             mobile_canvas = canvas
             mobile_ctx = context
             mobile_canvas_img = img
+            prev_img_w = 300
+
+            let scale = prev_img_w / img.width
+            disp_mobile_img(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
         }
     }
     function syntax_check() {
@@ -584,17 +591,30 @@ window.addEventListener('load', () => {
     function mobile_canvas_dragStart(event) {
         isDrag = true
         let img = mobile_canvas_img
-        if (Math.abs(prev_img_w + mobile_img_x - event.layerX) <= 30
-            && Math.abs(img.height * prev_img_w / img.width + mobile_img_y - event.layerY) <= 30) {
-            mobile_canvas_ope = "ch_scale"
-        }
-        else if (mobile_img_x - 30 < event.layerX && event.layerX < prev_img_w + mobile_img_x + 30
-            && mobile_img_y - 30 < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + 30) {
+        const k = 15
+        if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
+            && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
             mobile_canvas_ope = "move"
+        }
+        else if (prev_img_w + mobile_img_x - k < event.layerX && event.layerX < prev_img_w + mobile_img_x + k
+            && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            mobile_canvas_ope = "ch_scale_right"
+        }
+        else if (mobile_img_x - k < event.layerX && event.layerX < mobile_img_x + k
+            && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            mobile_canvas_ope = "ch_scale_left"
+        }
+        else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
+            && mobile_img_y - k < event.layerY && event.layerY < mobile_img_y + k) {
+            mobile_canvas_ope = "ch_scale_top"
+        }
+        else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
+            && img.height * prev_img_w / img.width + mobile_img_y - k < event.layerY
+            && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            mobile_canvas_ope = "ch_scale_bottom"
         }
         else {
             mobile_canvas_ope = "set"
-            console.log("set")
         }
         lastPosition.x = event.layerX
         lastPosition.y = event.layerY
@@ -604,16 +624,27 @@ window.addEventListener('load', () => {
         isDrag = false
         let dx = event.layerX - lastPosition.x
         let dy = event.layerY - lastPosition.y
+        let img = mobile_canvas_img
         switch (mobile_canvas_ope) {
-            case "ch_scale":
+            case "ch_scale_left":
+                prev_img_w -= dx
+                mobile_img_x += dx
+                break
+            case "ch_scale_right":
                 prev_img_w += dx
+                break
+            case "ch_scale_top":
+                prev_img_w -= dy * img.width / img.height
+                mobile_img_y += dy
+                break
+            case "ch_scale_bottom":
+                prev_img_w += dy * img.width / img.height
                 break
             case "move":
                 mobile_img_x += dx
                 mobile_img_y += dy
                 break
             case "set":
-                let img = mobile_canvas_img
                 cur_context.drawImage(img, mobile_img_x, mobile_img_y,
                     prev_img_w, img.height * prev_img_w / img.width)
                 group.removeChild(mobile_canvas)
@@ -628,23 +659,79 @@ window.addEventListener('load', () => {
         lastPosition.y = null;
     }
     function mobile_canvas_move(event) {
-        if (!isDrag) return
-        let img = mobile_canvas_img
-        let dx = event.layerX - lastPosition.x
-        let dy = event.layerY - lastPosition.y
-        switch (mobile_canvas_ope) {
-            case "ch_scale":
-                let scale = (prev_img_w + dx) / img.width
-                mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
-                mobile_ctx.drawImage(img, mobile_img_x, mobile_img_y,
-                    img.width * scale, img.height * scale)
-                break
-            case "move":
-                mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
-                mobile_ctx.drawImage(img, mobile_img_x + dx, mobile_img_y + dy,
-                    prev_img_w, img.height * prev_img_w / img.width)
-                break
+        if (isDrag == false) {
+            let img = mobile_canvas_img
+            const k = 15
+            if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
+                && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
+                mobile_canvas.style.cursor = "move"
+            }
+            else if (prev_img_w + mobile_img_x - k < event.layerX && event.layerX < prev_img_w + mobile_img_x + k
+                && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+                mobile_canvas.style.cursor = "ew-resize"
+            }
+            else if (mobile_img_x - k < event.layerX && event.layerX < mobile_img_x + k
+                && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+                mobile_canvas.style.cursor = "ew-resize"
+            }
+            else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
+                && mobile_img_y - k < event.layerY && event.layerY < mobile_img_y + k) {
+                mobile_canvas.style.cursor = "ns-resize"
+            }
+            else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
+                && img.height * prev_img_w / img.width + mobile_img_y - k < event.layerY
+                && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+                mobile_canvas.style.cursor = "ns-resize"
+            }
+            else {
+                mobile_canvas_ope = "set"
+                mobile_canvas.style.cursor = "default"
+            }
         }
+        else {
+            let img = mobile_canvas_img
+            let dx = event.layerX - lastPosition.x
+            let dy = event.layerY - lastPosition.y
+            let scale
+            switch (mobile_canvas_ope) {
+                case "ch_scale_left":
+                    scale = (prev_img_w - dx) / img.width
+                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y,
+                        img.width * scale, img.height * scale)
+                    break
+                case "ch_scale_right":
+                    scale = (prev_img_w + dx) / img.width
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y,
+                        img.width * scale, img.height * scale)
+                    break
+                case "ch_scale_top":
+                    scale = (prev_img_w * img.height / img.width - dy) / img.height
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y + dy,
+                        img.width * scale, img.height * scale)
+                    break
+                case "ch_scale_bottom":
+                    scale = (prev_img_w * img.height / img.width + dy) / img.height
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y,
+                        img.width * scale, img.height * scale)
+                    break
+                case "move":
+                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y + dy,
+                        prev_img_w, img.height * prev_img_w / img.width)
+                    break
+            }
+        }
+    }
+    function disp_mobile_img(img, x, y, sw, sh) {
+        mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
+        mobile_ctx.drawImage(img, x, y, sw, sh)
+        mobile_ctx.beginPath()
+        mobile_ctx.moveTo(x, y)
+        mobile_ctx.lineTo(x + sw, y)
+        mobile_ctx.lineTo(x + sw, y + sh)
+        mobile_ctx.lineTo(x, y + sh)
+        mobile_ctx.lineTo(x, y)
+        mobile_ctx.stroke()
+        mobile_ctx.closePath()
     }
 });
 
