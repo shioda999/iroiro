@@ -1,4 +1,5 @@
-import { RGBColor } from './rgbcolor';
+import { RGBColor } from './rgbcolor'
+import html2canvas from 'html2canvas'
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [[]], history_id = 0, canvas_written = false
@@ -43,10 +44,10 @@ window.addEventListener('load', () => {
             line_mode = line_mode_button.options[line_mode_button.selectedIndex].value
         }
         upload_form.onchange = function () {
-            reader.readAsDataURL(upload_form.files[0])
+            if (upload_form.files[0]) reader.readAsDataURL(upload_form.files[0])
         }
         reader.onload = () => {
-            create_image_canvas(reader.result)
+            load_img_from_url(reader.result)
         }
 
         thickness.value = 3
@@ -86,6 +87,7 @@ window.addEventListener('load', () => {
         document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) { form.text.value = ""; onClick() } })
         document.getElementById("button_cases").addEventListener("click", () => add_str("\n\\begin{cases}\n", "\n\\end{cases}"))
         document.getElementById("button_align").addEventListener("click", () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true))
+        document.getElementById("button_hspace").addEventListener("click", () => add_str("\\hspace{3em} "))
         document.getElementById("button_frac").addEventListener("click", () => add_str("\\frac{a}{b}"))
         document.getElementById("button_dfrac").addEventListener("click", () => add_str("\\dfrac{a}{b}"))
         document.getElementById("button_mathrm").addEventListener("click", () => add_str("\\mathrm{", "}"))
@@ -94,6 +96,7 @@ window.addEventListener('load', () => {
 
         document.getElementById("text_mode").addEventListener("click", () => change_text_mode())
         document.getElementById("paint_mode").addEventListener("click", () => change_paint_mode())
+        document.getElementById("paint_chara").addEventListener("click", () => paint_chara())
         document.getElementById("paint_upload").addEventListener("click", () => paint_upload())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
@@ -113,36 +116,37 @@ window.addEventListener('load', () => {
         form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
         onClick()
     }
-    function create_image_canvas(url) {
+    function load_img_from_url(url) {
         const img = new Image()
         img.src = url
-        img.onload = () => {
-            if (mobile_canvas) transfer_mobile_canvase_to_cur_canvas()
-            let canvas = document.createElement("canvas")
-            canvas.classList.add("canvas");
-            canvas.width = document.documentElement.scrollWidth - 30
-            canvas.height = document.documentElement.scrollHeight
-            canvas.style.zIndex = "1";
-            let context = canvas.getContext("2d")
+        img.onload = () => create_mobile_canvas(img, 300)
+    }
+    function create_mobile_canvas(img, width) {
+        if (mobile_canvas) transfer_mobile_canvase_to_cur_canvas()
+        let canvas = document.createElement("canvas")
+        canvas.classList.add("canvas");
+        canvas.width = document.documentElement.scrollWidth - 30
+        canvas.height = document.documentElement.scrollHeight
+        canvas.style.zIndex = "1";
+        let context = canvas.getContext("2d")
 
-            group.appendChild(canvas)
-            canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
-            canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
-            canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
-            canvas.addEventListener('pointermove', mobile_canvas_move);
-            context.setLineDash([3, 3]);
-            context.lineCap = 'round'; // 丸みを帯びた線にする
-            context.lineJoin = 'round'; // 丸みを帯びた線にする
-            context.lineWidth = 1; // 線の太さ
-            context.strokeStyle = "black"; // 線の色
-            mobile_canvas = canvas
-            mobile_ctx = context
-            mobile_canvas_img = img
-            prev_img_w = 300
+        group.appendChild(canvas)
+        canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
+        canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
+        canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
+        canvas.addEventListener('pointermove', mobile_canvas_move);
+        context.setLineDash([3, 3]);
+        context.lineCap = 'round'; // 丸みを帯びた線にする
+        context.lineJoin = 'round'; // 丸みを帯びた線にする
+        context.lineWidth = 1; // 線の太さ
+        context.strokeStyle = "black"; // 線の色
+        mobile_canvas = canvas
+        mobile_ctx = context
+        mobile_canvas_img = img
+        prev_img_w = width
 
-            let scale = prev_img_w / img.width
-            disp_mobile_img(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
-        }
+        let scale = prev_img_w / img.width
+        disp_mobile_img(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
     }
     function syntax_check() {
         let html, ok = true
@@ -285,6 +289,27 @@ window.addEventListener('load', () => {
         ad.forEach((e) => group.appendChild(e))
         canvas_list = new_a.concat()
     }
+    function paint_chara() {
+        const ret = window.prompt("表示したい文字を入力してください。")
+        if (ret == "" || ret == null) return
+        const html = katex.renderToString(ret)
+        const element = document.createElement("div")
+        element.innerHTML = html
+        group.appendChild(element)
+        html2canvas(element, { scale: font_size.value }).then((canvas) => {
+            const ctx = canvas.getContext("2d")
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
+            const W = img.width
+            const H = img.height
+            for (let i = 0; i < W * H; i++) {
+                let v = Math.floor((img.data[4 * i] + img.data[4 * i + 1] + img.data[4 * i + 2]) / 3)
+                img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
+            }
+            ctx.putImageData(img, 0, 0)
+            create_mobile_canvas(canvas, canvas.width / 2)
+            group.removeChild(element)
+        })
+    }
     function paint_upload() {
         upload_form.click()
     }
@@ -346,13 +371,13 @@ window.addEventListener('load', () => {
         }
         const k = 2
         const dx = [0, k, 0, -k, 0], dy = [0, 0, k, 0, -k]
-        for (let i = 0; i < canvas_list.length; i++) {
+        for (let i = canvas_list.length - 1; i >= 0; i--) {
             const context = canvas_list[i].getContext("2d")
             for (let j = 0; j < 5; j++) {
                 const color = context.getImageData(x + dx[j], y + dy[j], 1, 1).data
                 if (color[0] != 0 || color[1] != 0 || color[2] != 0 || color[3] != 0) {
                     erase_canvas([i])
-                    break
+                    return
                 }
             }
         }
@@ -576,7 +601,7 @@ window.addEventListener('load', () => {
     function mobile_canvas_dragStart(event) {
         isDrag = true
         let img = mobile_canvas_img
-        const k = 15
+        const k = Math.min(prev_img_w / 5, 15)
         if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
             && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
             mobile_canvas_ope = "move"
@@ -639,7 +664,7 @@ window.addEventListener('load', () => {
     function mobile_canvas_move(event) {
         if (isDrag == false) {
             let img = mobile_canvas_img
-            const k = 15
+            const k = Math.min(prev_img_w / 5, 15)
             if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
                 && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
                 mobile_canvas.style.cursor = "move"
