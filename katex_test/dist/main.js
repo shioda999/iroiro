@@ -122,13 +122,13 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ }),
 
 /***/ 0:
-/*!****************************************!*\
-  !*** multi ./src/main.ts ./src/use.ts ***!
-  \****************************************/
+/*!***************************!*\
+  !*** multi ./src/main.ts ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("__webpack_require__(/*! ./src/main.ts */\"./src/main.ts\");\n!(function webpackMissingModule() { var e = new Error(\"Cannot find module './src/use.ts'\"); e.code = 'MODULE_NOT_FOUND'; throw e; }());\n\n\n//# sourceURL=webpack:///multi_./src/main.ts_./src/use.ts?");
+eval("module.exports = __webpack_require__(/*! ./src/main.ts */\"./src/main.ts\");\n\n\n//# sourceURL=webpack:///multi_./src/main.ts?");
 
 /***/ })
 
