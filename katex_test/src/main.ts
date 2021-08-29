@@ -68,7 +68,7 @@ window.addEventListener('load', () => {
         resize_sub_canvas()
         set_keyEvent()
         set_cur_canvas()
-        group.hidden = true
+        group.style.pointerEvents = "none"
         onClick()
     }
 
@@ -185,7 +185,7 @@ window.addEventListener('load', () => {
         change_range()
         text_form.style.transition = "1s"
         document.getElementById("text_canvas").hidden = true
-        group.hidden = true
+        group.style.pointerEvents = "none"
         onClick()
     }
     function change_paint_mode() {
@@ -194,7 +194,7 @@ window.addEventListener('load', () => {
         menu.style.bottom = "-50px"
         text_form.style.transition = "1s"
         text_form.style.left = "100%"
-        group.hidden = false
+        group.style.pointerEvents = "auto"
         let scr_x = window.scrollX
         let scr_y = window.scrollY
         window.scrollTo(0, 0);
