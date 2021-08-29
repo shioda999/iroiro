@@ -303,7 +303,7 @@ window.addEventListener('load', () => {
         const element = document.createElement("div")
         element.innerHTML = html
         group.appendChild(element)
-        html2canvas(element, { scale: font_size.value }).then((canvas) => {
+        html2canvas(element, { scale: font_size.value / 2 * window.devicePixelRatio }).then((canvas) => {
             const ctx = canvas.getContext("2d")
             const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
             const W = img.width
@@ -313,7 +313,7 @@ window.addEventListener('load', () => {
                 img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
             }
             ctx.putImageData(img, 0, 0)
-            create_mobile_canvas(canvas, canvas.width / 2)
+            create_mobile_canvas(canvas, canvas.width / window.devicePixelRatio)
             group.removeChild(element)
         })
     }
