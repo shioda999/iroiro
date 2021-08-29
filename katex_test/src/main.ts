@@ -10,9 +10,9 @@ window.addEventListener('load', () => {
 
     const reader = new FileReader()
     const form = document["form"]
-    const text_form = getRuleBySelector('.textform')
     const katex_rule = getRuleBySelector('.katex')
 
+    const text_form = document.getElementById("textform")
     const group = document.getElementById("draw_canvas")
     const text_area = document.getElementById("text")
     const menu = document.getElementById("floating_menu")
@@ -93,8 +93,8 @@ window.addEventListener('load', () => {
         document.getElementById("button_rightarrow").addEventListener("click", () => add_str("\\rightarrow "))
         document.getElementById("syntax_checker").addEventListener("click", () => syntax_check())
 
-        document.getElementById("text_mode").addEventListener("click", () => text_modeClick())
-        document.getElementById("paint_mode").addEventListener("click", () => paint_modeClick())
+        document.getElementById("text_mode").addEventListener("click", () => change_text_mode())
+        document.getElementById("paint_mode").addEventListener("click", () => change_paint_mode())
         document.getElementById("paint_upload").addEventListener("click", () => paint_upload())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
         document.getElementById("paint_do").addEventListener("click", () => paint_do())
@@ -178,16 +178,22 @@ window.addEventListener('load', () => {
             text_area.innerHTML = html
         }
     }
-    function text_modeClick() {
+    function change_text_mode() {
         if (mode == "text") return
         mode = "text"
+        menu.style.bottom = "0px"
+        change_range()
+        text_form.style.transition = "1s"
         document.getElementById("text_canvas").hidden = true
         group.hidden = true
         onClick()
     }
-    function paint_modeClick() {
+    function change_paint_mode() {
         if (mode == "paint") return
         mode = "paint"
+        menu.style.bottom = "-50px"
+        text_form.style.transition = "1s"
+        text_form.style.left = "100%"
         group.hidden = false
         let scr_x = window.scrollX
         let scr_y = window.scrollY
@@ -242,13 +248,8 @@ window.addEventListener('load', () => {
     function change_range() {
         let v = parseInt(range.value) / 100
         let left = 30 * (1 - v) + 80 * v
-        text_form.style.cssText = "\
-    position: fixed;\
-    top: 20px;\
-    left: " + left + "%;\
-    width: 50%;\
-    height: 80%;\
-";
+        text_form.style.transition = "0s"
+        text_form.style.left = left + "%"
     }
     function change_thickness() {
         const thick_table = [1, 2, 3, 5, 7, 9, 10, 20, 30, 50]

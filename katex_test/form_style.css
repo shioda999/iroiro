@@ -4,6 +4,8 @@
     left: 55%;
     width: 20%;
     height: 80%;
+    transition: 1s;
+    z-index: 10;
 }
 .text {
     position: absolute;
@@ -24,6 +26,7 @@ input.font_size{
     bottom: 0px;
     z-index: 10;
     pointer-events: none;
+    transition: 1s;
 }
 .move{
     margin:5px;
