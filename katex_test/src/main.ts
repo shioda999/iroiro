@@ -1,4 +1,3 @@
-import html2canvas from 'html2canvas'
 import { RGBColor } from './rgbcolor';
 
 window.addEventListener('load', () => {
@@ -24,7 +23,7 @@ window.addEventListener('load', () => {
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
-    const line_mode_button = document.getElementById("line_mode_button")
+    const line_mode_button: any = document.getElementById("line_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
     const upload_form: any = document.getElementById("upload_button")
     let sub_ctx = sub_canvas.getContext("2d")
@@ -37,11 +36,11 @@ window.addEventListener('load', () => {
         range.addEventListener('input', () => change_range())
         thickness.addEventListener('input', () => change_thickness())
         bright.addEventListener('input', () => change_bright())
-        colorcircle2.forEach((e) => {
+        colorcircle2.forEach((e: any) => {
             e.addEventListener('input', () => change_color(e.value))
         })
         line_mode_button.onchange = function () {
-            line_mode = this.options[this.selectedIndex].value
+            line_mode = line_mode_button.options[line_mode_button.selectedIndex].value
         }
         upload_form.onchange = function () {
             reader.readAsDataURL(upload_form.files[0])
@@ -184,7 +183,6 @@ window.addEventListener('load', () => {
         menu.style.bottom = "0px"
         change_range()
         text_form.style.transition = "1s"
-        document.getElementById("text_canvas").hidden = true
         group.style.pointerEvents = "none"
         onClick()
     }
@@ -195,21 +193,6 @@ window.addEventListener('load', () => {
         text_form.style.transition = "1s"
         text_form.style.left = "100%"
         group.style.pointerEvents = "auto"
-        let scr_x = window.scrollX
-        let scr_y = window.scrollY
-        window.scrollTo(0, 0);
-        html2canvas(text_area, { scale: font_size.value / 2 }).then((canvas) => {
-            {
-                const x = text_area.getBoundingClientRect().left
-                const y = text_area.getBoundingClientRect().top
-                const prev_canvas = document.getElementById("text_canvas")
-                if (prev_canvas) document.body.removeChild(prev_canvas)
-                document.body.appendChild(canvas)
-                canvas.setAttribute("style", "position: absolute;left:" + round(x) + "px;top:" + round(y) + "px;")
-                canvas.setAttribute("id", "text_canvas")
-                text_area.innerHTML = ""
-                window.scroll(scr_x, scr_y)
-            });
     }
     function change_fontsize() {
         katex_rule.style.cssText = "font-size : " + font_size.value + "em"
