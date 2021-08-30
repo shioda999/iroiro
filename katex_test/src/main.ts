@@ -74,12 +74,33 @@ window.addEventListener('load', () => {
 
     function set_keyEvent() {
         document.addEventListener("keydown", event => {
-            //console.log(event.key)
-            if (event.key == "Shift") line_mode = "straight"
+            //console.log("down" + event.key)
+            switch (event.key) {
+                case "ArrowRight":
+                    disp_mobile_img(mobile_canvas_img, ++mobile_img_x, mobile_img_y)
+                    break
+                case "ArrowLeft":
+                    disp_mobile_img(mobile_canvas_img, --mobile_img_x, mobile_img_y)
+                    break
+                case "ArrowUp":
+                    disp_mobile_img(mobile_canvas_img, mobile_img_x, --mobile_img_y)
+                    break
+                case "ArrowDown":
+                    disp_mobile_img(mobile_canvas_img, mobile_img_x, ++mobile_img_y)
+                    break
+            }
         })
         document.addEventListener("keyup", event => {
-            //console.log(event.key)
-            if (event.key == "Shift") line_mode = "default"
+            //console.log("up:" + event.key)
+            switch (event.key) {
+                case "Shift":
+                    if (line_mode == "default") line_mode = "straight"
+                    else if (line_mode == "straight") line_mode = "default"
+                    break
+                case "Backspace":
+                    if (mobile_canvas) remove_mobile_canvas()
+                    break
+            }
         })
     }
 
@@ -146,7 +167,7 @@ window.addEventListener('load', () => {
         prev_img_w = width
 
         let scale = prev_img_w / img.width
-        disp_mobile_img(img, mobile_img_x = 0, mobile_img_y = 0, img.width * scale, img.height * scale)
+        disp_mobile_img(img, mobile_img_x = 0, mobile_img_y = 0, scale)
     }
     function syntax_check() {
         let html, ok = true
@@ -706,27 +727,22 @@ window.addEventListener('load', () => {
             switch (mobile_canvas_ope) {
                 case "ch_scale_left":
                     scale = (prev_img_w - dx) / img.width
-                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y,
-                        img.width * scale, img.height * scale)
+                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y, scale)
                     break
                 case "ch_scale_right":
                     scale = (prev_img_w + dx) / img.width
-                    disp_mobile_img(img, mobile_img_x, mobile_img_y,
-                        img.width * scale, img.height * scale)
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y, scale)
                     break
                 case "ch_scale_top":
                     scale = (prev_img_w * img.height / img.width - dy) / img.height
-                    disp_mobile_img(img, mobile_img_x, mobile_img_y + dy,
-                        img.width * scale, img.height * scale)
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y + dy, scale)
                     break
                 case "ch_scale_bottom":
                     scale = (prev_img_w * img.height / img.width + dy) / img.height
-                    disp_mobile_img(img, mobile_img_x, mobile_img_y,
-                        img.width * scale, img.height * scale)
+                    disp_mobile_img(img, mobile_img_x, mobile_img_y, scale)
                     break
                 case "move":
-                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y + dy,
-                        prev_img_w, img.height * prev_img_w / img.width)
+                    disp_mobile_img(img, mobile_img_x + dx, mobile_img_y + dy)
                     break
             }
         }
@@ -735,21 +751,24 @@ window.addEventListener('load', () => {
         let img = mobile_canvas_img
         cur_context.drawImage(img, mobile_img_x, mobile_img_y,
             prev_img_w, img.height * prev_img_w / img.width)
+        remove_mobile_canvas()
+        canvas_written = true
+        create_new_canvas()
+    }
+    function remove_mobile_canvas() {
         group.removeChild(mobile_canvas)
         mobile_canvas = null
         mobile_ctx = null
         mobile_canvas_img = null
-        canvas_written = true
-        create_new_canvas()
     }
-    function disp_mobile_img(img, x, y, sw, sh) {
+    function disp_mobile_img(img, x, y, scale = prev_img_w / img.width) {
         mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
-        mobile_ctx.drawImage(img, x, y, sw, sh)
+        mobile_ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
         mobile_ctx.beginPath()
         mobile_ctx.moveTo(x, y)
-        mobile_ctx.lineTo(x + sw, y)
-        mobile_ctx.lineTo(x + sw, y + sh)
-        mobile_ctx.lineTo(x, y + sh)
+        mobile_ctx.lineTo(x + img.width * scale, y)
+        mobile_ctx.lineTo(x + img.width * scale, y + img.height * scale)
+        mobile_ctx.lineTo(x, y + img.height * scale)
         mobile_ctx.lineTo(x, y)
         mobile_ctx.stroke()
         mobile_ctx.closePath()
