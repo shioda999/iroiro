@@ -24,7 +24,7 @@ input.font_size{
     width: 100%;
     position: fixed;
     bottom: 0px;
-    z-index: 10;
+    z-index: 20;
     pointer-events: none;
     transition: 1s;
 }
@@ -45,10 +45,7 @@ input.font_size{
     right: 10px;
     bottom: 10px;
     position: fixed;
-}
-.syntax_checker:hover{
-    cursor: pointer;
-    text-decoration: underline;
+    z-index: 20;
 }
 .canvas{
     position:absolute;

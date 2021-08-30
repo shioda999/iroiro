@@ -97,7 +97,7 @@
     </div>
   </div>
   <div class="floating_menu" id="floating_menu">
-    <input type="range" id="move" class="move" min="0" max="100">
+    <input type="range" id="move" class="move" min="0" max="100" value="55">
     <select name="font_size" class="font_size">
       <option value="1.0">1.0</option>
       <option value="1.2">1.2</option>
@@ -115,7 +115,7 @@
   </div>
   <div class="textform" id="textform">
     <form name="form" onsubmit="return false">
-      <textarea name="text" cols="50" rows="39" spellcheck="false"></textarea>
+      <textarea name="text" id="textarea" cols="50" rows="39" spellcheck="false" style="font-size: 14px;"></textarea>
     </form>
   </div>
   <canvas class="canvas" id="sub_canvas"></canvas>

@@ -66,12 +66,17 @@ window.addEventListener('load', () => {
         form.text.value = "a+b+c"
         window.onresize = () => { set_cur_canvas(); resize_sub_canvas(); }
         resize_sub_canvas()
+        set_textarea_size()
         set_keyEvent()
         set_cur_canvas()
         group.style.pointerEvents = "none"
         onClick()
     }
-
+    function set_textarea_size() {
+        const textarea: any = document.getElementById("textarea")
+        textarea.rows = Math.floor((document.documentElement.clientHeight - 70) / parseInt(textarea.style["font-size"]))
+        textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 200) + "px"
+    }
     function set_keyEvent() {
         document.addEventListener("keydown", event => {
             //console.log("down" + event.key)
@@ -762,13 +767,15 @@ window.addEventListener('load', () => {
         mobile_canvas_img = null
     }
     function disp_mobile_img(img, x, y, scale = prev_img_w / img.width) {
+        let w = Math.floor(img.width * scale), h = Math.floor(img.height * scale)
         mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
-        mobile_ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
+        x = Math.floor(x), y = Math.floor(y)
+        mobile_ctx.drawImage(img, x, y, w, h)
         mobile_ctx.beginPath()
         mobile_ctx.moveTo(x, y)
-        mobile_ctx.lineTo(x + img.width * scale, y)
-        mobile_ctx.lineTo(x + img.width * scale, y + img.height * scale)
-        mobile_ctx.lineTo(x, y + img.height * scale)
+        mobile_ctx.lineTo(x + w, y)
+        mobile_ctx.lineTo(x + w, y + h)
+        mobile_ctx.lineTo(x, y + h)
         mobile_ctx.lineTo(x, y)
         mobile_ctx.stroke()
         mobile_ctx.closePath()
