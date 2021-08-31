@@ -82,8 +82,16 @@ window.addEventListener('load', () => {
     }
     function set_textarea_size() {
         const textarea: any = document.getElementById("textarea")
-        textarea.rows = Math.floor((document.documentElement.clientHeight - 70) / parseInt(textarea.style["font-size"]))
-        textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 200) + "px"
+        if (is_PC) {
+            textarea.rows = Math.floor(document.documentElement.clientHeight - 70)
+            textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 200) + "px"
+        }
+        else {
+            textarea.style.fontSize = "30px"
+            textarea.style.borderWidth = "2px"
+            textarea.rows = Math.floor(document.documentElement.clientHeight - 70)
+            textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 10) + "px"
+        }
     }
     function set_keyEvent() {
         document.addEventListener("keydown", event => {
