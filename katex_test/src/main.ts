@@ -30,6 +30,7 @@ window.addEventListener('load', () => {
     const grid_mode_button: any = document.getElementById("grid_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
     const upload_form: any = document.getElementById("upload_button")
+    const is_PC = !isSmartPhone()
     let sub_ctx = sub_canvas.getContext("2d")
     setup()
 
@@ -164,10 +165,7 @@ window.addEventListener('load', () => {
         let context = canvas.getContext("2d")
 
         group.appendChild(canvas)
-        canvas.addEventListener('pointerdown', mobile_canvas_dragStart);
-        canvas.addEventListener('pointerup', mobile_canvas_dragEnd);
-        canvas.addEventListener('pointerout', mobile_canvas_dragEnd);
-        canvas.addEventListener('pointermove', mobile_canvas_move);
+        set_pointer_evens(canvas)
         context.setLineDash([3, 3]);
         context.lineCap = 'round'; // 丸みを帯びた線にする
         context.lineJoin = 'round'; // 丸みを帯びた線にする
@@ -378,12 +376,51 @@ window.addEventListener('load', () => {
         cur_canvas.style.zIndex = 1;
         cur_context = cur_canvas.getContext("2d")
         group.appendChild(cur_canvas)
-        cur_canvas.addEventListener('pointerdown', dragStart);
-        cur_canvas.addEventListener('pointerup', dragEnd);
-        cur_canvas.addEventListener('pointerout', dragEnd);
-        cur_canvas.addEventListener('pointermove', (event) => {
-            draw(event.layerX, event.layerY);
-        });
+        set_pointer_evens(cur_canvas)
+    }
+    function set_pointer_evens(element) {
+        if (is_PC) {
+            element.addEventListener('mousedown', mouse_dragStart, false);
+            element.addEventListener('mouseup', mouse_dragEnd, false);
+            element.addEventListener('mouseout', mouse_dragEnd, false);
+            element.addEventListener('mousemove', mouse_dragging, false);
+        }
+        else {
+            element.addEventListener('touchstart', touch_start, false);
+            element.addEventListener('touchend', touch_end, false);
+            element.addEventListener('touchmove', touch_move, false)
+        }
+    }
+    function mouse_dragStart(event) {
+        const px = event.layerX, py = event.layerY
+        if (mobile_canvas) mobile_canvas_dragStart(px, py)
+        else dragStart(px, py)
+    }
+    function mouse_dragEnd(event) {
+        const px = event.layerX, py = event.layerY
+        if (mobile_canvas) mobile_canvas_dragEnd(px, py)
+        else dragEnd(px, py)
+    }
+    function mouse_dragging(event) {
+        const px = event.layerX, py = event.layerY
+        if (mobile_canvas) mobile_canvas_move(px, py)
+        else dragmove(px, py)
+    }
+    function touch_start(event) {
+        const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
+        if (mobile_canvas) mobile_canvas_dragStart(px, py)
+        else dragStart(px, py)
+    }
+    function touch_end(event) {
+        const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
+        if (mobile_canvas) mobile_canvas_dragEnd(px, py)
+        else dragEnd(px, py)
+    }
+    function touch_move(event) {
+        event.preventDefault();
+        const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
+        if (mobile_canvas) mobile_canvas_move(px, py)
+        else dragmove(px, py)
     }
     function create_new_canvas() {
         if (!canvas_written) return
@@ -491,7 +528,7 @@ window.addEventListener('load', () => {
         return Math.floor((v + GRID_W / 2) / GRID_W) * GRID_W
     }
     // 絵を書く
-    function draw(px, py) {
+    function dragmove(px, py) {
         if (!isDrag) {
             return;
         }
@@ -626,13 +663,13 @@ window.addEventListener('load', () => {
 
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
     // お絵かき処理が途中で止まらないようにする
-    function dragStart(event) {
+    function dragStart(px, py) {
         isDrag = true;
-        draw(event.layerX, event.layerY);
+        dragmove(px, py);
     }
     // マウスのドラッグが終了したら、もしくはマウスがcanvas外に移動したら
     // isDragのフラグをfalseにしてdraw関数内でお絵かき処理が中断されるようにする
-    function dragEnd(event) {
+    function dragEnd(px, py) {
         if (!cur_context) return
         if (grid_mode == "no-grid") sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
 
@@ -698,43 +735,43 @@ window.addEventListener('load', () => {
         })
         return ctx.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
     }
-    function mobile_canvas_dragStart(event) {
+    function mobile_canvas_dragStart(px, py) {
         isDrag = true
         let img = mobile_canvas_img
         const k = Math.min(prev_img_w / 5, 15)
-        if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
-            && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
+        if (mobile_img_x + k < px && px < prev_img_w + mobile_img_x - k
+            && mobile_img_y + k < py && py < img.height * prev_img_w / img.width + mobile_img_y - k) {
             mobile_canvas_ope = "move"
         }
-        else if (prev_img_w + mobile_img_x - k < event.layerX && event.layerX < prev_img_w + mobile_img_x + k
-            && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+        else if (prev_img_w + mobile_img_x - k < px && px < prev_img_w + mobile_img_x + k
+            && mobile_img_y - k < py && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
             mobile_canvas_ope = "ch_scale_right"
         }
-        else if (mobile_img_x - k < event.layerX && event.layerX < mobile_img_x + k
-            && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+        else if (mobile_img_x - k < px && px < mobile_img_x + k
+            && mobile_img_y - k < py && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
             mobile_canvas_ope = "ch_scale_left"
         }
-        else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
-            && mobile_img_y - k < event.layerY && event.layerY < mobile_img_y + k) {
+        else if (mobile_img_x < px && px < prev_img_w + mobile_img_x
+            && mobile_img_y - k < py && py < mobile_img_y + k) {
             mobile_canvas_ope = "ch_scale_top"
         }
-        else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
-            && img.height * prev_img_w / img.width + mobile_img_y - k < event.layerY
-            && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+        else if (mobile_img_x < px && px < prev_img_w + mobile_img_x
+            && img.height * prev_img_w / img.width + mobile_img_y - k < py
+            && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
             mobile_canvas_ope = "ch_scale_bottom"
         }
         else {
             mobile_canvas_ope = "set"
             transfer_mobile_canvase_to_cur_canvas()
         }
-        firstPosition.x = event.layerX
-        firstPosition.y = event.layerY
+        firstPosition.x = px
+        firstPosition.y = py
     }
-    function mobile_canvas_dragEnd(event) {
+    function mobile_canvas_dragEnd(px, py) {
         if (!isDrag) return
         isDrag = false
-        let dx = event.layerX - firstPosition.x
-        let dy = event.layerY - firstPosition.y
+        let dx = px - firstPosition.x
+        let dy = py - firstPosition.y
         let img = mobile_canvas_img
         switch (mobile_canvas_ope) {
             case "ch_scale_left":
@@ -761,29 +798,29 @@ window.addEventListener('load', () => {
         firstPosition.x = null;
         firstPosition.y = null;
     }
-    function mobile_canvas_move(event) {
+    function mobile_canvas_move(px, py) {
         if (isDrag == false) {
             let img = mobile_canvas_img
             const k = Math.min(prev_img_w / 5, 15)
-            if (mobile_img_x + k < event.layerX && event.layerX < prev_img_w + mobile_img_x - k
-                && mobile_img_y + k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y - k) {
+            if (mobile_img_x + k < px && px < prev_img_w + mobile_img_x - k
+                && mobile_img_y + k < py && py < img.height * prev_img_w / img.width + mobile_img_y - k) {
                 mobile_canvas.style.cursor = "move"
             }
-            else if (prev_img_w + mobile_img_x - k < event.layerX && event.layerX < prev_img_w + mobile_img_x + k
-                && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            else if (prev_img_w + mobile_img_x - k < px && px < prev_img_w + mobile_img_x + k
+                && mobile_img_y - k < py && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
                 mobile_canvas.style.cursor = "ew-resize"
             }
-            else if (mobile_img_x - k < event.layerX && event.layerX < mobile_img_x + k
-                && mobile_img_y - k < event.layerY && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            else if (mobile_img_x - k < px && px < mobile_img_x + k
+                && mobile_img_y - k < py && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
                 mobile_canvas.style.cursor = "ew-resize"
             }
-            else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
-                && mobile_img_y - k < event.layerY && event.layerY < mobile_img_y + k) {
+            else if (mobile_img_x < px && px < prev_img_w + mobile_img_x
+                && mobile_img_y - k < py && py < mobile_img_y + k) {
                 mobile_canvas.style.cursor = "ns-resize"
             }
-            else if (mobile_img_x < event.layerX && event.layerX < prev_img_w + mobile_img_x
-                && img.height * prev_img_w / img.width + mobile_img_y - k < event.layerY
-                && event.layerY < img.height * prev_img_w / img.width + mobile_img_y + k) {
+            else if (mobile_img_x < px && px < prev_img_w + mobile_img_x
+                && img.height * prev_img_w / img.width + mobile_img_y - k < py
+                && py < img.height * prev_img_w / img.width + mobile_img_y + k) {
                 mobile_canvas.style.cursor = "ns-resize"
             }
             else {
@@ -793,8 +830,8 @@ window.addEventListener('load', () => {
         }
         else {
             let img = mobile_canvas_img
-            let dx = event.layerX - firstPosition.x
-            let dy = event.layerY - firstPosition.y
+            let dx = px - firstPosition.x
+            let dy = py - firstPosition.y
             let scale
             switch (mobile_canvas_ope) {
                 case "ch_scale_left":
@@ -849,3 +886,10 @@ window.addEventListener('load', () => {
     }
 });
 
+function isSmartPhone() {
+    if (window.matchMedia && window.matchMedia('(max-device-width: 640px)').matches) {
+        return true;
+    } else {
+        return false;
+    }
+}
