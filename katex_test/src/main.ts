@@ -410,7 +410,7 @@ window.addEventListener('load', () => {
             case "grid":
                 sub_ctx.setLineDash([]);
                 sub_ctx.lineWidth = 3; // 線の太さ
-                sub_ctx.strokeStyle = "#aaaaaa"; // 線の色
+                sub_ctx.strokeStyle = "#cccccc"; // 線の色
                 for (let x = 0; x <= sub_canvas.width; x += GRID_W * 5) {
                     sub_ctx.moveTo(x, 0)
                     sub_ctx.lineTo(x, sub_canvas.height)
@@ -422,7 +422,6 @@ window.addEventListener('load', () => {
                 sub_ctx.stroke()
                 sub_ctx.beginPath()
                 sub_ctx.lineWidth = 1; // 線の太さ
-                sub_ctx.strokeStyle = "gray"; // 線の色
                 for (let x = 0; x <= sub_canvas.width; x += GRID_W) {
                     if (x % (GRID_W * 5) == 0) continue
                     sub_ctx.moveTo(x, 0)
