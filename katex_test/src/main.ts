@@ -1,11 +1,13 @@
 import { RGBColor } from './rgbcolor'
 import html2canvas from 'html2canvas'
 
+const GRID_W = 20
+
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [[]], history_id = 0, canvas_written = false
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
-    let line_mode = "default"
+    let line_mode = "default", grid_mode = "no-grid"
     let mobile_canvas, mobile_ctx, mobile_canvas_ope, mobile_canvas_img, prev_img_w, mobile_img_x, mobile_img_y
 
     const reader = new FileReader()
@@ -25,6 +27,7 @@ window.addEventListener('load', () => {
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
     const line_mode_button: any = document.getElementById("line_mode_button")
+    const grid_mode_button: any = document.getElementById("grid_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
     const upload_form: any = document.getElementById("upload_button")
     let sub_ctx = sub_canvas.getContext("2d")
@@ -42,6 +45,10 @@ window.addEventListener('load', () => {
         })
         line_mode_button.onchange = function () {
             line_mode = line_mode_button.options[line_mode_button.selectedIndex].value
+        }
+        grid_mode_button.onchange = function () {
+            grid_mode = grid_mode_button.options[grid_mode_button.selectedIndex].value
+            draw_grid()
         }
         upload_form.onchange = function () {
             if (upload_form.files[0]) reader.readAsDataURL(upload_form.files[0])
@@ -359,14 +366,9 @@ window.addEventListener('load', () => {
     function resize_sub_canvas() {
         sub_canvas.width = document.documentElement.scrollWidth - 30;
         sub_canvas.height = document.documentElement.scrollHeight;
-        sub_canvas.style.zIndex = 10;
         sub_canvas.style["pointer-events"] = "none"
         sub_ctx = sub_canvas.getContext("2d")
-        sub_ctx.setLineDash([3, 3]);
-        sub_ctx.lineCap = 'round'; // 丸みを帯びた線にする
-        sub_ctx.lineJoin = 'round'; // 丸みを帯びた線にする
-        sub_ctx.lineWidth = 1; // 線の太さ
-        sub_ctx.strokeStyle = "black"; // 線の色
+        draw_grid()
     }
     function set_cur_canvas() {
         cur_canvas = document.createElement("canvas")
@@ -392,8 +394,78 @@ window.addEventListener('load', () => {
         canvas_history[history_id] = canvas_list.concat()
         set_cur_canvas()
     }
+    function draw_grid() {
+        sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
+        sub_ctx.beginPath()
+        sub_ctx.lineCap = 'butt'; // 丸みを帯びた線にする
+        sub_ctx.lineJoin = 'butt'; // 丸みを帯びた線にする
+        sub_canvas.zIndex = -1
+        switch (grid_mode) {
+            case "no-grid":
+                sub_ctx.setLineDash([3, 3]);
+                sub_ctx.lineWidth = 1; // 線の太さ
+                sub_ctx.strokeStyle = "black"; // 線の色
+                sub_canvas.zIndex = 10
+                break
+            case "grid":
+                sub_ctx.setLineDash([]);
+                sub_ctx.lineWidth = 3; // 線の太さ
+                sub_ctx.strokeStyle = "#aaaaaa"; // 線の色
+                for (let x = 0; x <= sub_canvas.width; x += GRID_W * 5) {
+                    sub_ctx.moveTo(x, 0)
+                    sub_ctx.lineTo(x, sub_canvas.height)
+                }
+                for (let y = 0; y <= sub_canvas.height; y += GRID_W * 5) {
+                    sub_ctx.moveTo(0, y)
+                    sub_ctx.lineTo(sub_canvas.width, y)
+                }
+                sub_ctx.stroke()
+                sub_ctx.beginPath()
+                sub_ctx.lineWidth = 1; // 線の太さ
+                sub_ctx.strokeStyle = "gray"; // 線の色
+                for (let x = 0; x <= sub_canvas.width; x += GRID_W) {
+                    if (x % (GRID_W * 5) == 0) continue
+                    sub_ctx.moveTo(x, 0)
+                    sub_ctx.lineTo(x, sub_canvas.height)
+                }
+                for (let y = 0; y <= sub_canvas.height; y += GRID_W) {
+                    if (y % (GRID_W * 5) == 0) continue
+                    sub_ctx.moveTo(0, y)
+                    sub_ctx.lineTo(sub_canvas.width, y)
+                }
+                break
+            case "dotted-grid":
+                sub_ctx.setLineDash([]);
+                sub_ctx.lineWidth = 1; // 線の太さ
+                sub_ctx.strokeStyle = "gray"; // 線の色
+                for (let x = 0; x <= sub_canvas.width; x += GRID_W * 5) {
+                    sub_ctx.moveTo(x, 0)
+                    sub_ctx.lineTo(x, sub_canvas.height)
+                }
+                for (let y = 0; y <= sub_canvas.height; y += GRID_W * 5) {
+                    sub_ctx.moveTo(0, y)
+                    sub_ctx.lineTo(sub_canvas.width, y)
+                }
+                sub_ctx.stroke()
+                sub_ctx.beginPath()
+                sub_ctx.setLineDash([3, 3]);
+                for (let x = 0; x <= sub_canvas.width; x += GRID_W) {
+                    if (x % (GRID_W * 5) == 0) continue
+                    sub_ctx.moveTo(x, 0)
+                    sub_ctx.lineTo(x, sub_canvas.height)
+                }
+                for (let y = 0; y <= sub_canvas.height; y += GRID_W) {
+                    if (y % (GRID_W * 5) == 0) continue
+                    sub_ctx.moveTo(0, y)
+                    sub_ctx.lineTo(sub_canvas.width, y)
+                }
+                break
+        }
+        sub_ctx.stroke()
+    }
     // 直前のマウスのcanvas上のx座標とy座標を記録する
-    const lastPosition = { x: null, y: null };
+    const prevPosition = { x: null, y: null };
+    const firstPosition = { x: null, y: null };
 
     // マウスがドラッグされているか(クリックされたままか)判断するためのフラグ
     let isDrag = false;
@@ -417,11 +489,10 @@ window.addEventListener('load', () => {
     }
 
     function round(v) {
-        return Math.floor((v + 10) / 20) * 20
+        return Math.floor((v + GRID_W / 2) / GRID_W) * GRID_W
     }
     // 絵を書く
     function draw(px, py) {
-        let prev_x, prev_y, next_x, next_y
         if (!isDrag) {
             return;
         }
@@ -430,15 +501,15 @@ window.addEventListener('load', () => {
             return
         }
         if (line_mode == "fill") {
-            if (lastPosition.x === null || lastPosition.y === null) my_fill(px, py)
-            lastPosition.x = px
-            lastPosition.y = py
+            if (firstPosition.x === null || firstPosition.y === null) my_fill(px, py)
+            firstPosition.x = px
+            firstPosition.y = py
             return
         }
-        if (lastPosition.x === null || lastPosition.y === null) {
+        if (firstPosition.x === null || firstPosition.y === null) {
             // ドラッグ開始時の線の開始位置
-            lastPosition.x = px
-            lastPosition.y = py
+            firstPosition.x = prevPosition.x = px
+            firstPosition.y = prevPosition.y = py
             cur_context.lineCap = 'round'; // 丸みを帯びた線にする
             cur_context.lineJoin = 'round'; // 丸みを帯びた線にする
             cur_context.lineWidth = line_thickness; // 線の太さ
@@ -451,109 +522,107 @@ window.addEventListener('load', () => {
                 cur_context.fillStyle = cur_context.fillStyle.substring(0, 7) + "50"
             }
         }
-        switch (line_mode) {
-            case "default":
-                cur_context.moveTo(lastPosition.x, lastPosition.y);
-                cur_context.lineTo(px, py);
-                cur_context.stroke();
-                canvas_written = true
-                lastPosition.x = px;
-                lastPosition.y = py;
-                break
-            case "straight":
-                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                next_x = round(px), next_y = round(py)
-                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
-                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
-                else canvas_written = true
-                cur_context.beginPath();
-                cur_context.moveTo(prev_x, prev_y);
-                cur_context.lineTo(next_x, next_y);
-                cur_context.stroke();
-                cur_context.closePath();
-
-                sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
-                if (prev_x == next_x || prev_y == next_y || Math.abs(prev_x - next_x) == Math.abs(prev_y - next_y)) {
-                    const k = Math.max(sub_canvas.width, sub_canvas.height)
-                    sub_ctx.beginPath();
-                    sub_ctx.moveTo(next_x, next_y);
-                    sub_ctx.lineTo((next_x - prev_x) * k + prev_x, (next_y - prev_y) * k + prev_y);
-                    sub_ctx.stroke();
-                    sub_ctx.closePath();
-                }
-                break
-            case "rectangle":
-            case "fill_rectangle":
-            case "alpha_rectangle":
-                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                next_x = round(px), next_y = round(py)
-                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
-                if (prev_x == next_x || prev_y == next_y) { canvas_written = false; return }
-                else canvas_written = true
-                cur_context.beginPath();
-                cur_context.moveTo(prev_x, prev_y)
-                cur_context.lineTo(prev_x, next_y)
-                cur_context.lineTo(next_x, next_y)
-                cur_context.lineTo(next_x, prev_y)
-                cur_context.lineTo(prev_x, prev_y)
-                if (line_mode == "rectangle") cur_context.stroke()
-                else cur_context.fillRect(prev_x, prev_y, next_x - prev_x, next_y - prev_y);
-                cur_context.closePath();
-                break
-            case "circle":
-            case "fill_circle":
-                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                next_x = px, next_y = py
-                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
-                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
-                else canvas_written = true
-                let radius = round(Math.sqrt((prev_x - next_x) * (prev_x - next_x) + (prev_y - next_y) * (prev_y - next_y)))
-                cur_context.beginPath();
-                cur_context.arc(prev_x, prev_y, radius,
-                    0, 2 * Math.PI, false)
-                if (line_mode == "fill_circle") cur_context.fill()
-                else cur_context.stroke()
-                cur_context.closePath();
-                break
-            case "arrow":
-                prev_x = round(lastPosition.x), prev_y = round(lastPosition.y)
-                next_x = round(px), next_y = round(py)
-                cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
-                if (prev_x == next_x && prev_y == next_y) { canvas_written = false; return }
-                else canvas_written = true
-                cur_context.beginPath();
-                let w = next_x - prev_x, h = next_y - prev_y, aw = 0, ah = 0
-                const k = [3, 8, 13, 25, 50, 80]
-                if (Math.abs(prev_x - next_x) >= Math.abs(prev_y - next_y)) {
-                    h = k[Math.min(Math.floor(Math.abs(h) / 10), k.length - 1)]
-                    aw = h + 10
-                    ah = (Math.abs(aw) + 10) * (w / Math.abs(w))
-                    cur_context.moveTo(prev_x + w, prev_y)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - aw / 2)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y - h / 3)
-                    cur_context.lineTo(prev_x, prev_y - h / 3)
-                    cur_context.lineTo(prev_x, prev_y + h / 3)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + h / 3)
-                    cur_context.lineTo(prev_x + w - ah / 2, prev_y + aw / 2)
-                    cur_context.lineTo(prev_x + w, prev_y)
-                }
-                else {
-                    w = k[Math.min(Math.floor(Math.abs(w) / 10), k.length - 1)]
-                    aw = w + 10
-                    ah = (Math.abs(aw) + 10) * (h / Math.abs(h))
-                    cur_context.moveTo(prev_x, prev_y + h)
-                    cur_context.lineTo(prev_x - aw / 2, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x - w / 3, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x - w / 3, prev_y)
-                    cur_context.lineTo(prev_x + w / 3, prev_y)
-                    cur_context.lineTo(prev_x + w / 3, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x + aw / 2, prev_y + h - ah / 2)
-                    cur_context.lineTo(prev_x, prev_y + h)
-                }
-                cur_context.fill()
-                cur_context.closePath();
-                break
+        if (line_mode == "default") {
+            cur_context.moveTo(prevPosition.x, prevPosition.y);
+            cur_context.lineTo(px, py);
+            cur_context.stroke();
+            canvas_written = true
         }
+        else {
+            let first_x, first_y, cur_x, cur_y, prev_x, prev_y
+            first_x = round(firstPosition.x), first_y = round(firstPosition.y)
+            prev_x = round(prevPosition.x), prev_y = round(prevPosition.y)
+            cur_x = round(px), cur_y = round(py)
+            if (prev_x == cur_x && prev_y == cur_y) return
+            switch (line_mode) {
+                case "straight":
+                    cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                    if (first_x == cur_x && first_y == cur_y) { canvas_written = false; return }
+                    else canvas_written = true
+                    cur_context.beginPath();
+                    cur_context.moveTo(first_x, first_y);
+                    cur_context.lineTo(cur_x, cur_y);
+                    cur_context.stroke();
+
+                    if (grid_mode == "no-grid") sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
+                    if ((first_x == cur_x || first_y == cur_y || Math.abs(first_x - cur_x) == Math.abs(first_y - cur_y))
+                        && grid_mode == "no-grid") {
+                        const k = Math.max(sub_canvas.width, sub_canvas.height)
+                        sub_ctx.beginPath();
+                        sub_ctx.moveTo(cur_x, cur_y);
+                        sub_ctx.lineTo((cur_x - first_x) * k + first_x, (cur_y - first_y) * k + first_y);
+                        sub_ctx.stroke();
+                    }
+                    break
+                case "rectangle":
+                case "fill_rectangle":
+                case "alpha_rectangle":
+                    cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                    if (first_x == cur_x || first_y == cur_y) { canvas_written = false; return }
+                    else canvas_written = true
+                    cur_context.beginPath();
+                    cur_context.moveTo(first_x, first_y)
+                    cur_context.lineTo(first_x, cur_y)
+                    cur_context.lineTo(cur_x, cur_y)
+                    cur_context.lineTo(cur_x, first_y)
+                    cur_context.closePath()
+                    if (line_mode == "rectangle") cur_context.stroke()
+                    else cur_context.fillRect(first_x, first_y, cur_x - first_x, cur_y - first_y);
+                    break
+                case "circle":
+                case "fill_circle":
+                    cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                    let radius = Math.sqrt((first_x - cur_x) * (first_x - cur_x) + (first_y - cur_y) * (first_y - cur_y))
+                    if (first_x == cur_x && first_y == cur_y || radius == 0) { canvas_written = false; return }
+                    else canvas_written = true
+                    cur_context.beginPath();
+                    cur_context.arc(first_x, first_y, radius,
+                        0, 2 * Math.PI, false)
+                    cur_context.moveTo(first_x, first_y + 1)
+                    cur_context.arc(first_x, first_y, 1,
+                        0, 2 * Math.PI, false)
+                    if (line_mode == "fill_circle") cur_context.fill()
+                    else cur_context.stroke()
+                    break
+                case "arrow":
+                    cur_context.clearRect(0, 0, cur_canvas.width, cur_canvas.height)
+                    if (first_x == cur_x && first_y == cur_y) { canvas_written = false; return }
+                    else canvas_written = true
+                    cur_context.beginPath();
+                    let w = cur_x - first_x, h = cur_y - first_y, aw = 0, ah = 0
+                    const k = [3, 8, 13, 25, 50, 80]
+                    if (Math.abs(first_x - cur_x) >= Math.abs(first_y - cur_y)) {
+                        h = k[Math.min(Math.floor(Math.abs(h) / 10), k.length - 1)]
+                        aw = h + 10
+                        ah = (Math.abs(aw) + 10) * (w / Math.abs(w))
+                        cur_context.moveTo(first_x + w, first_y)
+                        cur_context.lineTo(first_x + w - ah / 2, first_y - aw / 2)
+                        cur_context.lineTo(first_x + w - ah / 2, first_y - h / 3)
+                        cur_context.lineTo(first_x, first_y - h / 3)
+                        cur_context.lineTo(first_x, first_y + h / 3)
+                        cur_context.lineTo(first_x + w - ah / 2, first_y + h / 3)
+                        cur_context.lineTo(first_x + w - ah / 2, first_y + aw / 2)
+                        cur_context.closePath()
+                    }
+                    else {
+                        w = k[Math.min(Math.floor(Math.abs(w) / 10), k.length - 1)]
+                        aw = w + 10
+                        ah = (Math.abs(aw) + 10) * (h / Math.abs(h))
+                        cur_context.moveTo(first_x, first_y + h)
+                        cur_context.lineTo(first_x - aw / 2, first_y + h - ah / 2)
+                        cur_context.lineTo(first_x - w / 3, first_y + h - ah / 2)
+                        cur_context.lineTo(first_x - w / 3, first_y)
+                        cur_context.lineTo(first_x + w / 3, first_y)
+                        cur_context.lineTo(first_x + w / 3, first_y + h - ah / 2)
+                        cur_context.lineTo(first_x + aw / 2, first_y + h - ah / 2)
+                        cur_context.closePath()
+                    }
+                    cur_context.fill()
+                    break
+            }
+        }
+        prevPosition.x = px;
+        prevPosition.y = py;
     }
 
     // マウスのドラッグを開始したらisDragのフラグをtrueにしてdraw関数内で
@@ -566,11 +635,10 @@ window.addEventListener('load', () => {
     // isDragのフラグをfalseにしてdraw関数内でお絵かき処理が中断されるようにする
     function dragEnd(event) {
         if (!cur_context) return
-        if (line_mode == "default") cur_context.closePath();
-        sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
+        if (grid_mode == "no-grid") sub_ctx.clearRect(0, 0, sub_canvas.width, sub_canvas.height)
 
-        lastPosition.x = null;
-        lastPosition.y = null;
+        firstPosition.x = null;
+        firstPosition.y = null;
         if (isDrag && line_color != "erase") create_new_canvas()
         isDrag = false;
     }
@@ -660,14 +728,14 @@ window.addEventListener('load', () => {
             mobile_canvas_ope = "set"
             transfer_mobile_canvase_to_cur_canvas()
         }
-        lastPosition.x = event.layerX
-        lastPosition.y = event.layerY
+        firstPosition.x = event.layerX
+        firstPosition.y = event.layerY
     }
     function mobile_canvas_dragEnd(event) {
         if (!isDrag) return
         isDrag = false
-        let dx = event.layerX - lastPosition.x
-        let dy = event.layerY - lastPosition.y
+        let dx = event.layerX - firstPosition.x
+        let dy = event.layerY - firstPosition.y
         let img = mobile_canvas_img
         switch (mobile_canvas_ope) {
             case "ch_scale_left":
@@ -691,8 +759,8 @@ window.addEventListener('load', () => {
             case "set":
                 break
         }
-        lastPosition.x = null;
-        lastPosition.y = null;
+        firstPosition.x = null;
+        firstPosition.y = null;
     }
     function mobile_canvas_move(event) {
         if (isDrag == false) {
@@ -726,8 +794,8 @@ window.addEventListener('load', () => {
         }
         else {
             let img = mobile_canvas_img
-            let dx = event.layerX - lastPosition.x
-            let dy = event.layerY - lastPosition.y
+            let dx = event.layerX - firstPosition.x
+            let dy = event.layerY - firstPosition.y
             let scale
             switch (mobile_canvas_ope) {
                 case "ch_scale_left":
