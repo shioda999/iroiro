@@ -39,4 +39,5 @@ td {
 .katex {
     font-family: KaTeX_Main, "Times New Roman", serif;
     font-size: 2em;
+    display: inline-flex;
 }

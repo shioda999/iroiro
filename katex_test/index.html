@@ -3,15 +3,11 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=0.75">
+  <meta name="viewport" content="width=device-width,initial-scale=0.5">
   <title>数式ビュワー</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
-    integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
   <link rel="stylesheet" type="text/css" href="../common/style.css">
   <link rel="stylesheet" type="text/css" href="./form_style.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
-    integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4"
-    crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -24,6 +20,11 @@
       for="paint_mode">Paint</label>
     <div class="tab-body">
       <div class="body1">
+        <select name="subject_button" id="subject_button"
+          style="margin-bottom: 10px; margin-left: 25px; height:25px; font-size: 15px;">
+          <option value="math" selected>数学</option>
+          <option value="english">英語</option>
+        </select>
         <input type="button" class="command_button" id="button_cases" value="連立{">
         <input type="button" class="command_button" id="button_align" value="整列">
         <input type="button" class="command_button" id="button_hspace" value="空白">

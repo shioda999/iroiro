@@ -1,13 +1,18 @@
 import { RGBColor } from './rgbcolor'
 import html2canvas from 'html2canvas'
+import katex from 'katex'
 
 const GRID_W = 20
+const katex_option = {
+    strict: false,
+    maxSize: 100,
+}
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_list = [], canvas_history = [[]], history_id = 0, canvas_written = false
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
-    let line_mode = "default", grid_mode = "no-grid"
+    let line_mode = "default", grid_mode = "no-grid", subject = "math"
     let mobile_canvas, mobile_ctx, mobile_canvas_ope, mobile_canvas_img, prev_img_w, mobile_img_x, mobile_img_y
 
     const reader = new FileReader()
@@ -16,7 +21,7 @@ window.addEventListener('load', () => {
 
     const text_form = document.getElementById("textform")
     const group = document.getElementById("draw_canvas")
-    const text_area = document.getElementById("text")
+    const html_text = document.getElementById("text")
     const menu = document.getElementById("floating_menu")
     const range = menu.children["move"]
     const thickness: any = document.getElementById("thickness")
@@ -26,6 +31,7 @@ window.addEventListener('load', () => {
     const auto_update = menu.children["auto_update"]
     const font_size = menu.children["font_size"]
     const colorcircle2 = document.getElementsByName("colorcircle")
+    const subject_button: any = document.getElementById("subject_button")
     const line_mode_button: any = document.getElementById("line_mode_button")
     const grid_mode_button: any = document.getElementById("grid_mode_button")
     const sub_canvas: any = document.getElementById("sub_canvas")
@@ -36,14 +42,18 @@ window.addEventListener('load', () => {
 
     function setup() {
         set_button_option()
-        auto_update.onclick = () => onClick()
-        font_size.addEventListener('change', () => { change_fontsize(), onClick() })
+        auto_update.onclick = () => render_text()
+        font_size.addEventListener('change', () => { change_fontsize(), render_text() })
         range.addEventListener('input', () => change_range())
         thickness.addEventListener('input', () => change_thickness())
         bright.addEventListener('input', () => change_bright())
         colorcircle2.forEach((e: any) => {
             e.addEventListener('input', () => change_color(e.value))
         })
+        subject_button.onchange = function () {
+            subject = subject_button.options[subject_button.selectedIndex].value
+            render_text()
+        }
         line_mode_button.onchange = function () {
             line_mode = line_mode_button.options[line_mode_button.selectedIndex].value
         }
@@ -69,7 +79,7 @@ window.addEventListener('load', () => {
             change_fontsize()
             if (form.text.value.length != len) pos++
             form.text.selectionEnd = form.text.selectionStart = pos
-            if (auto_update.checked) onClick()
+            if (auto_update.checked) render_text()
         }
         form.text.value = "a+b+c"
         window.onresize = () => { set_cur_canvas(); resize_sub_canvas(); }
@@ -78,18 +88,19 @@ window.addEventListener('load', () => {
         set_keyEvent()
         set_cur_canvas()
         group.style.pointerEvents = "none"
-        onClick()
+        render_text()
     }
     function set_textarea_size() {
         const textarea: any = document.getElementById("textarea")
+        const H = Math.min(document.documentElement.clientHeight, screen.availHeight) / 1.5
         if (is_PC) {
-            textarea.rows = Math.floor(document.documentElement.clientHeight - 70)
+            textarea.rows = Math.floor((H - 70) / parseInt(textarea.style.fontSize))
             textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 200) + "px"
         }
         else {
             textarea.style.fontSize = "30px"
             textarea.style.borderWidth = "2px"
-            textarea.rows = Math.floor(document.documentElement.clientHeight - 70)
+            textarea.rows = Math.floor((H - 70) / parseInt(textarea.style.fontSize))
             textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 10) + "px"
         }
     }
@@ -126,7 +137,7 @@ window.addEventListener('load', () => {
     }
 
     function set_button_option() {
-        document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) { form.text.value = ""; onClick() } })
+        document.getElementById("button_clear").addEventListener("click", () => { if (window.confirm("本当にテキストを全て削除しますか？")) { form.text.value = ""; render_text() } })
         document.getElementById("button_cases").addEventListener("click", () => add_str("\n\\begin{cases}\n", "\n\\end{cases}"))
         document.getElementById("button_align").addEventListener("click", () => add_str("\n\\begin{aligned}\n", "\n\\end{aligned}", true))
         document.getElementById("button_hspace").addEventListener("click", () => add_str("\\hspace{3em} "))
@@ -156,7 +167,7 @@ window.addEventListener('load', () => {
         form.text.value = pre + middle + after
         form.text.focus()
         form.text.selectionEnd = form.text.selectionStart = pre.length + middle.length
-        onClick()
+        render_text()
     }
     function load_img_from_url(url) {
         const img = new Image()
@@ -190,7 +201,7 @@ window.addEventListener('load', () => {
     function syntax_check() {
         let html, ok = true
         try {
-            html = katex.renderToString(form.text.value, {})
+            html = katex.renderToString(form.text.value, katex_option)
         }
         catch (error) {
             alert(error.message)
@@ -207,17 +218,17 @@ window.addEventListener('load', () => {
         }
         if (ok) alert("構文エラーはありませんでした。")
     }
-    function onClick() {
+    function render_text() {
         let text = henkan2(form.text.value)
         let html, ok = true
         try {
-            html = katex.renderToString(text, {}) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
+            html = katex.renderToString(text, katex_option) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
         }
         catch (error) {
             ok = false
         }
         if (ok) {
-            text_area.innerHTML = html
+            html_text.innerHTML = html
         }
     }
     function change_text_mode() {
@@ -227,7 +238,7 @@ window.addEventListener('load', () => {
         change_range()
         text_form.style.transition = "1s"
         group.style.pointerEvents = "none"
-        onClick()
+        render_text()
     }
     function change_paint_mode() {
         if (mode == "paint") return
@@ -241,17 +252,23 @@ window.addEventListener('load', () => {
         katex_rule.style.cssText = "font-size : " + font_size.value + "em"
     }
     function henkan2(str) {
-        str = str.replace(/\\$/, '')
-        str = str.replace(/\*/g, '\\times ')
-        str = str.replace(/\//g, '\\div ')
-        str = str.replace(/\\begin{cases}\n/g, '\\begin{cases}')
-        str = str.replace(/\\begin{aligned}\n/g, '\\begin{aligned}')
-        str = str.replace(/\.\n/g, '')
-        str = str.replace(/\n/g, '\\ \\\\\n')
-        str = str.replace(/>=/g, '\\geqq')
-        str = str.replace(/<=/g, '\\leqq')
-        str = str.replace(/\\vec2/g, '\\overrightarrow')
-        return str;
+        switch (subject) {
+            case "math":
+                str = str.replace(/\*/g, '\\times ')
+                str = str.replace(/\//g, '\\div ')
+                str = str.replace(/\\begin{([^}]+)}\n/g, '\\begin{$1}')
+                str = str.replace(/\.\n/g, '')
+                str = str.replace(/\n/g, '\\ \\\\\n')
+                str = str.replace(/>=/g, '\\geqq')
+                str = str.replace(/<=/g, '\\leqq')
+                str = str.replace(/\\vec2/g, '\\overrightarrow')
+                break
+            case "english":
+                str = str.replace(/([^\n]+)/g, '\\text{$1}')
+                str = str.replace(/\n/g, '\\ \\\\\n')
+                break
+        }
+        return str
     }
     function getRuleBySelector(sele) {
         var i, j, sheets, rules, rule = null;
@@ -333,7 +350,7 @@ window.addEventListener('load', () => {
         if (ret == "" || ret == null) return
         let html
         try {
-            html = katex.renderToString(ret)
+            html = katex.renderToString(ret, katex_option)
         }
         catch (error) {
             alert(error.message)
@@ -878,7 +895,9 @@ window.addEventListener('load', () => {
         mobile_ctx = null
         mobile_canvas_img = null
     }
-    function disp_mobile_img(img, x, y, scale = prev_img_w / img.width) {
+    function disp_mobile_img(img, x, y, scale?) {
+        if (img == undefined) return
+        if (scale == undefined) scale = prev_img_w / img.width
         let w = Math.floor(img.width * scale), h = Math.floor(img.height * scale)
         mobile_ctx.clearRect(0, 0, mobile_canvas.width, mobile_canvas.height)
         x = Math.floor(x), y = Math.floor(y)
