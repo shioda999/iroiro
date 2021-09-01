@@ -98,7 +98,7 @@ window.addEventListener('load', () => {
             textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 200) + "px"
         }
         else {
-            textarea.style.fontSize = "30px"
+            textarea.style.fontSize = "20px"
             textarea.style.borderWidth = "2px"
             textarea.rows = Math.floor((H - 70) / parseInt(textarea.style.fontSize))
             textarea.style.width = Math.floor(document.documentElement.clientWidth * (1 - parseInt(text_form.style.left) / 100 - 0.01) - 10) + "px"
