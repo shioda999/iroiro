@@ -29,16 +29,9 @@ export class Paint {
     private line_color = "black"
     private base_color = "black"
     private line_bright = 1
-    private line_alpha = 1
     private line_mode = "default"
     private grid_mode = "no-grid"
-    private mobile_canvas: any
-    private mobile_ctx: any
-    private mobile_canvas_ope
-    private mobile_canvas_img
-    private prev_img_w
-    private mobile_img_x
-    private mobile_img_y
+    private mobile = { canvas: null, ctx: null, ope: "", img: null, prev_img_w: 0, img_x: 0, img_y: 0 }
     private prevPosition = { x: null, y: null };
     private firstPosition = { x: null, y: null };
     private isDrag: boolean = false;
@@ -114,7 +107,7 @@ export class Paint {
     }
 
     private create_mobile_canvas(img, width) {
-        if (this.mobile_canvas) this.transfer_mobile_canvase_to_canvas()
+        if (this.mobile.canvas) this.transfer_mobile_canvase_to_canvas()
         let canvas = document.createElement("canvas")
         canvas.classList.add("canvas");
         canvas.width = document.documentElement.scrollWidth - 30
@@ -129,13 +122,13 @@ export class Paint {
         context.lineJoin = 'round'; // 丸みを帯びた線にする
         context.lineWidth = 1; // 線の太さ
         context.strokeStyle = "black"; // 線の色
-        this.mobile_canvas = canvas
-        this.mobile_ctx = context
-        this.mobile_canvas_img = img
-        this.prev_img_w = width
+        this.mobile.canvas = canvas
+        this.mobile.ctx = context
+        this.mobile.img = img
+        this.mobile.prev_img_w = width
 
-        let scale = this.prev_img_w / img.width
-        this.disp_mobile_img(img, this.mobile_img_x = 0, this.mobile_img_y = 0, scale)
+        let scale = this.mobile.prev_img_w / img.width
+        this.disp_mobile_img(img, this.mobile.img_x = 0, this.mobile.img_y = 0, scale)
     }
     private load_img_from_url(url) {
         const img = new Image()
@@ -201,33 +194,33 @@ export class Paint {
     }
     private mouse_dragStart = (event) => {
         const px = event.layerX, py = event.layerY
-        if (this.mobile_canvas) this.mobile_canvas_dragStart(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_dragStart(px, py)
         else this.dragStart(px, py)
     }
     private mouse_dragEnd = (event) => {
         const px = event.layerX, py = event.layerY
-        if (this.mobile_canvas) this.mobile_canvas_dragEnd(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_dragEnd(px, py)
         else this.dragEnd(px, py)
     }
     private mouse_dragging = (event) => {
         const px = event.layerX, py = event.layerY
-        if (this.mobile_canvas) this.mobile_canvas_move(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_move(px, py)
         else this.dragmove(px, py)
     }
     private touch_start = (event) => {
         const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
-        if (this.mobile_canvas) this.mobile_canvas_dragStart(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_dragStart(px, py)
         else this.dragStart(px, py)
     }
     private touch_end = (event) => {
         const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
-        if (this.mobile_canvas) this.mobile_canvas_dragEnd(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_dragEnd(px, py)
         else this.dragEnd(px, py)
     }
     private touch_move = (event) => {
         event.preventDefault();
         const px = event.changedTouches[0].pageX, py = event.changedTouches[0].pageY
-        if (this.mobile_canvas) this.mobile_canvas_move(px, py)
+        if (this.mobile.canvas) this.mobile_canvas_move(px, py)
         else this.dragmove(px, py)
     }
     private draw_grid() {
@@ -527,31 +520,34 @@ export class Paint {
     }
     private mobile_canvas_dragStart(px, py) {
         this.isDrag = true
-        let img = this.mobile_canvas_img
-        const k = Math.min(this.prev_img_w / 5, 15)
-        if (this.mobile_img_x + k < px && px < this.prev_img_w + this.mobile_img_x - k
-            && this.mobile_img_y + k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y - k) {
-            this.mobile_canvas_ope = "move"
+        let img = this.mobile.img
+        let prev_w = this.mobile.prev_img_w
+        let x = this.mobile.img_x
+        let y = this.mobile.img_y
+        const k = Math.min(this.mobile.prev_img_w / 5, 15)
+        if (x + k < px && px < prev_w + x - k
+            && y + k < py && py < img.height * prev_w / img.width + y - k) {
+            this.mobile.ope = "move"
         }
-        else if (this.prev_img_w + this.mobile_img_x - k < px && px < this.prev_img_w + this.mobile_img_x + k
-            && this.mobile_img_y - k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-            this.mobile_canvas_ope = "ch_scale_right"
+        else if (prev_w + x - k < px && px < prev_w + x + k
+            && y - k < py && py < img.height * prev_w / img.width + y + k) {
+            this.mobile.ope = "ch_scale_right"
         }
-        else if (this.mobile_img_x - k < px && px < this.mobile_img_x + k
-            && this.mobile_img_y - k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-            this.mobile_canvas_ope = "ch_scale_left"
+        else if (x - k < px && px < x + k
+            && y - k < py && py < img.height * prev_w / img.width + y + k) {
+            this.mobile.ope = "ch_scale_left"
         }
-        else if (this.mobile_img_x < px && px < this.prev_img_w + this.mobile_img_x
-            && this.mobile_img_y - k < py && py < this.mobile_img_y + k) {
-            this.mobile_canvas_ope = "ch_scale_top"
+        else if (x < px && px < prev_w + x
+            && y - k < py && py < y + k) {
+            this.mobile.ope = "ch_scale_top"
         }
-        else if (this.mobile_img_x < px && px < this.prev_img_w + this.mobile_img_x
-            && img.height * this.prev_img_w / img.width + this.mobile_img_y - k < py
-            && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-            this.mobile_canvas_ope = "ch_scale_bottom"
+        else if (x < px && px < prev_w + x
+            && img.height * prev_w / img.width + y - k < py
+            && py < img.height * prev_w / img.width + y + k) {
+            this.mobile.ope = "ch_scale_bottom"
         }
         else {
-            this.mobile_canvas_ope = "set"
+            this.mobile.ope = "set"
             this.transfer_mobile_canvase_to_canvas()
         }
         this.firstPosition.x = px
@@ -562,25 +558,25 @@ export class Paint {
         this.isDrag = false
         let dx = px - this.firstPosition.x
         let dy = py - this.firstPosition.y
-        let img = this.mobile_canvas_img
-        switch (this.mobile_canvas_ope) {
+        let img = this.mobile.img
+        switch (this.mobile.ope) {
             case "ch_scale_left":
-                this.prev_img_w -= dx
-                this.mobile_img_x += dx
+                this.mobile.prev_img_w -= dx
+                this.mobile.img_x += dx
                 break
             case "ch_scale_right":
-                this.prev_img_w += dx
+                this.mobile.prev_img_w += dx
                 break
             case "ch_scale_top":
-                this.prev_img_w -= dy * img.width / img.height
-                this.mobile_img_y += dy
+                this.mobile.prev_img_w -= dy * img.width / img.height
+                this.mobile.img_y += dy
                 break
             case "ch_scale_bottom":
-                this.prev_img_w += dy * img.width / img.height
+                this.mobile.prev_img_w += dy * img.width / img.height
                 break
             case "move":
-                this.mobile_img_x += dx
-                this.mobile_img_y += dy
+                this.mobile.img_x += dx
+                this.mobile.img_y += dy
                 break
             case "set":
                 break
@@ -589,91 +585,94 @@ export class Paint {
         this.firstPosition.y = null;
     }
     private mobile_canvas_move(px, py) {
+        let prev_w = this.mobile.prev_img_w
+        let x = this.mobile.img_x
+        let y = this.mobile.img_y
         if (this.isDrag == false) {
-            let img = this.mobile_canvas_img
-            const k = Math.min(this.prev_img_w / 5, 15)
-            if (this.mobile_img_x + k < px && px < this.prev_img_w + this.mobile_img_x - k
-                && this.mobile_img_y + k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y - k) {
-                this.mobile_canvas.style.cursor = "move"
+            let img = this.mobile.img
+            const k = Math.min(prev_w / 5, 15)
+            if (x + k < px && px < prev_w + this.mobile.img_x - k
+                && y + k < py && py < img.height * prev_w / img.width + y - k) {
+                this.mobile.canvas.style.cursor = "move"
             }
-            else if (this.prev_img_w + this.mobile_img_x - k < px && px < this.prev_img_w + this.mobile_img_x + k
-                && this.mobile_img_y - k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-                this.mobile_canvas.style.cursor = "ew-resize"
+            else if (prev_w + x - k < px && px < prev_w + x + k
+                && y - k < py && py < img.height * prev_w / img.width + y + k) {
+                this.mobile.canvas.style.cursor = "ew-resize"
             }
-            else if (this.mobile_img_x - k < px && px < this.mobile_img_x + k
-                && this.mobile_img_y - k < py && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-                this.mobile_canvas.style.cursor = "ew-resize"
+            else if (x - k < px && px < x + k
+                && y - k < py && py < img.height * prev_w / img.width + y + k) {
+                this.mobile.canvas.style.cursor = "ew-resize"
             }
-            else if (this.mobile_img_x < px && px < this.prev_img_w + this.mobile_img_x
-                && this.mobile_img_y - k < py && py < this.mobile_img_y + k) {
-                this.mobile_canvas.style.cursor = "ns-resize"
+            else if (x < px && px < prev_w + x
+                && y - k < py && py < y + k) {
+                this.mobile.canvas.style.cursor = "ns-resize"
             }
-            else if (this.mobile_img_x < px && px < this.prev_img_w + this.mobile_img_x
-                && img.height * this.prev_img_w / img.width + this.mobile_img_y - k < py
-                && py < img.height * this.prev_img_w / img.width + this.mobile_img_y + k) {
-                this.mobile_canvas.style.cursor = "ns-resize"
+            else if (x < px && px < prev_w + x
+                && img.height * prev_w / img.width + y - k < py
+                && py < img.height * prev_w / img.width + y + k) {
+                this.mobile.canvas.style.cursor = "ns-resize"
             }
             else {
-                this.mobile_canvas_ope = "set"
-                this.mobile_canvas.style.cursor = "default"
+                this.mobile.ope = "set"
+                this.mobile.canvas.style.cursor = "default"
             }
         }
         else {
-            let img = this.mobile_canvas_img
+            let img = this.mobile.img
             let dx = px - this.firstPosition.x
             let dy = py - this.firstPosition.y
             let scale
-            switch (this.mobile_canvas_ope) {
+            switch (this.mobile.ope) {
                 case "ch_scale_left":
-                    scale = (this.prev_img_w - dx) / img.width
-                    this.disp_mobile_img(img, this.mobile_img_x + dx, this.mobile_img_y, scale)
+                    scale = (prev_w - dx) / img.width
+                    this.disp_mobile_img(img, x + dx, y, scale)
                     break
                 case "ch_scale_right":
-                    scale = (this.prev_img_w + dx) / img.width
-                    this.disp_mobile_img(img, this.mobile_img_x, this.mobile_img_y, scale)
+                    scale = (prev_w + dx) / img.width
+                    this.disp_mobile_img(img, x, y, scale)
                     break
                 case "ch_scale_top":
-                    scale = (this.prev_img_w * img.height / img.width - dy) / img.height
-                    this.disp_mobile_img(img, this.mobile_img_x, this.mobile_img_y + dy, scale)
+                    scale = (prev_w * img.height / img.width - dy) / img.height
+                    this.disp_mobile_img(img, x, y + dy, scale)
                     break
                 case "ch_scale_bottom":
-                    scale = (this.prev_img_w * img.height / img.width + dy) / img.height
-                    this.disp_mobile_img(img, this.mobile_img_x, this.mobile_img_y, scale)
+                    scale = (prev_w * img.height / img.width + dy) / img.height
+                    this.disp_mobile_img(img, x, y, scale)
                     break
                 case "move":
-                    this.disp_mobile_img(img, this.mobile_img_x + dx, this.mobile_img_y + dy)
+                    this.disp_mobile_img(img, x + dx, y + dy)
                     break
             }
         }
     }
     private transfer_mobile_canvase_to_canvas() {
-        let img = this.mobile_canvas_img
-        this.context.drawImage(img, this.mobile_img_x, this.mobile_img_y,
-            this.prev_img_w, img.height * this.prev_img_w / img.width)
+        let img = this.mobile.img
+        this.context.drawImage(img, this.mobile.img_x, this.mobile.img_y,
+            this.mobile.prev_img_w, img.height * this.mobile.prev_img_w / img.width)
         this.remove_mobile_canvas()
         this.canvas_written = true
         this.create_new_canvas()
     }
     private remove_mobile_canvas() {
-        this.parent.removeChild(this.mobile_canvas)
-        this.mobile_canvas = null
-        this.mobile_ctx = null
-        this.mobile_canvas_img = null
+        this.parent.removeChild(this.mobile.canvas)
+        this.mobile.canvas = null
+        this.mobile.ctx = null
+        this.mobile.img = null
     }
     private disp_mobile_img(img, x, y, scale?) {
         if (img == undefined) return
-        if (scale == undefined) scale = this.prev_img_w / img.width
+        if (scale == undefined) scale = this.mobile.prev_img_w / img.width
         let w = Math.floor(img.width * scale), h = Math.floor(img.height * scale)
-        this.mobile_ctx.clearRect(0, 0, this.mobile_canvas.width, this.mobile_canvas.height)
+        this.mobile.ctx.clearRect(0, 0, this.mobile.canvas.width, this.mobile.canvas.height)
         x = Math.floor(x), y = Math.floor(y)
-        this.mobile_ctx.drawImage(img, x, y, w, h)
-        this.mobile_ctx.beginPath()
-        this.mobile_ctx.moveTo(x, y)
-        this.mobile_ctx.lineTo(x + w, y)
-        this.mobile_ctx.lineTo(x + w, y + h)
-        this.mobile_ctx.lineTo(x, y + h)
-        this.mobile_ctx.closePath()
-        this.mobile_ctx.stroke()
+        this.mobile.ctx.drawImage(img, x, y, w, h)
+        this.mobile.ctx.beginPath()
+        this.mobile.ctx.moveTo(x, y)
+        this.mobile.ctx.lineTo(x + w, y)
+        this.mobile.ctx.lineTo(x + w, y + h)
+        this.mobile.ctx.lineTo(x, y + h)
+        this.mobile.ctx.closePath()
+        this.mobile.ctx.stroke()
     }
     private change_thickness() {
         const thick_table = [1, 2, 3, 5, 7, 9, 10, 20, 30, 50]
