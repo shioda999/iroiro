@@ -7,9 +7,10 @@ const katex_option = {
     strict: false,
     maxSize: 100,
 }
+const katex_instance = katex
 let loading = false
 
-setTimeout(() => { if (!loading) document.getElementById("loading-icon").hidden = false }, 100)
+setTimeout(() => { if (!loading) document.getElementById("loading-icon").hidden = false }, 10)
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_written = false
@@ -206,7 +207,7 @@ window.addEventListener('load', () => {
     function syntax_check() {
         let html, ok = true
         try {
-            html = katex.renderToString(form.text.value, katex_option)
+            html = katex_instance.renderToString(form.text.value, katex_option)
         }
         catch (error) {
             alert(error.message)
@@ -227,7 +228,7 @@ window.addEventListener('load', () => {
         let text = henkan2(form.text.value)
         let html, ok = true
         try {
-            html = katex.renderToString(text, katex_option) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
+            html = katex_instance.renderToString(text, katex_option) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
         }
         catch (error) {
             ok = false
@@ -363,7 +364,7 @@ window.addEventListener('load', () => {
         if (ret == "" || ret == null) return
         let html
         try {
-            html = katex.renderToString(ret, katex_option)
+            html = katex_instance.renderToString(ret, katex_option)
         }
         catch (error) {
             alert(error.message)
