@@ -1,6 +1,5 @@
 import { RGBColor } from './rgbcolor'
 import html2canvas from 'html2canvas'
-import katex from 'katex'
 
 const GRID_W = 20
 const katex_option = {
