@@ -11,6 +11,7 @@ export class Paint {
     private parent = document.getElementById("draw_canvas")
     private font_size: any = document.getElementById("font_size")
     private sub_canvas: any = document.getElementById("sub_canvas")
+    private sub_ctx = this.sub_canvas.getContext("2d")
     private thickness: any = document.getElementById("thickness")
     private thickness_label: any = document.getElementById("thickness_label")
     private bright: any = document.getElementById("bright")
@@ -20,16 +21,11 @@ export class Paint {
     private grid_mode_button: any = document.getElementById("grid_mode_button")
     private upload_form: any = document.getElementById("upload_button")
 
-    private sub_ctx = this.sub_canvas.getContext("2d")
     private canvas: any
     private context: any
     private canvas_written: boolean = false
     private canvas_history: ManageHistory
-    private line_thickness = 5
-    private line_color = "black"
-    private base_color = "black"
-    private line_bright = 1
-    private line_mode = "default"
+    private line = { thickness: 3, color: "black", base_color: "black", bright: 1, mode: "default" }
     private grid_mode = "no-grid"
     private mobile = { canvas: null, ctx: null, ope: "", img: null, prev_img_w: 0, img_x: 0, img_y: 0 }
     private prevPosition = { x: null, y: null };
@@ -44,7 +40,7 @@ export class Paint {
             e.addEventListener('input', () => this.change_color(e.value))
         })
         this.line_mode_button.onchange = () => {
-            this.line_mode = this.line_mode_button.options[this.line_mode_button.selectedIndex].value
+            this.line.mode = this.line_mode_button.options[this.line_mode_button.selectedIndex].value
         }
         this.grid_mode_button.onchange = () => {
             this.grid_mode = this.grid_mode_button.options[this.grid_mode_button.selectedIndex].value
@@ -64,16 +60,16 @@ export class Paint {
 
         this.set_initial_value()
     }
-    public onresize = () => {
-        this.set_canvas()
-        this.resize_sub_canvas()
-    }
     private set_initial_value() {
         this.thickness.value = 3
         this.change_thickness()
         this.change_color("black")
         this.resize_sub_canvas()
         this.set_canvas()
+    }
+    public onresize = () => {
+        this.set_canvas()
+        this.resize_sub_canvas()
     }
     private set_pointer_evens(element) {
         if (is_PC) {
@@ -314,11 +310,11 @@ export class Paint {
         if (!this.isDrag) {
             return;
         }
-        if (this.line_color == "erase") {
+        if (this.line.color == "erase") {
             this.erase(px, py)
             return
         }
-        if (this.line_mode == "fill") {
+        if (this.line.mode == "fill") {
             if (this.firstPosition.x === null || this.firstPosition.y === null) this.my_fill(px, py)
             this.firstPosition.x = px
             this.firstPosition.y = py
@@ -330,17 +326,17 @@ export class Paint {
             this.firstPosition.y = this.prevPosition.y = py
             this.context.lineCap = 'round'; // 丸みを帯びた線にする
             this.context.lineJoin = 'round'; // 丸みを帯びた線にする
-            this.context.lineWidth = this.line_thickness; // 線の太さ
-            this.context.strokeStyle = this.line_color; // 線の色
-            this.context.fillStyle = this.line_color; // 線の色
-            if (this.line_mode == "default") {
+            this.context.lineWidth = this.line.thickness; // 線の太さ
+            this.context.strokeStyle = this.line.color; // 線の色
+            this.context.fillStyle = this.line.color; // 線の色
+            if (this.line.mode == "default") {
                 this.context.beginPath();
             }
-            if (this.line_mode == "alpha_rectangle") {
+            if (this.line.mode == "alpha_rectangle") {
                 this.context.fillStyle = this.context.fillStyle.substring(0, 7) + "50"
             }
         }
-        if (this.line_mode == "default") {
+        if (this.line.mode == "default") {
             this.context.moveTo(this.prevPosition.x, this.prevPosition.y);
             this.context.lineTo(px, py);
             this.context.stroke();
@@ -352,7 +348,7 @@ export class Paint {
             prev_x = round(this.prevPosition.x), prev_y = round(this.prevPosition.y)
             cur_x = round(px), cur_y = round(py)
             if (prev_x == cur_x && prev_y == cur_y) return
-            switch (this.line_mode) {
+            switch (this.line.mode) {
                 case "straight":
                     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
                     if (first_x == cur_x && first_y == cur_y) { this.canvas_written = false; return }
@@ -384,7 +380,7 @@ export class Paint {
                     this.context.lineTo(cur_x, cur_y)
                     this.context.lineTo(cur_x, first_y)
                     this.context.closePath()
-                    if (this.line_mode == "rectangle") this.context.stroke()
+                    if (this.line.mode == "rectangle") this.context.stroke()
                     else this.context.fillRect(first_x, first_y, cur_x - first_x, cur_y - first_y);
                     break
                 case "circle":
@@ -399,7 +395,7 @@ export class Paint {
                     this.context.moveTo(first_x, first_y + 1)
                     this.context.arc(first_x, first_y, 1,
                         0, 2 * Math.PI, false)
-                    if (this.line_mode == "fill_circle") this.context.fill()
+                    if (this.line.mode == "fill_circle") this.context.fill()
                     else this.context.stroke()
                     break
                 case "arrow":
@@ -457,7 +453,7 @@ export class Paint {
 
         this.firstPosition.x = null;
         this.firstPosition.y = null;
-        if (this.isDrag && this.line_color != "erase") this.create_new_canvas()
+        if (this.isDrag && this.line.color != "erase") this.create_new_canvas()
         this.isDrag = false;
     }
     private flood_fill(img, dist, px, py, rep_color) {
@@ -496,7 +492,7 @@ export class Paint {
         }
     }
     private get_colorValue() {
-        const c = this.line_color
+        const c = this.line.color
         return [c.slice(1, 3), c.slice(3, 5), c.slice(5, 7), c.slice(7, 9)].map(function (str) {
             return parseInt(str, 16);
         });
@@ -676,16 +672,16 @@ export class Paint {
     }
     private change_thickness() {
         const thick_table = [1, 2, 3, 5, 7, 9, 10, 20, 30, 50]
-        this.line_thickness = thick_table[this.thickness.value - 1]
-        this.thickness_label.innerHTML = "線の太さ：" + this.line_thickness
+        this.line.thickness = thick_table[this.thickness.value - 1]
+        this.thickness_label.innerHTML = "線の太さ：" + this.line.thickness
     }
     private change_bright() {
-        this.line_bright = this.bright.value / 10
-        this.bright_label.innerHTML = "明度：" + this.line_bright
+        this.line.bright = this.bright.value / 10
+        this.bright_label.innerHTML = "明度：" + this.line.bright
         this.update_linecolor()
     }
     private change_color(color) {
-        this.base_color = color
+        this.line.base_color = color
         this.update_linecolor()
     }
     private toHex(val) {
@@ -697,14 +693,14 @@ export class Paint {
         else return Math.round(255 * (k - 1) + val * (2 - k))
     }
     private update_linecolor() {
-        if (this.base_color == "erase") {
-            this.line_color = "erase"
+        if (this.line.base_color == "erase") {
+            this.line.color = "erase"
             return
         }
-        let c = RGBColor(this.base_color)
-        c[0] = this.calc_color(c[0], this.line_bright)
-        c[1] = this.calc_color(c[1], this.line_bright)
-        c[2] = this.calc_color(c[2], this.line_bright)
-        this.line_color = "#" + this.toHex(c[0]) + this.toHex(c[1]) + this.toHex(c[2]) + this.toHex(255)
+        let c = RGBColor(this.line.base_color)
+        c[0] = this.calc_color(c[0], this.line.bright)
+        c[1] = this.calc_color(c[1], this.line.bright)
+        c[2] = this.calc_color(c[2], this.line.bright)
+        this.line.color = "#" + this.toHex(c[0]) + this.toHex(c[1]) + this.toHex(c[2]) + this.toHex(255)
     }
 }

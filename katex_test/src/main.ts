@@ -1,4 +1,3 @@
-import { ManageHistory } from './managehistory'
 import { GRID_W, katex_option, katex_instance, is_PC, Global } from './global'
 import { Paint } from './paint'
 
