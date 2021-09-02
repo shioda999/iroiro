@@ -8,9 +8,6 @@ const katex_option = {
     maxSize: 100,
 }
 const katex_instance = katex
-let loading = false
-
-setTimeout(() => { if (!loading) document.getElementById("loading-icon").hidden = false }, 10)
 
 window.addEventListener('load', () => {
     let cur_canvas, cur_context, canvas_written = false
@@ -93,7 +90,6 @@ window.addEventListener('load', () => {
         set_cur_canvas()
         group.style.pointerEvents = "none"
         render_text()
-        loading = true
         document.getElementById("loading-icon").remove()
     }
     function set_textarea_size() {
