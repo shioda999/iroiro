@@ -1,14 +1,18 @@
 import { RGBColor } from './rgbcolor'
 import html2canvas from 'html2canvas'
+import { ManageHistory } from './managehistory'
 
 const GRID_W = 20
 const katex_option = {
     strict: false,
     maxSize: 100,
 }
+let loading = false
+
+setTimeout(() => { if (!loading) document.getElementById("loading-icon").hidden = false }, 100)
 
 window.addEventListener('load', () => {
-    let cur_canvas, cur_context, canvas_list = [], canvas_history = [[]], history_id = 0, canvas_written = false
+    let cur_canvas, cur_context, canvas_written = false
     let line_thickness = 5, line_color = "black", base_color = "black", line_bright = 1, line_alpha = 1
     let mode: "text" | "paint" = "text"
     let line_mode = "default", grid_mode = "no-grid", subject = "math"
@@ -88,6 +92,8 @@ window.addEventListener('load', () => {
         set_cur_canvas()
         group.style.pointerEvents = "none"
         render_text()
+        loading = true
+        document.getElementById("loading-icon").remove()
     }
     function set_textarea_size() {
         const textarea: any = document.getElementById("textarea")
@@ -151,7 +157,7 @@ window.addEventListener('load', () => {
         document.getElementById("paint_chara").addEventListener("click", () => paint_chara())
         document.getElementById("paint_upload").addEventListener("click", () => paint_upload())
         document.getElementById("paint_undo").addEventListener("click", () => paint_undo())
-        document.getElementById("paint_do").addEventListener("click", () => paint_do())
+        document.getElementById("paint_do").addEventListener("click", () => paint_redo())
         document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) erase_all_canvas() })
     }
     function add_str(str1, str2 = "", flag = false) {
@@ -253,6 +259,7 @@ window.addEventListener('load', () => {
     function henkan2(str) {
         switch (subject) {
             case "math":
+                str = str.replace(/ /g, '\\hspace{0.5em}')
                 str = str.replace(/\*/g, '\\times ')
                 str = str.replace(/\//g, '\\div ')
                 str = str.replace(/\\begin{([^}]+)}\n/g, '\\begin{$1}')
@@ -264,6 +271,11 @@ window.addEventListener('load', () => {
                 break
             case "english":
                 str = str.replace(/([^\n]+)/g, '\\text{$1}')
+                str = str.replace(/\n/g, '\\ \\\\\n')
+                break
+            case "chemistry":
+                str = str.replace(/ /g, '\\hspace{0.5em}')
+                str = str.replace(/([^\n]+)/g, '\\mathrm{$1}')
                 str = str.replace(/\n/g, '\\ \\\\\n')
                 break
         }
@@ -327,23 +339,25 @@ window.addEventListener('load', () => {
         line_color = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]) + toHex(255)
     }
     function erase_all_canvas() {
-        set_canvases([])
-        canvas_history.push(canvas_list.concat())
-        history_id++
+        canvas_history.erase_all()
     }
     function erase_canvas(i) {
-        group.removeChild(canvas_list[i])
-        canvas_list.splice(i, 1)
-        canvas_history.push(canvas_list.concat())
-        history_id++
+        canvas_history.erase_byid(i)
     }
-    function set_canvases(new_a) {
-        let rm = canvas_list.filter(i => new_a.indexOf(i) == -1)
-        let ad = new_a.filter(i => canvas_list.indexOf(i) == -1)
+    function paint_undo() {
+        canvas_history.undo()
+    }
+    function paint_redo() {
+        canvas_history.redo()
+    }
+    const update_canvases = (prev, now) => {
+        let rm = prev.filter(i => now.indexOf(i) == -1)
+        let ad = now.filter(i => prev.indexOf(i) == -1)
         rm.forEach((e) => group.removeChild(e))
         ad.forEach((e) => group.appendChild(e))
-        canvas_list = new_a.concat()
     }
+    const canvas_history = new ManageHistory(update_canvases)
+
     function paint_chara() {
         const ret = window.prompt("表示したい文字を入力してください。")
         if (ret == "" || ret == null) return
@@ -374,16 +388,6 @@ window.addEventListener('load', () => {
     }
     function paint_upload() {
         upload_form.click()
-    }
-    function paint_undo() {
-        if (history_id <= 0) return
-        set_canvases(canvas_history[history_id - 1])
-        history_id--
-    }
-    function paint_do() {
-        if (history_id >= canvas_history.length - 1) return
-        set_canvases(canvas_history[history_id + 1])
-        history_id++
     }
     function resize_sub_canvas() {
         sub_canvas.width = document.documentElement.scrollWidth - 30;
@@ -448,11 +452,8 @@ window.addEventListener('load', () => {
     }
     function create_new_canvas() {
         if (!canvas_written) return
-        canvas_list.push(cur_canvas)
-        history_id++
         canvas_written = false
-        canvas_history.length = history_id + 1
-        canvas_history[history_id] = canvas_list.concat()
+        canvas_history.push(cur_canvas)
         set_cur_canvas()
     }
     function draw_grid() {
@@ -536,8 +537,9 @@ window.addEventListener('load', () => {
         }
         const k = 2
         const dx = [0, k, 0, -k, 0], dy = [0, 0, k, 0, -k]
-        for (let i = canvas_list.length - 1; i >= 0; i--) {
-            const context = canvas_list[i].getContext("2d")
+        const canvases = canvas_history.get()
+        for (let i = canvases.length - 1; i >= 0; i--) {
+            const context = canvases[i].getContext("2d")
             for (let j = 0; j < 5; j++) {
                 const color = context.getImageData(x + dx[j], y + dy[j], 1, 1).data
                 if (color[0] != 0 || color[1] != 0 || color[2] != 0 || color[3] != 0) {
@@ -754,7 +756,7 @@ window.addEventListener('load', () => {
         new_canvas.width = cur_canvas.width;
         new_canvas.height = cur_canvas.height;
         let ctx = new_canvas.getContext("2d")
-        canvas_history[history_id].forEach((c) => {
+        canvas_history.get().forEach((c) => {
             ctx.drawImage(c, 0, 0, c.width, c.height);
         })
         return ctx.getImageData(0, 0, cur_canvas.width, cur_canvas.height)
@@ -906,9 +908,8 @@ window.addEventListener('load', () => {
         mobile_ctx.lineTo(x + w, y)
         mobile_ctx.lineTo(x + w, y + h)
         mobile_ctx.lineTo(x, y + h)
-        mobile_ctx.lineTo(x, y)
-        mobile_ctx.stroke()
         mobile_ctx.closePath()
+        mobile_ctx.stroke()
     }
 });
 
