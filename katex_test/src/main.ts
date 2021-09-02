@@ -21,6 +21,7 @@ window.addEventListener('load', () => {
     const katex_rule = getRuleBySelector('.katex')
 
     const text_form = document.getElementById("textform")
+    const textarea: any = document.getElementById("textarea")
     const group = document.getElementById("draw_canvas")
     const html_text = document.getElementById("text")
     const menu = document.getElementById("floating_menu")
@@ -68,20 +69,13 @@ window.addEventListener('load', () => {
         reader.onload = () => {
             load_img_from_url(reader.result)
         }
+        textarea.addEventListener("input", () => render_text())
 
         thickness.value = 3
         change_fontsize()
         change_range()
         change_thickness()
         change_color("black")
-        document.getElementById("button_menu").onclick = form.onkeyup = () => {
-            let pos = form.text.selectionStart
-            let len = form.text.value.length
-            change_fontsize()
-            if (form.text.value.length != len) pos++
-            form.text.selectionEnd = form.text.selectionStart = pos
-            if (auto_update.checked) render_text()
-        }
         form.text.value = "a+b+c"
         window.onresize = () => { set_cur_canvas(); resize_sub_canvas(); }
         resize_sub_canvas()
@@ -93,7 +87,6 @@ window.addEventListener('load', () => {
         document.getElementById("loading-icon").remove()
     }
     function set_textarea_size() {
-        const textarea: any = document.getElementById("textarea")
         const H = Math.min(document.documentElement.clientHeight, screen.availHeight) / 1.5
         if (is_PC) {
             textarea.rows = Math.floor((H - 70) / parseInt(textarea.style.fontSize))
