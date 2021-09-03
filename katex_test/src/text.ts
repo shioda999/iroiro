@@ -117,6 +117,7 @@ export class TextMode {
     }
     private render_text() {
         let text = this.henkan2(this.form.text.value)
+        console.log(text)
         let html, ok = true
         try {
             html = katex_instance.renderToString(text, katex_option) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
@@ -131,7 +132,9 @@ export class TextMode {
     private henkan2(str) {
         switch (this.subject) {
             case "math":
-                str = str.replace(/[^\\] /g, '$1\\hspace{0.5em}')
+                str = str.replace(/(\\\w*) /g, '$1\\___temp')
+                str = str.replace(/ /g, '$1\\hspace{0.5em}')
+                str = str.replace(/\\___temp/g, ' ')
                 str = str.replace(/\*/g, '\\times ')
                 str = str.replace(/\//g, '\\div ')
                 str = str.replace(/\\begin{([^}]+)}\n/g, '\\begin{$1}')
@@ -146,7 +149,9 @@ export class TextMode {
                 str = str.replace(/\n/g, '\\ \\\\\n')
                 break
             case "chemistry":
-                str = str.replace(/[^\\] /g, '$1\\hspace{0.5em}')
+                str = str.replace(/(\\\w*) /g, '$1\\___temp')
+                str = str.replace(/ /g, '$1\\hspace{0.5em}')
+                str = str.replace(/\\___temp/g, ' ')
                 str = str.replace(/([^\n]+)/g, '\\mathrm{$1}')
                 str = str.replace(/\n/g, '\\ \\\\\n')
                 break

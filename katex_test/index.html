@@ -21,6 +21,8 @@
       for="text_mode">Text</label>
     <input type="radio" id="paint_mode" class="radio" name="tab"><label class="tab-title title2"
       for="paint_mode">Paint</label>
+    <input type="radio" id="other_mode" class="radio" name="tab"><label class="tab-title title3"
+      for="other_mode">Other</label>
     <div class="tab-body">
       <div class="body1">
         <select name="subject_button" id="subject_button"
@@ -104,6 +106,10 @@
         <input type="button" class="command_button" id="paint_undo" value="戻る">
         <input type="button" class="command_button" id="paint_do" value="次">
         <input type="button" class="command_button" id="paint_clear" value="全消し">
+      </div>
+      <div class="body3" id="other_menu">
+        <label for="textarea_size" id="textarea_size_label" style="font-size: 14px; display: flex;">フォント</label>
+        <input type="number" id="textarea_size" value="14" style="width: 50px;margin-left: 100px;">
       </div>
     </div>
   </div>

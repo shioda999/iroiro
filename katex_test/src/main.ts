@@ -12,7 +12,6 @@ window.addEventListener('load', () => {
 
     function setup() {
         set_tabEvents()
-        //set_keyEvent()
         window.onresize = paint.onresize
         canvas_parent.style.pointerEvents = "none"
         document.getElementById("loading-icon").remove()
@@ -33,35 +32,4 @@ window.addEventListener('load', () => {
         canvas_parent.style.pointerEvents = "auto"
         text.change_mode()
     }
-    /*function set_keyEvent() {
-        document.addEventListener("keydown", event => {
-            //console.log("down" + event.key)
-            switch (event.key) {
-                case "ArrowRight":
-                    disp_mobile_img(mobile_canvas_img, ++mobile_img_x, mobile_img_y)
-                    break
-                case "ArrowLeft":
-                    disp_mobile_img(mobile_canvas_img, --mobile_img_x, mobile_img_y)
-                    break
-                case "ArrowUp":
-                    disp_mobile_img(mobile_canvas_img, mobile_img_x, --mobile_img_y)
-                    break
-                case "ArrowDown":
-                    disp_mobile_img(mobile_canvas_img, mobile_img_x, ++mobile_img_y)
-                    break
-            }
-        })
-        document.addEventListener("keyup", event => {
-            //console.log("up:" + event.key)
-            switch (event.key) {
-                case "Shift":
-                    if (line_mode == "default") line_mode = "straight"
-                    else if (line_mode == "straight") line_mode = "default"
-                    break
-                case "Backspace":
-                    if (mobile_canvas) remove_mobile_canvas()
-                    break
-            }
-        })
-    }*/
 });

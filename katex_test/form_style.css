@@ -60,6 +60,10 @@ rgb(127, 194, 239);
     border: 2px solid 
 rgb(214, 133, 176);
 }
+.title3, .body3 {
+    border: 2px solid 
+rgba(133, 235, 175);
+}
 .tab-title {
     border-bottom: none;
     padding: .3em .5em;
@@ -86,7 +90,7 @@ rgb(214, 133, 176);
     flex-wrap: wrap;
     position: fixed;
     z-index: 9999;
-    width: 150px;
+    width: 180px;
     top: 10px;
     right:10px;
 }
@@ -138,12 +142,19 @@ rgba(190, 224, 245);
     background: 
 rgba(235, 194, 215);
 }
+.add-control #other_mode:checked ~ .title3 {
+    background: 
+rgba(194, 245, 215);
+}
 
 /* tabs control */
 .add-control #text_mode:checked ~ .tab-body > .body1 {
     display: block;
 }
 .add-control #paint_mode:checked ~ .tab-body > .body2 {
+    display: block;
+}
+.add-control #other_mode:checked ~ .tab-body > .body3 {
     display: block;
 }
 input[type="range"] {
