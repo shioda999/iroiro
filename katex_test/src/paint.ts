@@ -3,7 +3,7 @@ import { Draw } from './draw'
 import { Chara } from './chara'
 import { Img } from './img'
 
-export class Paint {
+export class PaintMode {
     private draw = new Draw()
     private reader = new FileReader()
     private font_size: any = document.getElementById("font_size")
@@ -17,9 +17,6 @@ export class Paint {
     private upload_form: any = document.getElementById("upload_button")
     private img: Img
     private chara: Chara
-
-    private mobile = { canvas: null, ctx: null, ope: "", img: null, prev_img_w: 0, img_x: 0, img_y: 0 }
-    private isDrag: boolean = false;
 
     constructor() {
         this.thickness.addEventListener('input', () => this.change_thickness())
