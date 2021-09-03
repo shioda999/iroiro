@@ -9,7 +9,7 @@ export class MobileCanvas {
     private ope: string = ""
     private isDrag: boolean = false
     private firstPosition = { x: null, y: null };
-    constructor(img, width, private drawInstance) {
+    constructor(img, width, private drawInstance, private release_callback) {
         this.canvas = new Canvas(this.dragStart, this.dragEnd, this.move)
         const context = this.canvas.context
         context.setLineDash([3, 3]);
@@ -30,6 +30,7 @@ export class MobileCanvas {
         this.canvas.release()
         this.drawInstance.canvas_written = true
         this.drawInstance.create_new_canvas()
+        this.release_callback()
     }
     private disp_img(x, y, scale?) {
         const img = this.img

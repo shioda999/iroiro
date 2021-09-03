@@ -1,4 +1,4 @@
-import { GRID_W, katex_option, katex_instance, is_PC, Global } from './global'
+import { katex_option, katex_instance, is_PC, Global } from './global'
 import { Paint } from './paint'
 
 window.addEventListener('load', () => {
@@ -7,7 +7,7 @@ window.addEventListener('load', () => {
     const form = document["form"]
     const katex_rule = getRuleBySelector('.katex')
 
-    const canvas_parent = document.getElementById("text")
+    const canvas_parent = document.getElementById("canvas_parent")
     const text_form = document.getElementById("textform")
     const textarea: any = document.getElementById("textarea")
     const html_text = document.getElementById("text")

@@ -2,9 +2,9 @@ import html2canvas from "html2canvas"
 import { MobileCanvas } from "./mobile_canvas"
 
 export class Chara {
-    private parent = document.getElementById("draw_canvas")
+    private parent = document.getElementById("canvas_parent")
     private canvas: MobileCanvas
-    constructor(html: string, fontsize: number, drawInstance) {
+    constructor(html: string, fontsize: number, drawInstance, release_callback) {
         const element = document.createElement("div")
         element.innerHTML = html
         this.parent.appendChild(element)
@@ -18,8 +18,12 @@ export class Chara {
                 img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
             }
             ctx.putImageData(img, 0, 0)
-            this.canvas = new MobileCanvas(canvas, canvas.width / window.devicePixelRatio, drawInstance)
+            const w = canvas.width / window.devicePixelRatio
+            this.canvas = new MobileCanvas(canvas, w, drawInstance, this.release)
             this.parent.removeChild(element)
         })
+    }
+    private release = () => {
+        delete this.canvas
     }
 }

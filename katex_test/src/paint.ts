@@ -15,6 +15,8 @@ export class Paint {
     private line_mode_button: any = document.getElementById("line_mode_button")
     private grid_mode_button: any = document.getElementById("grid_mode_button")
     private upload_form: any = document.getElementById("upload_button")
+    private img: Img
+    private chara: Chara
 
     private mobile = { canvas: null, ctx: null, ope: "", img: null, prev_img_w: 0, img_x: 0, img_y: 0 }
     private isDrag: boolean = false;
@@ -37,7 +39,7 @@ export class Paint {
             if (this.upload_form.files[0]) this.reader.readAsDataURL(this.upload_form.files[0])
         }
         this.reader.onload = () => {
-            new Img(this.reader.result, this.draw)
+            this.img = new Img(this.reader.result, this.draw, () => { delete this.img })
         }
         document.getElementById("paint_chara").addEventListener("click", () => this.paint_chara())
         document.getElementById("paint_upload").addEventListener("click", () => this.img_upload())
@@ -77,7 +79,7 @@ export class Paint {
             alert(error.message)
             return
         }
-        new Chara(html, this.font_size.value, this.draw)
+        this.chara = new Chara(html, this.font_size.value, this.draw, () => { delete this.chara })
     }
     private img_upload() {
         this.upload_form.click()

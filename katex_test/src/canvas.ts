@@ -1,7 +1,7 @@
 import { is_PC } from "./global";
 
 export class Canvas {
-    private parent = document.getElementById("draw_canvas")
+    private parent = document.getElementById("canvas_parent")
     public canvas
     public context
     constructor(public dragStart, public dragEnd, public move) {

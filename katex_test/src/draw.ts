@@ -9,7 +9,7 @@ function round(v) {
 export class Draw {
     private sub_canvas: any = document.getElementById("sub_canvas")
     private sub_ctx = this.sub_canvas.getContext("2d")
-    private parent = document.getElementById("draw_canvas")
+    private parent = document.getElementById("canvas_parent")
     public canvas: Canvas
     private isDrag: boolean = false
     public canvas_written: boolean = false
