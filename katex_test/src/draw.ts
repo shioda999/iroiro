@@ -1,12 +1,15 @@
+import html2canvas from "html2canvas"
 import { Canvas } from "./canvas"
-import { GRID_W } from "./global"
+import { Global, GRID_W, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
+const upload_form: any = document.getElementById("upload_save_data_button")
 function round(v) {
     return Math.floor((v + GRID_W / 2) / GRID_W) * GRID_W
 }
 export class Draw {
+    private reader = new FileReader()
     private sub_canvas: any = document.getElementById("sub_canvas")
     private sub_ctx = this.sub_canvas.getContext("2d")
     private parent = document.getElementById("canvas_parent")
@@ -18,10 +21,118 @@ export class Draw {
     private prevPosition = { x: null, y: null };
     private firstPosition = { x: null, y: null };
     private grid_mode = "no-grid"
+    private points
     constructor() {
         this.canvas_history = new ManageHistory(this.update_canvases)
+        this.setEvents()
         this.set_canvas()
         this.resize_sub_canvas()
+    }
+    private setEvents() {
+        window.addEventListener("my_event_delete_history", this.delete_history)
+        window.addEventListener("my_event_save_data_to_storage", this.save_data_to_storage)
+        window.addEventListener("my_event_load_data_from_storage", this.load_data_from_storage)
+        window.addEventListener("my_event_save_data_to_file", this.save_data_to_file)
+        window.addEventListener("my_event_load_data_from_file", this.load_data_from_file)
+        upload_form.onchange = () => {
+            if (upload_form.files[0]) this.reader.readAsText(upload_form.files[0])
+        }
+        this.reader.onload = () => {
+            if (typeof (this.reader.result) !== "string") return
+            let data = JSON.parse(this.reader.result)
+            this.create_canvases_from_data(data)
+        }
+    }
+    private delete_history = () => {
+        this.canvas_history.delete_history()
+    }
+    private save_data_to_storage = () => {
+        const json = JSON.stringify(this.get_canvas_data())
+        localStorage.setItem("data", json)
+        console.log(json)
+    }
+    private load_data_from_storage = () => {
+        const json = localStorage.getItem("data")
+        if (!json) return
+        const data = JSON.parse(json)
+        this.create_canvases_from_data(data)
+    }
+    private save_data_to_file = () => {
+        let name = prompt("ファイル名を入力してください", "stage.json")
+        if (name == null) return
+        const json = JSON.stringify(this.get_canvas_data())
+        let blob = new Blob([json], { type: 'application/json' })
+        let anchor = document.createElement("a")
+        anchor.hidden = true
+        anchor.href = window.URL.createObjectURL(blob)
+        anchor.download = name
+        anchor.click()
+        anchor.remove()
+    }
+    private load_data_from_file = () => {
+        upload_form.click()
+    }
+    private get_canvas_data() {
+        let data = {}
+        this.canvas_history.get().forEach((c, i) => {
+            if (c.info.mode == "img" || c.info.mode == "fill") {
+                let str = c.canvas.toDataURL("image/webp", "0.5")
+                console.log(str.length)
+                const info = { mode: "img", url: str }
+                data[i] = info
+            }
+            else {
+                data[i] = c.info
+            }
+        });
+        return data
+    }
+    private create_canvases_from_data(data) {
+        for (let i in data) {
+            const e = data[i]
+            if (e.mode == "img") {
+                const img = new Image()
+                const ctx = this.canvas.context
+                this.canvas.info.mode = "img"
+                img.src = e.url
+                img.onload = () => ctx.drawImage(img, 0, 0)
+            }
+            else if (e.mode == "chara") {
+                const element = document.createElement("div")
+                const html = katex_instance.renderToString(e.text, katex_option)
+                const ctx = this.canvas.context
+                element.innerHTML = html
+                this.parent.appendChild(element)
+                this.canvas.info = e
+                html2canvas(element, { scale: e.font }).then((canvas) => {
+                    const context = canvas.getContext("2d")
+                    const img = context.getImageData(0, 0, canvas.width, canvas.height)
+                    const W = img.width
+                    const H = img.height
+                    for (let i = 0; i < W * H; i++) {
+                        let v = Math.floor((img.data[4 * i] + img.data[4 * i + 1] + img.data[4 * i + 2]) / 3)
+                        img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
+                    }
+                    context.putImageData(img, 0, 0)
+                    ctx.drawImage(canvas, e.points[0], e.points[1], e.prev_w, H * e.prev_w / W)
+                    element.remove()
+                })
+            }
+            else {
+                this.line.mode = e.mode
+                this.line.color = e.color
+                this.line.thickness = e.thick
+                let px, py
+                this.dragStart(px = e.points[0], py = e.points[1])
+                for (let i = 2; i < e.points.length; i += 2) {
+                    px += e.points[i], py += e.points[i + 1]
+                    if (i < e.points.length - 2) this.dragmove(px, py)
+                    else this.dragEnd(px, py)
+                }
+            }
+            this.canvas_written = true
+            this.create_new_canvas()
+        }
     }
     public resize() {
         this.canvas.resize()
@@ -95,17 +206,29 @@ export class Draw {
             return parseInt(str, 16);
         });
     }
+    private set_draw_info() {
+        this.canvas.info = {
+            color: this.line.color,
+            mode: this.line.mode,
+            thick: this.line.thickness,
+            points: this.points
+        }
+    }
     private dragStart = (px, py) => {
         this.isDrag = true
+        this.points = [px, py]
         this.dragmove(px, py)
     }
     private dragEnd = (px, py) => {
         if (!this.canvas.context) return
         if (this.grid_mode == "no-grid") this.sub_ctx.clearRect(0, 0, this.sub_canvas.width, this.sub_canvas.height)
-
-        this.firstPosition.x = null;
-        this.firstPosition.y = null;
-        if (this.isDrag && this.line.color != "erase") this.create_new_canvas()
+        if (this.isDrag && this.line.color != "erase") {
+            if (this.line.mode != "default") this.points.push(px - this.firstPosition.x, py - this.firstPosition.y)
+            this.set_draw_info()
+            this.create_new_canvas()
+        }
+        this.firstPosition.x = null
+        this.firstPosition.y = null
         this.isDrag = false
     }
     // 絵を書く
@@ -141,10 +264,12 @@ export class Draw {
             }
         }
         if (this.line.mode == "default") {
+            if (this.canvas_written && this.prevPosition.x == px && this.prevPosition.y == py) return
             context.moveTo(this.prevPosition.x, this.prevPosition.y);
             context.lineTo(px, py);
             context.stroke();
             this.canvas_written = true
+            this.points.push(px - this.prevPosition.x, py - this.prevPosition.y)
         }
         else {
             let first_x, first_y, cur_x, cur_y, prev_x, prev_y

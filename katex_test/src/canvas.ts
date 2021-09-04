@@ -1,9 +1,11 @@
 import { is_PC } from "./global";
 
+const parent = document.getElementById("canvas_parent")
+
 export class Canvas {
-    private parent = document.getElementById("canvas_parent")
     public canvas
     public context
+    public info = { mode: null, points: null, color: null, thick: null }
     constructor(public dragStart, public dragEnd, public move) {
         const canvas: any = document.createElement("canvas")
         this.canvas = canvas
@@ -11,7 +13,7 @@ export class Canvas {
         canvas.width = document.documentElement.scrollWidth - 30;
         canvas.height = document.documentElement.scrollHeight;
         canvas.style.zIndex = 1;
-        this.parent.appendChild(canvas)
+        parent.appendChild(canvas)
         this.set_pointer_evens()
         this.context = canvas.getContext("2d")
     }

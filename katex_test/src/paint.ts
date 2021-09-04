@@ -1,9 +1,10 @@
-import { katex_option, katex_instance } from './global'
+import { katex_option, katex_instance, Global } from './global'
 import { Draw } from './draw'
 import { Chara } from './chara'
 import { Img } from './img'
 
 export class PaintMode {
+    private canvas_parent = document.getElementById("canvas_parent")
     private draw = new Draw()
     private reader = new FileReader()
     private font_size: any = document.getElementById("font_size")
@@ -19,6 +20,12 @@ export class PaintMode {
     private chara: Chara
 
     constructor() {
+        this.change_mode()
+        this.set_buttonEvents()
+        this.change_thickness()
+        this.change_color("black")
+    }
+    private set_buttonEvents() {
         this.thickness.addEventListener('input', () => this.change_thickness())
         this.bright.addEventListener('input', () => this.change_bright())
         this.colorcircle2.forEach((e: any) => {
@@ -36,20 +43,23 @@ export class PaintMode {
             if (this.upload_form.files[0]) this.reader.readAsDataURL(this.upload_form.files[0])
         }
         this.reader.onload = () => {
-            this.img = new Img(this.reader.result, this.draw, () => { delete this.img })
+            this.print_img()
         }
         document.getElementById("paint_chara").addEventListener("click", () => this.paint_chara())
         document.getElementById("paint_upload").addEventListener("click", () => this.img_upload())
         document.getElementById("paint_undo").addEventListener("click", () => this.draw.undo())
         document.getElementById("paint_do").addEventListener("click", () => this.draw.redo())
-        document.getElementById("paint_clear").addEventListener("click", () => { if (window.confirm("本当にペイントを全て削除しますか？")) this.draw.erase_all_canvas() })
-
-        this.set_initial_value()
+        document.getElementById("paint_clear").addEventListener("click", () => {
+            if (window.confirm("本当にペイントを全て削除しますか？")) this.draw.erase_all_canvas()
+        })
     }
-    private set_initial_value() {
-        this.thickness.value = 3
-        this.change_thickness()
-        this.change_color("black")
+    public change_mode() {
+        if (Global.mode == "paint") {
+            this.canvas_parent.style.pointerEvents = "auto"
+        }
+        else {
+            this.canvas_parent.style.pointerEvents = "none"
+        }
     }
     private change_thickness() {
         const str = this.draw.change_thickness(this.thickness.value)
@@ -65,6 +75,11 @@ export class PaintMode {
     public onresize = () => {
         this.draw.resize()
     }
+    private print_img() {
+        if (this.img) { this.img.transfer_canvas(); delete this.img }
+        if (this.chara) { this.chara.transfer_canvas(); delete this.chara }
+        this.img = new Img(this.reader.result, this.draw)
+    }
     private paint_chara() {
         const ret = window.prompt("表示したい文字を入力してください。")
         if (ret == "" || ret == null) return
@@ -76,7 +91,9 @@ export class PaintMode {
             alert(error.message)
             return
         }
-        this.chara = new Chara(html, this.font_size.value, this.draw, () => { delete this.chara })
+        if (this.img) { this.img.transfer_canvas(); delete this.img }
+        if (this.chara) { this.chara.transfer_canvas(); delete this.chara }
+        this.chara = new Chara(html, ret, this.font_size.value, this.draw)
     }
     private img_upload() {
         this.upload_form.click()

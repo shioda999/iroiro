@@ -9,7 +9,8 @@ export class MobileCanvas {
     private ope: string = ""
     private isDrag: boolean = false
     private firstPosition = { x: null, y: null };
-    constructor(img, width, private drawInstance, private release_callback) {
+    public release_flag: boolean = false
+    constructor(img, width, private drawInstance, private text?, private font_scale?) {
         this.canvas = new Canvas(this.dragStart, this.dragEnd, this.move)
         const context = this.canvas.context
         context.setLineDash([3, 3]);
@@ -28,9 +29,25 @@ export class MobileCanvas {
         context.drawImage(img, this.img_x, this.img_y,
             this.prev_w, img.height * this.prev_w / img.width)
         this.canvas.release()
+        this.set_draw_info()
         this.drawInstance.canvas_written = true
         this.drawInstance.create_new_canvas()
-        this.release_callback()
+        this.release_flag = true
+    }
+    private set_draw_info() {
+        if (this.text) {
+            const info = {
+                mode: "chara",
+                points: [this.img_x, this.img_y],
+                text: this.text,
+                font: this.font_scale,
+                prev_w: Math.round(this.prev_w)
+            }
+            this.drawInstance.canvas.info = info
+        }
+        else {
+            this.drawInstance.canvas.info.mode = "img"
+        }
     }
     private disp_img(x, y, scale?) {
         const img = this.img

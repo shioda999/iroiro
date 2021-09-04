@@ -4,7 +4,8 @@ import { MobileCanvas } from "./mobile_canvas"
 export class Chara {
     private parent = document.getElementById("canvas_parent")
     private canvas: MobileCanvas
-    constructor(html: string, fontsize: number, drawInstance, release_callback) {
+    private loopId
+    constructor(html: string, text: string, fontsize: number, drawInstance) {
         const element = document.createElement("div")
         element.innerHTML = html
         this.parent.appendChild(element)
@@ -19,11 +20,21 @@ export class Chara {
             }
             ctx.putImageData(img, 0, 0)
             const w = canvas.width / window.devicePixelRatio
-            this.canvas = new MobileCanvas(canvas, w, drawInstance, this.release)
-            this.parent.removeChild(element)
+            this.canvas = new MobileCanvas(canvas, w, drawInstance, text, fontsize / 2 * window.devicePixelRatio)
+            element.remove()
         })
+        this.loopId = setInterval(() => {
+            if (this.canvas.release_flag) {
+                delete this.canvas
+                clearInterval(this.loopId)
+            }
+        }, 1000)
     }
-    private release = () => {
-        delete this.canvas
+    public transfer_canvas() {
+        if (this.canvas) {
+            this.canvas.transfer_canvas()
+            clearInterval(this.loopId)
+            delete this.canvas
+        }
     }
 }

@@ -1,7 +1,7 @@
 import { List } from './List'
 export class ManageHistory {
-    private index: number = 0
     private list: List
+    private temp = []
     private prev_data = []
     constructor(public on_change?: (prev, now) => void) {
         this.list = new List([])
@@ -10,8 +10,9 @@ export class ManageHistory {
         return this.list.get()
     }
     public push(element) {
-        const new_array = this.get().concat([element])
+        const new_array = this.get().concat(element)
         this.list.push(new_array)
+        this.temp.push(element)
         this.change()
     }
     public redo() {
@@ -39,5 +40,16 @@ export class ManageHistory {
     private change() {
         if (this.on_change) this.on_change(this.prev_data, this.get())
         this.prev_data = this.get()
+    }
+    public delete_history() {
+        const data = this.get()
+        this.temp.forEach((e) => {
+            if (data.indexOf(e) == -1) {
+                if (e.release) e.release()
+            }
+        })
+        this.temp = []
+        this.list.delete_all()
+        this.list.push(data)
     }
 }

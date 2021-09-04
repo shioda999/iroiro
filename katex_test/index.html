@@ -43,9 +43,9 @@
       </div>
       <div class="body2" id="paint_menu">
         <label for="thickness" id="thickness_label">線の太さ：</label>
-        <input type="range" id="thickness" name="thickness" min="1" max="10" style="margin-bottom: 15px;">
+        <input type="range" id="thickness" min="1" max="10" value="3" ;style="margin-bottom: 15px;">
         <label for="bright" id="bright_label">明度：1</label>
-        <input type="range" id="bright" name="bright" min="1" max="20" value="10">
+        <input type="range" id="bright" min="1" max="20" value="10">
         <label class="colorcircle">
           <input type="radio" name="colorcircle" value="black" checked>
           <span class="colorcircle2" style="background:black;"></span>
@@ -108,8 +108,12 @@
         <input type="button" class="command_button" id="paint_clear" value="全消し">
       </div>
       <div class="body3" id="other_menu">
-        <label for="textarea_size" id="textarea_size_label" style="font-size: 14px; display: flex;">フォント</label>
-        <input type="number" id="textarea_size" value="14" style="width: 50px;margin-left: 100px;">
+        <input type="button" class="command_button" id="delete_history" value="レイヤー削減">
+        <input type="button" class="command_button" id="save_data_to_storage" value="レイヤの保存">
+        <input type="button" class="command_button" id="load_data_from_storage" value="レイヤの読込">
+        <input type="button" class="command_button" id="save_data_to_file" value="ファイルに保存" style="font-size: 11px;">
+        <input type="button" class="command_button" id="load_data_from_file" value="ファイル読込">
+        <input type="file" id="upload_save_data_button" accept="application/json" style="display:none;">
       </div>
     </div>
   </div>
