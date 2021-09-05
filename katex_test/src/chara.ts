@@ -1,27 +1,15 @@
 import html2canvas from "html2canvas"
+import { katextext_to_canvas } from "./global"
 import { MobileCanvas } from "./mobile_canvas"
 
+const parent = document.getElementById("canvas_parent")
 export class Chara {
-    private parent = document.getElementById("canvas_parent")
     private canvas: MobileCanvas
     private loopId
     constructor(html: string, text: string, fontsize: number, drawInstance) {
-        const element = document.createElement("div")
-        element.innerHTML = html
-        this.parent.appendChild(element)
-        html2canvas(element, { scale: fontsize / 2 * window.devicePixelRatio }).then((canvas) => {
-            const ctx = canvas.getContext("2d")
-            const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
-            const W = img.width
-            const H = img.height
-            for (let i = 0; i < W * H; i++) {
-                let v = Math.floor((img.data[4 * i] + img.data[4 * i + 1] + img.data[4 * i + 2]) / 3)
-                img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
-            }
-            ctx.putImageData(img, 0, 0)
-            const w = canvas.width / window.devicePixelRatio
-            this.canvas = new MobileCanvas(canvas, w, drawInstance, text, fontsize / 2 * window.devicePixelRatio)
-            element.remove()
+        const scale = fontsize / 2 * window.devicePixelRatio
+        katextext_to_canvas(parent, html, scale, (canvas, W, H) => {
+            this.canvas = new MobileCanvas(canvas, W / window.devicePixelRatio, drawInstance, text, scale)
         })
         this.loopId = setInterval(() => {
             if (this.canvas.release_flag) {

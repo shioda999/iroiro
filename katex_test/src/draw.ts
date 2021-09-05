@@ -1,6 +1,6 @@
 import html2canvas from "html2canvas"
 import { Canvas } from "./canvas"
-import { Global, GRID_W, katex_instance, katex_option } from "./global"
+import { Global, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
@@ -22,6 +22,8 @@ export class Draw {
     private firstPosition = { x: null, y: null };
     private grid_mode = "no-grid"
     private points
+    private history_flag: boolean = true
+    private temp = []
     constructor() {
         this.canvas_history = new ManageHistory(this.update_canvases)
         this.setEvents()
@@ -49,7 +51,6 @@ export class Draw {
     private save_data_to_storage = () => {
         const json = JSON.stringify(this.get_canvas_data())
         localStorage.setItem("data", json)
-        console.log(json)
     }
     private load_data_from_storage = () => {
         const json = localStorage.getItem("data")
@@ -58,7 +59,7 @@ export class Draw {
         this.create_canvases_from_data(data)
     }
     private save_data_to_file = () => {
-        let name = prompt("ファイル名を入力してください", "stage.json")
+        let name = prompt("ファイル名を入力してください", "render.json")
         if (name == null) return
         const json = JSON.stringify(this.get_canvas_data())
         let blob = new Blob([json], { type: 'application/json' })
@@ -77,7 +78,6 @@ export class Draw {
         this.canvas_history.get().forEach((c, i) => {
             if (c.info.mode == "img" || c.info.mode == "fill") {
                 let str = c.canvas.toDataURL("image/webp", "0.5")
-                console.log(str.length)
                 const info = { mode: "img", url: str }
                 data[i] = info
             }
@@ -85,9 +85,12 @@ export class Draw {
                 data[i] = c.info
             }
         });
+        console.log(data)
         return data
     }
     private create_canvases_from_data(data) {
+        this.erase_all_canvas()
+        this.history_flag = false
         for (let i in data) {
             const e = data[i]
             if (e.mode == "img") {
@@ -96,27 +99,18 @@ export class Draw {
                 this.canvas.info.mode = "img"
                 img.src = e.url
                 img.onload = () => ctx.drawImage(img, 0, 0)
+                this.canvas_written = true
+                this.create_new_canvas()
             }
             else if (e.mode == "chara") {
-                const element = document.createElement("div")
                 const html = katex_instance.renderToString(e.text, katex_option)
                 const ctx = this.canvas.context
-                element.innerHTML = html
-                this.parent.appendChild(element)
-                this.canvas.info = Object.create(e)
-                html2canvas(element, { scale: e.font }).then((canvas) => {
-                    const context = canvas.getContext("2d")
-                    const img = context.getImageData(0, 0, canvas.width, canvas.height)
-                    const W = img.width
-                    const H = img.height
-                    for (let i = 0; i < W * H; i++) {
-                        let v = Math.floor((img.data[4 * i] + img.data[4 * i + 1] + img.data[4 * i + 2]) / 3)
-                        img.data[4 * i + 3] = Math.min((Math.round(255 - v) * 1.5), 255)
-                    }
-                    context.putImageData(img, 0, 0)
-                    ctx.drawImage(canvas, e.points[0], e.points[1], e.prev_w, H * e.prev_w / W)
-                    element.remove()
+                this.canvas.info = e
+                katextext_to_canvas(this.parent, html, e.font, (canvas, W, H) => {
+                    ctx.drawImage(canvas, e.points[0], e.points[1], W * e.scale, H * e.scale)
                 })
+                this.canvas_written = true
+                this.create_new_canvas()
             }
             else {
                 this.line.mode = e.mode
@@ -130,9 +124,10 @@ export class Draw {
                     if (i == e.points.length - 2) this.dragEnd(px, py)
                 }
             }
-            this.canvas_written = true
-            this.create_new_canvas()
         }
+        this.history_flag = true
+        this.canvas_history.push(this.temp)
+        this.temp = []
     }
     public resize() {
         this.canvas.resize()
@@ -144,7 +139,8 @@ export class Draw {
     public create_new_canvas() {
         if (!this.canvas_written) return
         this.canvas_written = false
-        this.canvas_history.push(this.canvas)
+        if (this.history_flag) this.canvas_history.push(this.canvas)
+        else this.temp.push(this.canvas)
         this.set_canvas()
     }
     public change_grid_mode(mode) {
@@ -382,9 +378,9 @@ export class Draw {
             return
         }
         this.canvas_written = true
-        let cell = [W * py + px]
-        while (cell.length) {
-            let p = cell.pop()
+        let points = [W * py + px]
+        while (points.length) {
+            let p = points.pop()
             pixel[p * 4] = rep_color[0]
             pixel[p * 4 + 1] = rep_color[1]
             pixel[p * 4 + 2] = rep_color[2]
@@ -399,7 +395,7 @@ export class Draw {
                 let nxp = W * ty + tx
                 if (pixel[nxp * 4] != tr || pixel[nxp * 4 + 1] != tg
                     || pixel[nxp * 4 + 2] != tb || pixel[nxp * 4 + 3] != ta) continue
-                cell.push(nxp)
+                points.push(nxp)
             }
         }
     }

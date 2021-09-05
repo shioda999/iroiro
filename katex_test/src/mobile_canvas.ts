@@ -41,7 +41,7 @@ export class MobileCanvas {
                 points: [this.img_x, this.img_y],
                 text: this.text,
                 font: this.font_scale,
-                prev_w: Math.round(this.prev_w)
+                scale: this.prev_w / this.img.width
             }
             this.drawInstance.canvas.info = info
         }
