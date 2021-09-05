@@ -1,4 +1,3 @@
-import html2canvas from "html2canvas"
 import { katextext_to_canvas } from "./global"
 import { MobileCanvas } from "./mobile_canvas"
 

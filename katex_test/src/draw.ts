@@ -1,4 +1,3 @@
-import html2canvas from "html2canvas"
 import { Canvas } from "./canvas"
 import { Global, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
@@ -89,6 +88,8 @@ export class Draw {
         return data
     }
     private create_canvases_from_data(data) {
+        const line_temp = Object.assign({}, this.line)
+        console.log(this.line, line_temp)
         this.erase_all_canvas()
         this.history_flag = false
         for (let i in data) {
@@ -105,7 +106,7 @@ export class Draw {
             else if (e.mode == "chara") {
                 const html = katex_instance.renderToString(e.text, katex_option)
                 const ctx = this.canvas.context
-                this.canvas.info = e
+                this.canvas.info = Object.assign({}, e)
                 katextext_to_canvas(this.parent, html, e.font, (canvas, W, H) => {
                     ctx.drawImage(canvas, e.points[0], e.points[1], W * e.scale, H * e.scale)
                 })
@@ -128,6 +129,7 @@ export class Draw {
         this.history_flag = true
         this.canvas_history.push(this.temp)
         this.temp = []
+        this.line = line_temp
     }
     public resize() {
         this.canvas.resize()
