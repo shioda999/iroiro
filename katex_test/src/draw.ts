@@ -103,7 +103,7 @@ export class Draw {
                 const ctx = this.canvas.context
                 element.innerHTML = html
                 this.parent.appendChild(element)
-                this.canvas.info = e
+                this.canvas.info = Object.create(e)
                 html2canvas(element, { scale: e.font }).then((canvas) => {
                     const context = canvas.getContext("2d")
                     const img = context.getImageData(0, 0, canvas.width, canvas.height)
@@ -126,8 +126,8 @@ export class Draw {
                 this.dragStart(px = e.points[0], py = e.points[1])
                 for (let i = 2; i < e.points.length; i += 2) {
                     px += e.points[i], py += e.points[i + 1]
-                    if (i < e.points.length - 2) this.dragmove(px, py)
-                    else this.dragEnd(px, py)
+                    this.dragmove(px, py)
+                    if (i == e.points.length - 2) this.dragEnd(px, py)
                 }
             }
             this.canvas_written = true

@@ -133,7 +133,7 @@ export class TextMode {
         switch (this.subject) {
             case "math":
                 str = str.replace(/(\\\w*) /g, '$1\\___temp')
-                str = str.replace(/ /g, '$1\\hspace{0.5em}')
+                str = str.replace(/ /g, '\\hspace{0.5em}')
                 str = str.replace(/\\___temp/g, ' ')
                 str = str.replace(/\*/g, '\\times ')
                 str = str.replace(/\//g, '\\div ')
@@ -150,7 +150,7 @@ export class TextMode {
                 break
             case "chemistry":
                 str = str.replace(/(\\\w*) /g, '$1\\___temp')
-                str = str.replace(/ /g, '$1\\hspace{0.5em}')
+                str = str.replace(/ /g, '\\hspace{0.5em}')
                 str = str.replace(/\\___temp/g, ' ')
                 str = str.replace(/([^\n]+)/g, '\\mathrm{$1}')
                 str = str.replace(/\n/g, '\\ \\\\\n')
