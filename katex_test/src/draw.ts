@@ -1,5 +1,5 @@
 import { Canvas } from "./canvas"
-import { Global, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
+import { GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
@@ -75,10 +75,13 @@ export class Draw {
     private get_canvas_data() {
         let data = {}
         this.canvas_history.get().forEach((c, i) => {
-            if (c.info.mode == "img" || c.info.mode == "fill") {
+            if (c.info.mode == "img") {
                 let str = c.canvas.toDataURL("image/webp", "0.5")
-                const info = { mode: "img", url: str }
-                data[i] = info
+                data[i] = { mode: "img", url: str }
+            }
+            else if (c.info.mode == "fill") {
+                this.make_contour(c)
+                data[i] = { mode: "fill", points: c.info.points, width: c.canvas.width, color: c.info.color }
             }
             else {
                 data[i] = c.info
@@ -89,7 +92,6 @@ export class Draw {
     }
     private create_canvases_from_data(data) {
         const line_temp = Object.assign({}, this.line)
-        console.log(this.line, line_temp)
         this.erase_all_canvas()
         this.history_flag = false
         for (let i in data) {
@@ -110,6 +112,22 @@ export class Draw {
                 katextext_to_canvas(this.parent, html, e.font, (canvas, W, H) => {
                     ctx.drawImage(canvas, e.points[0], e.points[1], W * e.scale, H * e.scale)
                 })
+                this.canvas_written = true
+                this.create_new_canvas()
+            }
+            else if (e.mode == "fill") {
+                const img = this.canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
+                this.canvas.info = Object.assign({}, e)
+                const c = RGBColor(e.color)
+                this.line.color = e.color
+                for (let i = 2; i < e.points.length; i += 2) {
+                    const p = e.points[i] + e.points[0] + (e.points[i + 1] + e.points[1]) * this.canvas.canvas.width
+                    img.data[p * 4] = c[0]
+                    img.data[p * 4 + 1] = c[1]
+                    img.data[p * 4 + 2] = c[2]
+                    img.data[p * 4 + 3] = c[3]
+                }
+                this.my_fill(e.points[0], e.points[1], img)
                 this.canvas_written = true
                 this.create_new_canvas()
             }
@@ -221,7 +239,8 @@ export class Draw {
         if (!this.canvas.context) return
         if (this.grid_mode == "no-grid") this.sub_ctx.clearRect(0, 0, this.sub_canvas.width, this.sub_canvas.height)
         if (this.isDrag && this.line.color != "erase") {
-            if (this.line.mode != "default") this.points.push(px - this.firstPosition.x, py - this.firstPosition.y)
+            if (this.line.mode != "default" && this.line.mode != "fill")
+                this.points.push(px - this.firstPosition.x, py - this.firstPosition.y)
             this.set_draw_info()
             this.create_new_canvas()
         }
@@ -401,12 +420,39 @@ export class Draw {
             }
         }
     }
-    private my_fill(px, py) {
+    private my_fill(px, py, img?) {
         px = Math.round(px), py = Math.round(py)
-        const img = this.get_current_img()
+        if (!img) img = this.get_current_img()
         const dist = this.canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
         this.flood_fill(img, dist, px, py, this.get_colorValue())
         this.canvas.context.putImageData(dist, 0, 0)
+    }
+    private make_contour(canvas: Canvas) {
+        const img = canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
+        const px = canvas.info.points[0], py = canvas.info.points[1]
+        const W = img.width, H = img.height
+        const tr = img.data[(W * py + px) * 4]
+        const tg = img.data[(W * py + px) * 4 + 1]
+        const tb = img.data[(W * py + px) * 4 + 2]
+        const ta = img.data[(W * py + px) * 4 + 3]
+        const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
+        for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+                const p = W * y + x
+                if (img.data[p * 4] == tr && img.data[p * 4 + 1] == tg
+                    && img.data[p * 4 + 2] == tb || img.data[p * 4 + 3] == ta) continue
+                for (let i = 0; i < 8; i++) {
+                    let tx = x + dx[i], ty = y + dy[i]
+                    let nxp = W * ty + tx
+                    if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
+                    if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
+                        && img.data[nxp * 4 + 2] == tb || img.data[nxp * 4 + 3] == ta) {
+                        canvas.info.points.push(x - px, y - py)
+                        break
+                    }
+                }
+            }
+        }
     }
     public change_thickness(value) {
         const thick_table = [1, 2, 3, 5, 7, 9, 10, 20, 30, 50]
