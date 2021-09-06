@@ -81,7 +81,7 @@ export class Draw {
             }
             else if (c.info.mode == "fill") {
                 this.make_contour(c)
-                data[i] = { mode: "fill", points: c.info.points, width: c.canvas.width, color: c.info.color }
+                data[i] = { mode: "fill", points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
             }
             else {
                 data[i] = c.info
@@ -116,18 +116,20 @@ export class Draw {
                 this.create_new_canvas()
             }
             else if (e.mode == "fill") {
-                const img = this.canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
-                this.canvas.info = Object.assign({}, e)
+                const img = new ImageData(e.width, e.height)
                 const c = RGBColor(e.color)
                 this.line.color = e.color
+                let x = e.points[0], y = e.points[1]
                 for (let i = 2; i < e.points.length; i += 2) {
-                    const p = e.points[i] + e.points[0] + (e.points[i + 1] + e.points[1]) * this.canvas.canvas.width
+                    x += e.points[i], y += e.points[i + 1]
+                    const p = y * e.width + x
                     img.data[p * 4] = c[0]
                     img.data[p * 4 + 1] = c[1]
                     img.data[p * 4 + 2] = c[2]
                     img.data[p * 4 + 3] = c[3]
                 }
                 this.my_fill(e.points[0], e.points[1], img)
+                this.canvas.info = Object.assign({}, e)
                 this.canvas_written = true
                 this.create_new_canvas()
             }
@@ -423,19 +425,20 @@ export class Draw {
     private my_fill(px, py, img?) {
         px = Math.round(px), py = Math.round(py)
         if (!img) img = this.get_current_img()
-        const dist = this.canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
+        const dist = this.canvas.context.getImageData(0, 0, img.width, img.height)
         this.flood_fill(img, dist, px, py, this.get_colorValue())
         this.canvas.context.putImageData(dist, 0, 0)
     }
     private make_contour(canvas: Canvas) {
         const img = canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
-        const px = canvas.info.points[0], py = canvas.info.points[1]
+        let px = canvas.info.points[0], py = canvas.info.points[1]
         const W = img.width, H = img.height
         const tr = img.data[(W * py + px) * 4]
         const tg = img.data[(W * py + px) * 4 + 1]
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
+        canvas.info.points.length = 2
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
@@ -448,6 +451,7 @@ export class Draw {
                     if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
                         && img.data[nxp * 4 + 2] == tb || img.data[nxp * 4 + 3] == ta) {
                         canvas.info.points.push(x - px, y - py)
+                        px = x, py = y
                         break
                     }
                 }
