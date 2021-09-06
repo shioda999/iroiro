@@ -118,16 +118,8 @@ export class Draw {
             else if (e.mode == "fill") {
                 const img = new ImageData(e.width, e.height)
                 const c = RGBColor(e.color)
+                this.disp_contour(img, e.points, c)
                 this.line.color = e.color
-                let x = e.points[0], y = e.points[1]
-                for (let i = 2; i < e.points.length; i += 2) {
-                    x += e.points[i], y += e.points[i + 1]
-                    const p = y * e.width + x
-                    img.data[p * 4] = c[0]
-                    img.data[p * 4 + 1] = c[1]
-                    img.data[p * 4 + 2] = c[2]
-                    img.data[p * 4 + 3] = c[3]
-                }
                 this.my_fill(e.points[0], e.points[1], img)
                 this.canvas.info = Object.assign({}, e)
                 this.canvas_written = true
@@ -439,6 +431,7 @@ export class Draw {
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
         canvas.info.points.length = 2
+        let t = [], points = []
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
@@ -450,12 +443,51 @@ export class Draw {
                     if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                     if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
                         && img.data[nxp * 4 + 2] == tb || img.data[nxp * 4 + 3] == ta) {
-                        canvas.info.points.push(x - px, y - py)
-                        px = x, py = y
+                        let f = false
+                        for (let j = 0; j < t.length; j += 2) {
+                            for (let k = 0; k < 8; k++) {
+                                if (t[j] + dx[k] == x && t[j + 1] + dy[k] == y) {
+                                    f = true
+                                    points[j / 2].push(k + 1)
+                                    t[j] = x, t[j + 1] = y
+                                    break
+                                }
+                            }
+                            if (f) break
+                        }
+                        if (!f) {
+                            t.push(x, y)
+                            points.push([x, y])
+                        }
                         break
                     }
                 }
             }
+        }
+        points.forEach((p) => {
+            p.push(0)
+            canvas.info.points = canvas.info.points.concat(p)
+        })
+        canvas.info.points.pop()
+    }
+    private disp_contour(img, c, color) {
+        const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
+        let x = c[2], y = c[3]
+        console.log(c.length)
+        for (let i = 4; i < c.length; i++) {
+            if (c[i]) {
+                x += dx[c[i] - 1], y += dy[c[i] - 1]
+            }
+            else {
+                x = c[i + 1]
+                y = c[i + 2]
+                i += 2
+            }
+            const p = y * img.width + x
+            img.data[p * 4] = color[0]
+            img.data[p * 4 + 1] = color[1]
+            img.data[p * 4 + 2] = color[2]
+            img.data[p * 4 + 3] = color[3]
         }
     }
     public change_thickness(value) {
