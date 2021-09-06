@@ -86,7 +86,7 @@ export class Draw {
             else {
                 data[i] = c.info
             }
-        });
+        })
         console.log(data)
         return data
     }
@@ -468,12 +468,12 @@ export class Draw {
             p.push(0)
             canvas.info.points = canvas.info.points.concat(p)
         })
-        canvas.info.points.pop()
+        if (points.length) canvas.info.points.pop()
     }
     private disp_contour(img, c, color) {
         const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
+        if (c.length < 4) return
         let x = c[2], y = c[3]
-        console.log(x, y)
         for (let i = 1; i < c.length; i++) {
             if (c[i] == 0 || i == 1) {
                 x = c[i + 1]
