@@ -473,15 +473,15 @@ export class Draw {
     private disp_contour(img, c, color) {
         const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
         let x = c[2], y = c[3]
-        console.log(c.length)
-        for (let i = 4; i < c.length; i++) {
-            if (c[i]) {
-                x += dx[c[i] - 1], y += dy[c[i] - 1]
-            }
-            else {
+        console.log(x, y)
+        for (let i = 1; i < c.length; i++) {
+            if (c[i] == 0 || i == 1) {
                 x = c[i + 1]
                 y = c[i + 2]
                 i += 2
+            }
+            else {
+                x += dx[c[i] - 1], y += dy[c[i] - 1]
             }
             const p = y * img.width + x
             img.data[p * 4] = color[0]
