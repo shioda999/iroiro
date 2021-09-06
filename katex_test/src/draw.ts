@@ -4,6 +4,7 @@ import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
 const upload_form: any = document.getElementById("upload_save_data_button")
+const render_text_event = new CustomEvent("my_event_render_text")
 function round(v) {
     return Math.floor((v + GRID_W / 2) / GRID_W) * GRID_W
 }
@@ -74,17 +75,19 @@ export class Draw {
     }
     private get_canvas_data() {
         let data = {}
+        const textarea: any = document.getElementById("textarea")
+        data[0] = { text: textarea.value, grid: this.grid_mode }
         this.canvas_history.get().forEach((c, i) => {
             if (c.info.mode == "img") {
                 let str = c.canvas.toDataURL("image/webp", "0.5")
-                data[i] = { mode: "img", url: str }
+                data[i + 1] = { mode: "img", url: str }
             }
             else if (c.info.mode == "fill") {
                 this.make_contour(c)
-                data[i] = { mode: "fill", points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
+                data[i + 1] = { mode: "fill", points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
             }
             else {
-                data[i] = c.info
+                data[i + 1] = c.info
             }
         })
         console.log(data)
@@ -96,7 +99,13 @@ export class Draw {
         this.history_flag = false
         for (let i in data) {
             const e = data[i]
-            if (e.mode == "img") {
+            if (!e.mode) {
+                const textarea: any = document.getElementById("textarea")
+                textarea.value = e.text
+                window.dispatchEvent(render_text_event)
+                this.change_grid_mode(e.grid)
+            }
+            else if (e.mode == "img") {
                 const img = new Image()
                 const ctx = this.canvas.context
                 this.canvas.info.mode = "img"
