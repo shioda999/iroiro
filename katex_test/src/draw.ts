@@ -1,5 +1,5 @@
 import { Canvas } from "./canvas"
-import { GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
+import { compress_array, decompress_array, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
@@ -83,8 +83,8 @@ export class Draw {
                 data[i + 1] = { mode: "img", url: str }
             }
             else if (c.info.mode == "fill") {
-                this.make_contour(c)
-                data[i + 1] = { mode: "fill", points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
+                let contour = this.make_contour(c)
+                data[i + 1] = { mode: "fill", contour: contour, points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
             }
             else {
                 data[i + 1] = c.info
@@ -127,7 +127,7 @@ export class Draw {
             else if (e.mode == "fill") {
                 const img = new ImageData(e.width, e.height)
                 const c = RGBColor(e.color)
-                this.disp_contour(img, e.points, c)
+                this.disp_contour(img, e.contour, c)
                 this.line.color = e.color
                 this.my_fill(e.points[0], e.points[1], img)
                 this.canvas.info = Object.assign({}, e)
@@ -438,53 +438,62 @@ export class Draw {
         const tg = img.data[(W * py + px) * 4 + 1]
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
-        const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
+        const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
         canvas.info.points.length = 2
-        let t = [], points = []
+        let contour = [], points = new Array(W * H)
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
                 if (img.data[p * 4] == tr && img.data[p * 4 + 1] == tg
                     && img.data[p * 4 + 2] == tb || img.data[p * 4 + 3] == ta) continue
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < 4; i++) {
                     let tx = x + dx[i], ty = y + dy[i]
                     let nxp = W * ty + tx
                     if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                     if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
                         && img.data[nxp * 4 + 2] == tb || img.data[nxp * 4 + 3] == ta) {
-                        let f = false
-                        for (let j = 0; j < t.length; j += 2) {
-                            for (let k = 0; k < 8; k++) {
-                                if (t[j] + dx[k] == x && t[j + 1] + dy[k] == y) {
-                                    f = true
-                                    points[j / 2].push(k + 1)
-                                    t[j] = x, t[j + 1] = y
-                                    break
-                                }
-                            }
-                            if (f) break
-                        }
-                        if (!f) {
-                            t.push(x, y)
-                            points.push([x, y])
-                        }
+                        points[p] = 1
                         break
                     }
                 }
             }
         }
-        points.forEach((p) => {
-            p.push(0)
-            canvas.info.points = canvas.info.points.concat(p)
-        })
-        if (points.length) canvas.info.points.pop()
+        for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+                let px = x, py = y
+                if (points[y * W + x] == 1) {
+                    if (contour.length) contour.push(0)
+                    contour.push(x, y)
+                    while (1) {
+                        let ok = false
+                        for (let i = 0; i < 8; i++) {
+                            let tx = px + dx[i], ty = py + dy[i]
+                            let nxp = W * ty + tx
+                            if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
+                            if (points[nxp] == 1) {
+                                points[nxp] = 0
+                                contour.push(i + 1)
+                                px = tx, py = ty
+                                ok = true
+                                break
+                            }
+                        }
+                        if (!ok) break
+                    }
+                }
+            }
+        }
+        const ret = compress_array(contour)
+        console.log(ret.toString().length, ret.length)
+        return ret
     }
-    private disp_contour(img, c, color) {
-        const dx = [-1, -1, -1, 0, 0, 1, 1, 1], dy = [-1, 0, 1, -1, 1, -1, 0, 1]
-        if (c.length < 4) return
-        let x = c[2], y = c[3]
-        for (let i = 1; i < c.length; i++) {
-            if (c[i] == 0 || i == 1) {
+    private disp_contour(img, contour, color) {
+        const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
+        const c = decompress_array(contour)
+        if (c.length < 2) return
+        let x, y
+        for (let i = -1; i < c.length; i++) {
+            if (c[i] == 0 || i == -1) {
                 x = c[i + 1]
                 y = c[i + 2]
                 i += 2

@@ -37,3 +37,64 @@ export function katextext_to_canvas(parent, html, scale, callback) {
         element.remove()
     })
 }
+//lzssを使った数列圧縮関数
+//配列の要素は0以上4095以下であることが必要
+//wがウィンドウ幅のビット数
+//11-wが連続数のビット数
+export function compress_array(array, w = 4) {
+    let ret = ""
+    const l = 11 - w
+    for (let i = 0; i < array.length;) {
+        let pos = -1
+        let len = 0
+        for (let j = 0; j < Math.min(1 << w, i); j++) {
+            for (let k = Math.max(0, 1 - i + j); k < Math.min(1 << l, array.length - i); k++) {
+                if (array[i + k] != array[i - j + k - 1]) {
+                    if (len < k) {
+                        len = k
+                        pos = j
+                    }
+                    break
+                }
+            }
+        }
+        let v
+        if (len <= 1) {
+            v = array[i]
+            i++
+        }
+        else {// len >= 2
+            v = 4096 | ((len - 2) << w) | pos
+            i += len
+        }
+        ret += String.fromCharCode(v >> 6)
+        ret += String.fromCharCode(v % (1 << 6))
+    }
+    return btoa(ret)
+}
+export function decompress_array(data, w = 4) {
+    let str = atob(data)
+    let ret = []
+    for (let i = 0; i < str.length; i += 2) {
+        let v = str.charCodeAt(i) << 6 | str.charCodeAt(i + 1)
+        if (v < 4096) {
+            ret.push(v)
+        }
+        else {
+            let len = ((v - 4096) >> w) + 2
+            let p = v % (1 << w)
+            console.log(p, len)
+            for (let i = 0; i < len; i++) {
+                ret.push(ret[ret.length - p - 1])
+            }
+        }
+    }
+    return ret
+}
+/*export function comppress_function_check() {
+    const a = [10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10]
+    let b = compress_array(a)
+    let c = decompress_array(b)
+    console.log(b)
+    console.log(a.toString() == c.toString())
+}*/

@@ -1,4 +1,4 @@
-import { Global } from './global'
+import { compress_array, decompress_array, Global } from './global'
 import { Other } from './other';
 import { PaintMode } from './paint'
 import { TextMode } from './text';
