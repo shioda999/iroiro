@@ -1,5 +1,5 @@
 import { Canvas } from "./canvas"
-import { compress_array, decompress_array, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
+import { BASE64, compress_array, decompress_array, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
@@ -86,6 +86,12 @@ export class Draw {
                 let contour = this.make_contour(c)
                 data[i + 1] = { mode: "fill", contour: contour, points: c.info.points, width: c.canvas.width, height: c.canvas.height, color: c.info.color }
             }
+            else if (c.info.mode == "default") {
+                this.compress_trace(c)
+                data[i + 1] = Object.assign({}, c.info)
+                data[i + 1].points = data[i + 1].points.concat()
+                data[i + 1].points.length = 2
+            }
             else {
                 data[i + 1] = c.info
             }
@@ -135,6 +141,9 @@ export class Draw {
                 this.create_new_canvas()
             }
             else {
+                if (e.mode == "default") {
+                    this.decompress_trace(e)
+                }
                 this.line.mode = e.mode
                 this.line.color = e.color
                 this.line.thickness = e.thick
@@ -143,8 +152,8 @@ export class Draw {
                 for (let i = 2; i < e.points.length; i += 2) {
                     px += e.points[i], py += e.points[i + 1]
                     this.dragmove(px, py)
-                    if (i == e.points.length - 2) this.dragEnd(px, py)
                 }
+                this.dragEnd(px, py)
             }
         }
         this.history_flag = true
@@ -285,11 +294,18 @@ export class Draw {
         }
         if (this.line.mode == "default") {
             if (this.canvas_written && this.prevPosition.x == px && this.prevPosition.y == py) return
+            if (this.canvas_written) {
+                const k = 30
+                if (px - this.prevPosition.x > k) px = this.prevPosition.x + k
+                if (py - this.prevPosition.y > k) py = this.prevPosition.y + k
+                if (px - this.prevPosition.x < -k) px = this.prevPosition.x - k
+                if (py - this.prevPosition.y < -k) py = this.prevPosition.y - k
+                this.points.push(px - this.prevPosition.x, py - this.prevPosition.y)
+            }
             context.moveTo(this.prevPosition.x, this.prevPosition.y);
             context.lineTo(px, py);
             context.stroke();
             this.canvas_written = true
-            this.points.push(px - this.prevPosition.x, py - this.prevPosition.y)
         }
         else {
             let first_x, first_y, cur_x, cur_y, prev_x, prev_y
@@ -384,8 +400,8 @@ export class Draw {
                     break
             }
         }
-        this.prevPosition.x = px;
-        this.prevPosition.y = py;
+        this.prevPosition.x = px
+        this.prevPosition.y = py
     }
 
     private flood_fill(img, dist, px, py, rep_color) {
@@ -439,8 +455,9 @@ export class Draw {
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
+        const inv = [3, 2, 1, 0, 7, 6, 5, 4]
         canvas.info.points.length = 2
-        let contour = [], points = new Array(W * H)
+        let list = [], contour = [], points = new Array(W * H)
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
@@ -462,8 +479,18 @@ export class Draw {
             for (let x = 0; x < W; x++) {
                 let px = x, py = y
                 if (points[y * W + x] == 1) {
-                    if (contour.length) contour.push(0)
-                    contour.push(x, y)
+                    let aaa = [x, y]
+                    if (list.length) list.push(inv[list[list.length - 1]])
+                    console.log(x, y)
+                    list.push(x >> 9)
+                    list.push((x >> 6) % 8)
+                    list.push((x >> 3) % 8)
+                    list.push(x % 8)
+                    list.push(y >> 9)
+                    list.push((y >> 6) % 8)
+                    list.push((y >> 3) % 8)
+                    list.push(y % 8)
+                    points[y * W + x] = 0
                     while (1) {
                         let ok = false
                         for (let i = 0; i < 8; i++) {
@@ -472,40 +499,98 @@ export class Draw {
                             if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                             if (points[nxp] == 1) {
                                 points[nxp] = 0
-                                contour.push(i + 1)
+                                list.push(i)
+                                if (inv[list[list.length - 2]] == list[list.length - 1])
+                                    console.log("!!!", list.length, i, px, py, tx, ty)
                                 px = tx, py = ty
+                                aaa.push(tx, ty)
                                 ok = true
                                 break
                             }
                         }
                         if (!ok) break
                     }
+                    console.log(aaa)
                 }
             }
         }
-        const ret = compress_array(contour)
-        console.log(ret.toString().length, ret.length)
+        console.log(list)
+        list.unshift(list.length % 2)
+        for (let i = 0; i < list.length; i += 2) {
+            if (i + 1 < list.length) contour.push(list[i] * 8 + list[i + 1])
+            else contour.push(list[i] * 8)
+        }
+        const ret = BASE64.enc(contour)
         return ret
     }
     private disp_contour(img, contour, color) {
         const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
-        const c = decompress_array(contour)
-        if (c.length < 2) return
-        let x, y
-        for (let i = -1; i < c.length; i++) {
-            if (c[i] == 0 || i == -1) {
-                x = c[i + 1]
-                y = c[i + 2]
-                i += 2
+        const inv = [3, 2, 1, 0, 7, 6, 5, 4]
+        const temp = BASE64.dec(contour)
+        let c = []
+        for (let i = 0; i < temp.length; i++)c.push(temp[i] >> 3, temp[i] % 8)
+        if (c[0] == 0) c.pop()
+        c.shift()
+        console.log(c)
+        let x, y, f = 1, prev = -1
+        for (let i = 0; i < c.length; i++) {
+            if (f) {
+                let v = 0
+                for (let j = 0; j < 4; j++) {
+                    v <<= 3
+                    v += c[j + i]
+                }
+                x = v, v = 0
+                for (let j = 4; j < 8; j++) {
+                    v <<= 3
+                    v += c[j + i]
+                }
+                y = v
+                console.log(x, y, i)
+                i += 7
+                f = 0
+                const p = y * img.width + x
+                img.data[p * 4] = color[0]
+                img.data[p * 4 + 1] = color[1]
+                img.data[p * 4 + 2] = color[2]
+                img.data[p * 4 + 3] = color[3]
+                prev = -1
             }
             else {
-                x += dx[c[i] - 1], y += dy[c[i] - 1]
+                if (prev == inv[c[i]]) {
+                    f = 1
+                }
+                else {
+                    x += dx[c[i]], y += dy[c[i]]
+                    const p = y * img.width + x
+                    img.data[p * 4] = color[0]
+                    img.data[p * 4 + 1] = color[1]
+                    img.data[p * 4 + 2] = color[2]
+                    img.data[p * 4 + 3] = color[3]
+                    prev = c[i]
+                }
             }
-            const p = y * img.width + x
-            img.data[p * 4] = color[0]
-            img.data[p * 4 + 1] = color[1]
-            img.data[p * 4 + 2] = color[2]
-            img.data[p * 4 + 3] = color[3]
+        }
+    }
+    private compress_trace(c) {
+        const points = c.info.points
+        if (points.length <= 2) {
+            c.info["comp"] = []
+            return
+        }
+        const dx = [points[2] + 30], dy = [points[3] + 30]
+        for (let i = 4; i < points.length; i += 2) {
+            dx.push(points[i] - points[i - 2] + 30)
+            dy.push(points[i + 1] - points[i - 1] + 30)
+        }
+        c.info["comp"] = BASE64.enc(dx.concat(dy))
+    }
+    private decompress_trace(e) {
+        let v = BASE64.dec(e.comp)
+        let len = v.length / 2, p1 = 0, p2 = 0
+        for (let i = 0; i < len; i++) {
+            e.points.push(p1 + v[i] - 30, p2 + v[len + i] - 30)
+            p1 += v[i] - 30, p2 += v[len + i] - 30
         }
     }
     public change_thickness(value) {

@@ -37,12 +37,42 @@ export function katextext_to_canvas(parent, html, scale, callback) {
         element.remove()
     })
 }
+
+export class BASE64 {
+    private static table: string[] = []
+    private static inv_t = {}
+    private static make_table() {
+        for (let i = 65; i < 91; i++) this.table.push(String.fromCharCode(i))
+        for (let i = 97; i < 123; i++) this.table.push(String.fromCharCode(i))
+        for (let i = 0; i < 10; i++) this.table.push(i.toString(10))
+        this.table.push("+");
+        this.table.push("/");
+        for (let i = 0; i < 64; i++) {
+            this.inv_t[this.table[i]] = i
+        }
+    }
+    public static enc(num: number[]) {
+        if (this.table.length == 0) this.make_table()
+        let ret = ""
+        num.forEach(n => {
+            if (this.table[n] == undefined) console.log("!!!!", n)
+            ret += this.table[n]
+        })
+        return ret
+    }
+    public static dec(str: string) {
+        if (this.table.length == 0) this.make_table()
+        let ret = []
+        for (let i = 0; i < str.length; i++)ret.push(this.inv_t[str[i]])
+        return ret
+    }
+}
 //lzssを使った数列圧縮関数
-//配列の要素は0以上4095以下であることが必要
+//配列の要素は0以上2047以下であることが必要
 //wがウィンドウ幅のビット数
 //11-wが連続数のビット数
-export function compress_array(array, w = 4) {
-    let ret = ""
+export function compress_array(array, w = 6) {
+    let ret = []
     const l = 11 - w
     for (let i = 0; i < array.length;) {
         let pos = -1
@@ -64,26 +94,26 @@ export function compress_array(array, w = 4) {
             i++
         }
         else {// len >= 2
-            v = 4096 | ((len - 2) << w) | pos
+            v = 2048 | ((len - 2) << w) | pos
             i += len
         }
-        ret += String.fromCharCode(v >> 6)
-        ret += String.fromCharCode(v % (1 << 6))
+        ret.push(v >> 6)
+        ret.push(v % (1 << 6))
     }
-    return btoa(ret)
+    console.log(array.length, ret.length)
+    return BASE64.enc(ret)
 }
-export function decompress_array(data, w = 4) {
-    let str = atob(data)
+export function decompress_array(data, w = 6) {
+    let num = BASE64.dec(data)
     let ret = []
-    for (let i = 0; i < str.length; i += 2) {
-        let v = str.charCodeAt(i) << 6 | str.charCodeAt(i + 1)
-        if (v < 4096) {
+    for (let i = 0; i < num.length; i += 2) {
+        let v = num[i] << 6 | num[i + 1]
+        if (v < 2048) {
             ret.push(v)
         }
         else {
-            let len = ((v - 4096) >> w) + 2
+            let len = ((v - 2048) >> w) + 2
             let p = v % (1 << w)
-            console.log(p, len)
             for (let i = 0; i < len; i++) {
                 ret.push(ret[ret.length - p - 1])
             }
@@ -91,10 +121,10 @@ export function decompress_array(data, w = 4) {
     }
     return ret
 }
-/*export function comppress_function_check() {
+export function comppress_function_check() {
     const a = [10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10, 10, 10, 30, 40, 10]
     let b = compress_array(a)
     let c = decompress_array(b)
     console.log(b)
     console.log(a.toString() == c.toString())
-}*/
+}
