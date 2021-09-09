@@ -454,8 +454,8 @@ export class Draw {
         const tg = img.data[(W * py + px) * 4 + 1]
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
-        const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
-        const inv = [3, 2, 1, 0, 7, 6, 5, 4]
+        const dx4 = [-1, 1, 0, 0], dy4 = [0, 0, -1, 1]
+        const dx = [-1, 0, 1, 1, 1, 0, -1, -1], dy = [1, 1, 1, 0, -1, -1, -1, 0]
         canvas.info.points.length = 2
         let list = [], contour = [], points = new Array(W * H)
         for (let y = 0; y < H; y++) {
@@ -464,7 +464,7 @@ export class Draw {
                 if (img.data[p * 4] == tr && img.data[p * 4 + 1] == tg
                     && img.data[p * 4 + 2] == tb || img.data[p * 4 + 3] == ta) continue
                 for (let i = 0; i < 4; i++) {
-                    let tx = x + dx[i], ty = y + dy[i]
+                    let tx = x + dx4[i], ty = y + dy4[i]
                     let nxp = W * ty + tx
                     if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                     if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
@@ -479,42 +479,37 @@ export class Draw {
             for (let x = 0; x < W; x++) {
                 let px = x, py = y
                 if (points[y * W + x] == 1) {
-                    let aaa = [x, y]
-                    if (list.length) list.push(inv[list[list.length - 1]])
-                    console.log(x, y)
-                    list.push(x >> 9)
+                    let prev = -6
+                    if (list.length) list.push((list[list.length - 1] + 4) % 8)
+                    list.push((x >> 9) % 8)
                     list.push((x >> 6) % 8)
                     list.push((x >> 3) % 8)
                     list.push(x % 8)
-                    list.push(y >> 9)
+                    list.push((y >> 9) % 8)
                     list.push((y >> 6) % 8)
                     list.push((y >> 3) % 8)
                     list.push(y % 8)
                     points[y * W + x] = 0
                     while (1) {
                         let ok = false
-                        for (let i = 0; i < 8; i++) {
+                        for (let _i = 0; _i < 7; _i++) {
+                            let i = (prev + 5 + _i) % 8
                             let tx = px + dx[i], ty = py + dy[i]
                             let nxp = W * ty + tx
                             if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                             if (points[nxp] == 1) {
                                 points[nxp] = 0
-                                list.push(i)
-                                if (inv[list[list.length - 2]] == list[list.length - 1])
-                                    console.log("!!!", list.length, i, px, py, tx, ty)
+                                list.push(prev = i)
                                 px = tx, py = ty
-                                aaa.push(tx, ty)
                                 ok = true
                                 break
                             }
                         }
                         if (!ok) break
                     }
-                    console.log(aaa)
                 }
             }
         }
-        console.log(list)
         list.unshift(list.length % 2)
         for (let i = 0; i < list.length; i += 2) {
             if (i + 1 < list.length) contour.push(list[i] * 8 + list[i + 1])
@@ -524,14 +519,12 @@ export class Draw {
         return ret
     }
     private disp_contour(img, contour, color) {
-        const dx = [-1, 0, 0, 1, -1, -1, 1, 1], dy = [0, -1, 1, 0, -1, 1, -1, 1]
-        const inv = [3, 2, 1, 0, 7, 6, 5, 4]
+        const dx = [-1, 0, 1, 1, 1, 0, -1, -1], dy = [1, 1, 1, 0, -1, -1, -1, 0]
         const temp = BASE64.dec(contour)
         let c = []
         for (let i = 0; i < temp.length; i++)c.push(temp[i] >> 3, temp[i] % 8)
         if (c[0] == 0) c.pop()
         c.shift()
-        console.log(c)
         let x, y, f = 1, prev = -1
         for (let i = 0; i < c.length; i++) {
             if (f) {
@@ -546,7 +539,6 @@ export class Draw {
                     v += c[j + i]
                 }
                 y = v
-                console.log(x, y, i)
                 i += 7
                 f = 0
                 const p = y * img.width + x
@@ -557,7 +549,7 @@ export class Draw {
                 prev = -1
             }
             else {
-                if (prev == inv[c[i]]) {
+                if (prev == (c[i] + 4) % 8) {
                     f = 1
                 }
                 else {
