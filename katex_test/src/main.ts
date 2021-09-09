@@ -1,8 +1,8 @@
-import { comppress_function_check, compress_array, decompress_array, Global } from './global'
+import { compress_function_check, compress_array, decompress_array, Global } from './global'
 import { Other } from './other';
 import { PaintMode } from './paint'
 import { TextMode } from './text';
-comppress_function_check()
+compress_function_check()
 window.addEventListener('load', () => {
     const text = new TextMode()
     const paint = new PaintMode()

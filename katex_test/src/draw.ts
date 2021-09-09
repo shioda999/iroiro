@@ -515,12 +515,12 @@ export class Draw {
             if (i + 1 < list.length) contour.push(list[i] * 8 + list[i + 1])
             else contour.push(list[i] * 8)
         }
-        const ret = BASE64.enc(contour)
+        const ret = compress_array(contour)
         return ret
     }
     private disp_contour(img, contour, color) {
         const dx = [-1, 0, 1, 1, 1, 0, -1, -1], dy = [1, 1, 1, 0, -1, -1, -1, 0]
-        const temp = BASE64.dec(contour)
+        const temp = decompress_array(contour)
         let c = []
         for (let i = 0; i < temp.length; i++)c.push(temp[i] >> 3, temp[i] % 8)
         if (c[0] == 0) c.pop()
@@ -539,6 +539,7 @@ export class Draw {
                     v += c[j + i]
                 }
                 y = v
+                console.log(x, y)
                 i += 7
                 f = 0
                 const p = y * img.width + x
@@ -575,10 +576,10 @@ export class Draw {
             dx.push(points[i] - points[i - 2] + 30)
             dy.push(points[i + 1] - points[i - 1] + 30)
         }
-        c.info["comp"] = BASE64.enc(dx.concat(dy))
+        c.info["comp"] = compress_array(dx.concat(dy))
     }
     private decompress_trace(e) {
-        let v = BASE64.dec(e.comp)
+        let v = decompress_array(e.comp)
         let len = v.length / 2, p1 = 0, p2 = 0
         for (let i = 0; i < len; i++) {
             e.points.push(p1 + v[i] - 30, p2 + v[len + i] - 30)
