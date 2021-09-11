@@ -1,5 +1,6 @@
 import { Canvas } from "./canvas"
-import { BASE64, compress_array, decompress_array, GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
+import { compress_array, decompress_array } from "./compress"
+import { GRID_W, katextext_to_canvas, katex_instance, katex_option } from "./global"
 import { ManageHistory } from "./managehistory"
 import { RGBColor } from "./rgbcolor"
 
@@ -455,9 +456,9 @@ export class Draw {
         const tb = img.data[(W * py + px) * 4 + 2]
         const ta = img.data[(W * py + px) * 4 + 3]
         const dx4 = [-1, 1, 0, 0], dy4 = [0, 0, -1, 1]
-        const dx = [-1, 0, 1, 1, 1, 0, -1, -1], dy = [1, 1, 1, 0, -1, -1, -1, 0]
+        const dx = [1, 1, 0, -1, -1, -1, 0, 1], dy = [0, -1, -1, -1, 0, 1, 1, 1]
         canvas.info.points.length = 2
-        let list = [], contour = [], points = new Array(W * H)
+        let list = [], table = [], table2 = [], points = new Array(W * H)
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
@@ -468,7 +469,7 @@ export class Draw {
                     let nxp = W * ty + tx
                     if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                     if (img.data[nxp * 4] == tr && img.data[nxp * 4 + 1] == tg
-                        && img.data[nxp * 4 + 2] == tb || img.data[nxp * 4 + 3] == ta) {
+                        && img.data[nxp * 4 + 2] == tb && img.data[nxp * 4 + 3] == ta) {
                         points[p] = 1
                         break
                     }
@@ -479,8 +480,8 @@ export class Draw {
             for (let x = 0; x < W; x++) {
                 let px = x, py = y
                 if (points[y * W + x] == 1) {
-                    let prev = -6
-                    if (list.length) list.push((list[list.length - 1] + 4) % 8)
+                    let prev = 0
+                    if (list.length) list.push(4)
                     list.push((x >> 9) % 8)
                     list.push((x >> 6) % 8)
                     list.push((x >> 3) % 8)
@@ -499,7 +500,10 @@ export class Draw {
                             if (tx < 0 || tx >= W || ty < 0 || ty >= H) continue
                             if (points[nxp] == 1) {
                                 points[nxp] = 0
-                                list.push(prev = i)
+                                list.push((i + 8 - prev) % 8)
+                                table.push(i)
+                                table2.push((i + 8 - prev) % 8)
+                                prev = i
                                 px = tx, py = ty
                                 ok = true
                                 break
@@ -510,21 +514,12 @@ export class Draw {
                 }
             }
         }
-        list.unshift(list.length % 2)
-        for (let i = 0; i < list.length; i += 2) {
-            if (i + 1 < list.length) contour.push(list[i] * 8 + list[i + 1])
-            else contour.push(list[i] * 8)
-        }
-        const ret = compress_array(contour)
+        const ret = compress_array(list, { bit_num: 6 })
         return ret
     }
     private disp_contour(img, contour, color) {
-        const dx = [-1, 0, 1, 1, 1, 0, -1, -1], dy = [1, 1, 1, 0, -1, -1, -1, 0]
-        const temp = decompress_array(contour)
-        let c = []
-        for (let i = 0; i < temp.length; i++)c.push(temp[i] >> 3, temp[i] % 8)
-        if (c[0] == 0) c.pop()
-        c.shift()
+        const dx = [1, 1, 0, -1, -1, -1, 0, 1], dy = [0, -1, -1, -1, 0, 1, 1, 1]
+        const c = decompress_array(contour, { bit_num: 6 })
         let x, y, f = 1, prev = -1
         for (let i = 0; i < c.length; i++) {
             if (f) {
@@ -550,17 +545,18 @@ export class Draw {
                 prev = -1
             }
             else {
-                if (prev == (c[i] + 4) % 8) {
+                if (c[i] == 4 && prev >= 0) {
                     f = 1
                 }
                 else {
-                    x += dx[c[i]], y += dy[c[i]]
+                    if (prev < 0) prev = 0
+                    x += dx[(c[i] + prev) % 8], y += dy[(c[i] + prev) % 8]
                     const p = y * img.width + x
                     img.data[p * 4] = color[0]
                     img.data[p * 4 + 1] = color[1]
                     img.data[p * 4 + 2] = color[2]
                     img.data[p * 4 + 3] = color[3]
-                    prev = c[i]
+                    prev = (c[i] + prev) % 8
                 }
             }
         }
@@ -580,7 +576,7 @@ export class Draw {
     }
     private decompress_trace(e) {
         let v = decompress_array(e.comp)
-        let len = v.length / 2, p1 = 0, p2 = 0
+        let len = v.length >> 1, p1 = 0, p2 = 0
         for (let i = 0; i < len; i++) {
             e.points.push(p1 + v[i] - 30, p2 + v[len + i] - 30)
             p1 += v[i] - 30, p2 += v[len + i] - 30
