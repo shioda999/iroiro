@@ -31,6 +31,7 @@ export class BASE64 {
 }
 export class huffman {
     public static enc(data, bit_num) {
+        if (data.length == 0) return []
         let hist = [], codes = [], queue = new priority_queue(), bit = new bitstream(), leaf_num = 0
         for (let i = 0; i < (1 << bit_num); i++)hist[i] = 0
         for (let i = 0; i < data.length; i++)hist[data[i]]++
@@ -49,10 +50,11 @@ export class huffman {
         const padding = bit.get_padding_size()
         let ret = bit.get()
         ret[0] |= padding << 3
-        //console.log("rate=", (ret.length * 6) / (data.length * bit_num))
+        console.log("rate=", (ret.length * 6) / (data.length * bit_num))
         return BASE64.enc(ret)
     }
     public static dec(data, bit_num) {
+        if (data.length == 0) return []
         const bit = new bitstream(BASE64.dec(data)), ret = []
         const padding = bit.read(3), leaf_num = bit.read(bit_num)
         const tree = this.make_tree_by_bp(bit, leaf_num, bit_num)
