@@ -463,7 +463,7 @@ export class Draw {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
                 if (img.data[p * 4] == tr && img.data[p * 4 + 1] == tg
-                    && img.data[p * 4 + 2] == tb || img.data[p * 4 + 3] == ta) continue
+                    && img.data[p * 4 + 2] == tb && img.data[p * 4 + 3] == ta) continue
                 for (let i = 0; i < 4; i++) {
                     let tx = x + dx4[i], ty = y + dy4[i]
                     let nxp = W * ty + tx
