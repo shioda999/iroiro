@@ -161,6 +161,7 @@ export class deflate {
     }
 }
 export function compress_array(data, info: any = {}) {
+    if (data.length == 0) return []
     if (!info.name) info.name = "auto"
     if (!info.bit_num) info.bit_num = 6
     switch (info.name) {
@@ -175,6 +176,7 @@ export function compress_array(data, info: any = {}) {
     }
 }
 export function decompress_array(data, info: any = {}) {
+    if (data.length == 0) return []
     if (!info.name) info.name = "auto"
     if (!info.bit_num) info.bit_num = 6
     switch (info.name) {
