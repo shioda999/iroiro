@@ -134,7 +134,11 @@ export class Draw {
                 const ctx = this.canvas.context
                 this.canvas.info = Object.assign({}, e)
                 katextext_to_canvas(this.parent, html, e.font, (canvas, W, H) => {
-                    ctx.drawImage(canvas, e.points[0], e.points[1], W * e.scale, H * e.scale)
+                    ctx.save()
+                    ctx.translate(e.points[0] + W * e.scale / 2, e.points[1] + H * e.scale / 2)
+                    ctx.rotate(e.rotate * Math.PI / 180)
+                    ctx.drawImage(canvas, -W * e.scale / 2, -H * e.scale / 2, W * e.scale, H * e.scale)
+                    ctx.restore()
                 })
                 this.canvas_written = true
                 this.create_new_canvas()

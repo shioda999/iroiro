@@ -46,7 +46,8 @@ export class MobileCanvas {
                 points: [this.img_x, this.img_y],
                 text: this.text,
                 font: this.font_scale,
-                scale: this.prev_w / this.img.width
+                scale: this.prev_w / this.img.width,
+                rotate: this.angle
             }
             this.drawInstance.canvas.info = info
         }
@@ -121,7 +122,7 @@ export class MobileCanvas {
         let a = this.conv(px, py)
         let px2 = a[0], py2 = a[1]
         if (this.isDrag == false) {
-            const k = Math.min(w / 5, 30)
+            const k = Math.min(Math.min(w / 4, h / 4), 30)
             if (x + k < px && px < w + x - k
                 && y + k < py && py < h + y - k) {
                 this.ope = "move"
