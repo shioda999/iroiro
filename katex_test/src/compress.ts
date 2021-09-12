@@ -49,7 +49,7 @@ export class huffman {
         const padding = bit.get_padding_size()
         let ret = bit.get()
         ret[0] |= padding << 3
-        console.log("rate=", (ret.length * 6) / (data.length * bit_num))
+        //console.log("rate=", (ret.length * 6) / (data.length * bit_num))
         return BASE64.enc(ret)
     }
     public static dec(data, bit_num) {
@@ -139,7 +139,7 @@ export class deflate {
         const str1 = huffman.enc(huf1, 1 + bit_num)
         const str2 = huffman.enc(huf2, l)
         const ret = str1 + "," + str2
-        console.log("rate=", ret.length / array.length)
+        //console.log("rate=", ret.length / array.length)
         return ret
     }
     public static dec(str, bit_num, l) {
