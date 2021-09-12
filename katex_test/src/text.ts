@@ -117,6 +117,7 @@ export class TextMode {
         this.katex_rule.style.cssText = "font-size : " + this.font_size.value + "em"
     }
     private render_text() {
+        if (!this.auto_update.checked) return
         let text = this.henkan2(this.form.text.value)
         let html, ok = true
         try {
