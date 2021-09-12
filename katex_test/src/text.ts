@@ -118,7 +118,6 @@ export class TextMode {
     }
     private render_text() {
         let text = this.henkan2(this.form.text.value)
-        console.log(text)
         let html, ok = true
         try {
             html = katex_instance.renderToString(text, katex_option) + "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"

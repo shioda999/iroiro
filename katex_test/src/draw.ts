@@ -534,7 +534,6 @@ export class Draw {
                     v += c[j + i]
                 }
                 y = v
-                console.log(x, y)
                 i += 7
                 f = 0
                 const p = y * img.width + x
