@@ -3,7 +3,8 @@ import { Global } from './global'
 import { Other } from './other';
 import { PaintMode } from './paint'
 import { TextMode } from './text';
-
+document.getElementById("loading-icon").remove()
+compress_function_check()
 window.addEventListener('load', () => {
     const text = new TextMode()
     const paint = new PaintMode()

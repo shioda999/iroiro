@@ -29,96 +29,6 @@ export class BASE64 {
         return ret
     }
 }
-//lzssを使った数列圧縮関数
-//配列の要素は0以上63以下であることが必要
-//wがウィンドウ幅のビット数
-//lが連続数のビット数
-export function lzss_comp(array, w = 3, l = 3) {
-    const bit = new bitstream()
-    let table = []
-    for (let i = 0; i < array.length;) {
-        let pos = -1
-        let len = 0
-        for (let j = 0; j < Math.min((1 << w), i); j++) {
-            for (let k = 0; k < Math.min(1 << l, array.length - i); k++) {
-                if (array[i + k] == array[i - j + k - 1]) {
-                    if (len < k) {
-                        len = k
-                        pos = j
-                    }
-                }
-                else break
-            }
-        }
-        if (len == 0) {
-            bit.write(0, 1)
-            bit.write(array[i], 6)
-            i++
-        }
-        else {
-            bit.write(1, 1)
-            bit.write(pos, w)
-            bit.write(len, l)
-            table.push([pos, len])
-            i += len
-        }
-    }
-    console.log(table)
-    console.log("rate=", bit.get().length / array.length)
-    return BASE64.enc(bit.get())
-}
-export function lzss_decomp(data, w = 3, l = 3) {
-    const bit = new bitstream(BASE64.dec(data))
-    let ret = []
-    while (1) {
-        if (!bit.check(7)) break
-        let f = bit.read(1)
-        if (f == 0) {
-            ret.push(bit.read(6))
-        }
-        else {
-            if (!bit.check(w + l)) break
-            let pos = bit.read(w), len = bit.read(l)
-            for (let i = 0; i < len; i++)ret.push(ret[ret.length - pos - 1])
-        }
-    }
-    return ret
-}
-//ランレングス符号
-//
-export function run_length_comp(array) {
-    let ret = [], table = []
-    for (let i = 0; i < array.length; i++) {
-        if (i && array[i] == array[i - 1]) {
-            let c = 0, v = array[i]
-            ret.push(v)
-            while (i + 1 < array.length && array[i + 1] == v) i++, c++
-            while (c >= 63) ret.push(63), c -= 63
-            ret.push(c)
-            table.push(c)
-        }
-        else ret.push(array[i])
-    }
-    console.log(table)
-    console.log("rate=", ret.length / array.length)
-    return BASE64.enc(ret)
-}
-export function run_length_decomp(data) {
-    let array = BASE64.dec(data)
-    let ret = [], f = 1
-    for (let i = 0; i < array.length; i++) {
-        ret.push(array[i])
-        if (f == 0 && array[i] == array[i - 1]) {
-            let c = 0, t = array[i++]
-            while (array[i] == 63) c += 63, i++
-            c += array[i]
-            while (c--) ret.push(t)
-            f = 1
-        }
-        else f = 0
-    }
-    return ret
-}
 export class huffman {
     public static enc(data, bit_num) {
         let hist = [], codes = [], queue = new priority_queue(), bit = new bitstream(), leaf_num = 0
@@ -137,9 +47,9 @@ export class huffman {
         this.huffman_make_bp(bit, node, bit_num)
         for (let i = 0; i < data.length; i++)bit.write(codes[data[i]].code, codes[data[i]].len)
         const padding = bit.get_padding_size()
-        const ret = bit.get()
+        let ret = bit.get()
         ret[0] |= padding << 3
-        console.log("rate=", ret.length / data.length)
+        console.log("rate=", (ret.length * 6) / (data.length * bit_num))
         return BASE64.enc(ret)
     }
     public static dec(data, bit_num) {
@@ -199,28 +109,82 @@ export class huffman {
         return tree
     }
 }
+export class deflate {
+    public static enc(array, bit_num, l) {
+        const huf1 = [], huf2 = []
+        for (let i = 0; i < array.length;) {
+            let pos = -1
+            let len = 0
+            for (let j = 0; j < Math.min((1 << bit_num), i); j++) {
+                for (let k = 0; k < Math.min(1 << l, array.length - i); k++) {
+                    if (array[i + k] == array[i - j + k - 1]) {
+                        if (len < k) {
+                            len = k
+                            pos = j
+                        }
+                    }
+                    else break
+                }
+            }
+            if (len == 0) {
+                huf1.push(array[i])
+                i++
+            }
+            else {
+                huf1.push(pos | (1 << bit_num))
+                huf2.push(len)
+                i += len
+            }
+        }
+        const str1 = huffman.enc(huf1, 1 + bit_num)
+        const str2 = huffman.enc(huf2, l)
+        const ret = str1 + "," + str2
+        console.log("rate=", ret.length / array.length)
+        return ret
+    }
+    public static dec(str, bit_num, l) {
+        const arr = str.split(",")
+        const data = huffman.dec(arr[0], 1 + bit_num)
+        const data2 = huffman.dec(arr[1], l)
+        let ret = [], i2 = 0
+        for (let i = 0; i < data.length; i++) {
+            if (data[i] >> bit_num & 1) {
+                let pos = data[i] % (1 << bit_num), len = data2[i2]
+                for (let i = 0; i < len; i++)ret.push(ret[ret.length - pos - 1])
+                i2++
+            }
+            else {
+                ret.push(data[i])
+            }
+        }
+        return ret
+    }
+}
 export function compress_array(data, info: any = {}) {
-    if (!info.name) info.name = "huffman"
+    if (!info.name) info.name = "auto"
     if (!info.bit_num) info.bit_num = 6
     switch (info.name) {
-        case "lzss":
-            return lzss_comp(data)
-        case "run_length":
-            return run_length_comp(data)
         case "huffman":
             return huffman.enc(data, info.bit_num)
+        case "deflate":
+            return deflate.enc(data, info.bit_num, 8)
+        case "auto":
+            const huf = huffman.enc(data, info.bit_num)
+            const def = deflate.enc(data, info.bit_num, 8)
+            return huf.length <= def.length ? huf : def
     }
 }
 export function decompress_array(data, info: any = {}) {
-    if (!info.name) info.name = "huffman"
+    if (!info.name) info.name = "auto"
     if (!info.bit_num) info.bit_num = 6
     switch (info.name) {
-        case "lzss":
-            return lzss_decomp(data)
-        case "run_length":
-            return run_length_decomp(data)
         case "huffman":
             return huffman.dec(data, info.bit_num)
+        case "deflate":
+            return deflate.dec(data, info.bit_num, 8)
+        case "auto":
+            if (data.indexOf(",") === -1) return huffman.dec(data, info.bit_num)
+            return deflate.dec(data, info.bit_num, 8)
     }
 }
 export function compress_function_check(a?) {
