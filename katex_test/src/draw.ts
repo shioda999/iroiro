@@ -456,8 +456,8 @@ export class Draw {
         px = Math.round(px), py = Math.round(py)
         if (!img) img = this.get_current_img()
         const dist = this.canvas.context.getImageData(0, 0, img.width, img.height)
-        //this.flood_fill(img, dist, px, py, this.get_colorValue())
-        this.canvas.context.putImageData(img, 0, 0)
+        this.flood_fill(img, dist, px, py, this.get_colorValue())
+        this.canvas.context.putImageData(dist, 0, 0)
     }
     private make_contour(canvas: Canvas) {
         const img = canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
