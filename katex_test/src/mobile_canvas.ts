@@ -3,6 +3,7 @@ import { Canvas } from "./canvas"
 export class MobileCanvas {
     private canvas: Canvas
     private img
+    private angle: number = 0
     private prev_w = 0
     private img_x = 0
     private img_y = 0
@@ -25,9 +26,13 @@ export class MobileCanvas {
     }
     public transfer_canvas() {
         let img = this.img
+        const w = this.prev_w, h = img.height * this.prev_w / img.width
         const context = this.drawInstance.canvas.context
-        context.drawImage(img, this.img_x, this.img_y,
-            this.prev_w, img.height * this.prev_w / img.width)
+        context.save()
+        context.translate(this.img_x + w / 2, this.img_y + h / 2)
+        context.rotate(this.angle * Math.PI / 180)
+        context.drawImage(img, -w / 2, -h / 2, w, h)
+        context.restore()
         this.canvas.release()
         this.set_draw_info()
         this.drawInstance.canvas_written = true
@@ -49,7 +54,7 @@ export class MobileCanvas {
             this.drawInstance.canvas.info.mode = "img"
         }
     }
-    private disp_img(x, y, scale?) {
+    private disp_img(x, y, scale?, angle = this.angle) {
         const img = this.img
         if (img == undefined) return
         if (scale == undefined) scale = this.prev_w / img.width
@@ -57,47 +62,22 @@ export class MobileCanvas {
         const context = this.canvas.context
         context.clearRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
         x = Math.floor(x), y = Math.floor(y)
-        context.drawImage(img, x, y, w, h)
+        context.save()
+        context.translate(x + w / 2, y + h / 2)
+        context.rotate(angle * Math.PI / 180)
+        context.drawImage(img, -w / 2, -h / 2, w, h)
         context.beginPath()
-        context.moveTo(x, y)
-        context.lineTo(x + w, y)
-        context.lineTo(x + w, y + h)
-        context.lineTo(x, y + h)
+        context.moveTo(-w / 2, -h / 2)
+        context.lineTo(w / 2, -h / 2)
+        context.lineTo(w / 2, h / 2)
+        context.lineTo(-w / 2, h / 2)
         context.closePath()
         context.stroke()
+        context.restore()
     }
     private dragStart = (px, py) => {
         this.isDrag = true
-        const img = this.img
-        const prev_w = this.prev_w
-        const x = this.img_x
-        const y = this.img_y
-        const k = Math.min(this.prev_w / 5, 15)
-        if (x + k < px && px < prev_w + x - k
-            && y + k < py && py < img.height * prev_w / img.width + y - k) {
-            this.ope = "move"
-        }
-        else if (prev_w + x - k < px && px < prev_w + x + k
-            && y - k < py && py < img.height * prev_w / img.width + y + k) {
-            this.ope = "ch_scale_right"
-        }
-        else if (x - k < px && px < x + k
-            && y - k < py && py < img.height * prev_w / img.width + y + k) {
-            this.ope = "ch_scale_left"
-        }
-        else if (x < px && px < prev_w + x
-            && y - k < py && py < y + k) {
-            this.ope = "ch_scale_top"
-        }
-        else if (x < px && px < prev_w + x
-            && img.height * prev_w / img.width + y - k < py
-            && py < img.height * prev_w / img.width + y + k) {
-            this.ope = "ch_scale_bottom"
-        }
-        else {
-            this.ope = "set"
-            this.transfer_canvas()
-        }
+        if (this.ope == "set") this.transfer_canvas()
         this.firstPosition.x = px
         this.firstPosition.y = py
     }
@@ -126,6 +106,9 @@ export class MobileCanvas {
                 this.img_x += dx
                 this.img_y += dy
                 break
+            case "rotate":
+                this.angle += this.calc_rotate_angle(px, py, dx, dy)
+                break
             case "set":
                 break
         }
@@ -133,32 +116,41 @@ export class MobileCanvas {
         this.firstPosition.y = null;
     }
     private move = (px, py) => {
-        const prev_w = this.prev_w
-        const x = this.img_x
-        const y = this.img_y
+        const img = this.img
+        const x = this.img_x, y = this.img_y, w = this.prev_w, h = img.height * this.prev_w / img.width
+        let a = this.conv(px, py)
+        let px2 = a[0], py2 = a[1]
         if (this.isDrag == false) {
-            let img = this.img
-            const k = Math.min(prev_w / 5, 15)
-            if (x + k < px && px < prev_w + x - k
-                && y + k < py && py < img.height * prev_w / img.width + y - k) {
+            const k = Math.min(w / 5, 30)
+            if (x + k < px && px < w + x - k
+                && y + k < py && py < h + y - k) {
+                this.ope = "move"
                 this.canvas.change_cursor("move")
             }
-            else if (prev_w + x - k < px && px < prev_w + x + k
-                && y - k < py && py < img.height * prev_w / img.width + y + k) {
-                this.canvas.change_cursor("ew-resize")
-            }
-            else if (x - k < px && px < x + k
-                && y - k < py && py < img.height * prev_w / img.width + y + k) {
-                this.canvas.change_cursor("ew-resize")
-            }
-            else if (x < px && px < prev_w + x
-                && y - k < py && py < y + k) {
-                this.canvas.change_cursor("ns-resize")
-            }
-            else if (x < px && px < prev_w + x
-                && img.height * prev_w / img.width + y - k < py
-                && py < img.height * prev_w / img.width + y + k) {
-                this.canvas.change_cursor("ns-resize")
+            else if (x - k < px2 && px2 < w + x + k && y - k < py2 && py2 < h + y + k) {
+                if (w + x - k < px2 && px2 < w + x + k && y < py2 && py2 < h + y) {
+                    this.ope = "ch_scale_right"
+                    this.canvas.change_cursor("ew-resize")
+                }
+                else if (x - k < px2 && px2 < x + k && y < py2 && py2 < h + y) {
+                    this.ope = "ch_scale_left"
+                    this.canvas.change_cursor("ew-resize")
+                }
+                else if (x < px2 && px2 < w + x && y - k < py2 && py2 < y + k) {
+                    this.ope = "ch_scale_top"
+                    this.canvas.change_cursor("ns-resize")
+                }
+                else if (x < px2 && px2 < w + x && h + y - k < py2 && py2 < h + y + k) {
+                    this.ope = "ch_scale_bottom"
+                    this.canvas.change_cursor("ns-resize")
+                }
+                else {
+                    this.ope = "rotate"
+                    if ((x < px2) === (y < py2)) {
+                        this.canvas.change_cursor("ne-resize")
+                    }
+                    else this.canvas.change_cursor("nw-resize")
+                }
             }
             else {
                 this.ope = "set"
@@ -172,25 +164,47 @@ export class MobileCanvas {
             let scale
             switch (this.ope) {
                 case "ch_scale_left":
-                    scale = (prev_w - dx) / img.width
+                    scale = (w - dx) / img.width
                     this.disp_img(x + dx, y, scale)
                     break
                 case "ch_scale_right":
-                    scale = (prev_w + dx) / img.width
+                    scale = (w + dx) / img.width
                     this.disp_img(x, y, scale)
                     break
                 case "ch_scale_top":
-                    scale = (prev_w * img.height / img.width - dy) / img.height
+                    scale = (h - dy) / img.height
                     this.disp_img(x, y + dy, scale)
                     break
                 case "ch_scale_bottom":
-                    scale = (prev_w * img.height / img.width + dy) / img.height
+                    scale = (h + dy) / img.height
                     this.disp_img(x, y, scale)
+                    break
+                case "rotate":
+                    let d_angle = this.calc_rotate_angle(px, py, dx, dy)
+                    if (d_angle != 999) this.disp_img(x, y, scale, this.angle + d_angle)
                     break
                 case "move":
                     this.disp_img(x + dx, y + dy)
                     break
             }
         }
+    }
+    private calc_rotate_angle(px, py, dx, dy) {
+        const img = this.img, w = this.prev_w, h = img.height * w / img.width, x = this.img_x, y = this.img_y
+        const r1 = (x + w / 2 - this.firstPosition.x) * (x + w / 2 - this.firstPosition.x)
+            + (y + h / 2 - this.firstPosition.y) * (y + h / 2 - this.firstPosition.y)
+        const r2 = (x + w / 2 - px) * (x + w / 2 - px)
+            + (y + h / 2 - py) * (y + h / 2 - py)
+        if (r1 == 0 || r2 == 0) return 999
+        let d_angle = Math.acos((r1 + r2 - dx * dx - dy * dy) / 2 / Math.sqrt(r1 * r2))
+        let sign = (x + w / 2 - this.firstPosition.x) * (y + h / 2 - py) > (y + h / 2 - this.firstPosition.y) * (x + w / 2 - px) ? 1 : -1
+        return sign * Math.round((d_angle / Math.PI * 180) / 3) * 3
+    }
+    private conv(px, py) {
+        const img = this.img, w = this.prev_w, h = img.height * w / img.width, x = this.img_x, y = this.img_y
+        const r = Math.sqrt((x + w / 2 - px) * (x + w / 2 - px) + (y + h / 2 - py) * (y + h / 2 - py))
+        const rad = this.angle * Math.PI / 180
+        const rad2 = Math.atan2(y + h / 2 - py, x + w / 2 - px)
+        return [x + w / 2 - r * Math.cos(rad - rad2), y + h / 2 + r * Math.sin(rad - rad2)]
     }
 }
