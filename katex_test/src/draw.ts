@@ -76,8 +76,11 @@ export class Draw {
     }
     private get_canvas_data() {
         let data = {}
+        const menu = document.getElementById("floating_menu")
         const textarea: any = document.getElementById("textarea")
-        data[0] = { text: textarea.value, grid: this.grid_mode }
+        const range: any = menu.children["move"]
+        const font_size: any = menu.children["font_size"]
+        data[0] = { text: textarea.value, grid: this.grid_mode, font: font_size.value, text_form_left: range.value }
         this.canvas_history.get().forEach((c, i) => {
             if (c.info.mode == "img") {
                 let str = c.canvas.toDataURL("image/webp", "0.5")
@@ -107,8 +110,13 @@ export class Draw {
         for (let i in data) {
             const e = data[i]
             if (!e.mode) {
+                const menu = document.getElementById("floating_menu")
                 const textarea: any = document.getElementById("textarea")
+                const range: any = menu.children["move"]
+                const font_size: any = menu.children["font_size"]
                 textarea.value = e.text
+                range.value = e.text_form_left
+                font_size.value = e.font
                 window.dispatchEvent(render_text_event)
                 this.change_grid_mode(e.grid)
             }

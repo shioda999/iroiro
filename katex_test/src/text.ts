@@ -36,7 +36,7 @@ export class TextMode {
         document.getElementById("button_mathrm").addEventListener("click", () => this.add_str("\\mathrm{", "}"))
         document.getElementById("button_rightarrow").addEventListener("click", () => this.add_str("\\rightarrow "))
         document.getElementById("syntax_checker").addEventListener("click", () => this.syntax_check())
-        window.addEventListener("my_event_render_text", () => this.render_text())
+        window.addEventListener("my_event_render_text", () => { this.change_fontsize(); this.render_text() })
     }
     private set_floatingmenuEvents() {
         this.auto_update.onclick = () => this.render_text()
