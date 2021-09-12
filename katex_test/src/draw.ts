@@ -456,8 +456,8 @@ export class Draw {
         px = Math.round(px), py = Math.round(py)
         if (!img) img = this.get_current_img()
         const dist = this.canvas.context.getImageData(0, 0, img.width, img.height)
-        this.flood_fill(img, dist, px, py, this.get_colorValue())
-        this.canvas.context.putImageData(dist, 0, 0)
+        //this.flood_fill(img, dist, px, py, this.get_colorValue())
+        this.canvas.context.putImageData(img, 0, 0)
     }
     private make_contour(canvas: Canvas) {
         const img = canvas.context.getImageData(0, 0, this.canvas.canvas.width, this.canvas.canvas.height)
@@ -470,7 +470,7 @@ export class Draw {
         const dx4 = [-1, 1, 0, 0], dy4 = [0, 0, -1, 1]
         const dx = [1, 1, 0, -1, -1, -1, 0, 1], dy = [0, -1, -1, -1, 0, 1, 1, 1]
         canvas.info.points.length = 2
-        let list = [], table = [], table2 = [], points = new Array(W * H)
+        let list = [], points = new Array(W * H)
         for (let y = 0; y < H; y++) {
             for (let x = 0; x < W; x++) {
                 const p = W * y + x
@@ -513,8 +513,7 @@ export class Draw {
                             if (points[nxp] == 1) {
                                 points[nxp] = 0
                                 list.push((i + 8 - prev) % 8)
-                                table.push(i)
-                                table2.push((i + 8 - prev) % 8)
+                                if ((i + 8 - prev) % 8 == 4) console.log("!!!!!!!!!!!!!!")
                                 prev = i
                                 px = tx, py = ty
                                 ok = true
