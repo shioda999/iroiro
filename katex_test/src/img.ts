@@ -8,13 +8,13 @@ export class Img {
         img.src = url
         img.onload = () => {
             this.canvas = new MobileCanvas(img, 300, drawInstance)
+            this.loopId = setInterval(() => {
+                if (this.canvas.release_flag) {
+                    delete this.canvas
+                    clearInterval(this.loopId)
+                }
+            }, 1000)
         }
-        this.loopId = setInterval(() => {
-            if (this.canvas.release_flag) {
-                delete this.canvas
-                clearInterval(this.loopId)
-            }
-        }, 1000)
     }
     public transfer_canvas() {
         if (this.canvas) {

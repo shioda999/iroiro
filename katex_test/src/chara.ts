@@ -9,13 +9,13 @@ export class Chara {
         const scale = fontsize / 2 * window.devicePixelRatio
         katextext_to_canvas(parent, html, scale, (canvas, W, H) => {
             this.canvas = new MobileCanvas(canvas, W / window.devicePixelRatio, drawInstance, text, scale)
+            this.loopId = setInterval(() => {
+                if (this.canvas.release_flag) {
+                    delete this.canvas
+                    clearInterval(this.loopId)
+                }
+            }, 1000)
         })
-        this.loopId = setInterval(() => {
-            if (this.canvas.release_flag) {
-                delete this.canvas
-                clearInterval(this.loopId)
-            }
-        }, 1000)
     }
     public transfer_canvas() {
         if (this.canvas) {
