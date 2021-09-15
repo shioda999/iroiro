@@ -1,8 +1,8 @@
-import { Global, is_PC, katex_instance, katex_option } from "./global";
+import { getRuleBySelector, Global, is_PC, katex_instance, katex_option } from "./global";
 
 export class TextMode {
     private subject = "math"
-    private katex_rule = this.getRuleBySelector('.katex')
+    private katex_rule = getRuleBySelector('.katex')
     private form = document["form"]
     private html_text = document.getElementById("text")
     private text_form = document.getElementById("textform")
@@ -158,23 +158,5 @@ export class TextMode {
                 break
         }
         return str
-    }
-    private getRuleBySelector(sele) {
-        var i, j, sheets, rules, rule = null;
-
-        // stylesheetのリストを取得
-        sheets = document.styleSheets;
-        for (i = 0; i < sheets.length; i++) {
-            // そのstylesheetが持つCSSルールのリストを取得
-            rules = sheets[i].cssRules;
-            for (j = 0; j < rules.length; j++) {
-                // セレクタが一致するか調べる
-                if (sele === rules[j].selectorText) {
-                    rule = rules[j];
-                    break;
-                }
-            }
-        }
-        return rule;
     }
 }

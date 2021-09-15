@@ -1,5 +1,5 @@
 import { compress_function_check, compress_function_check2 } from './compress';
-import { Global } from './global'
+import { getRuleBySelector, Global } from './global'
 import { Other } from './other';
 import { PaintMode } from './paint'
 import { TextMode } from './text';
@@ -13,6 +13,7 @@ window.addEventListener('load', () => {
 
     function setup() {
         set_tabEvents()
+        container_on()
         window.onresize = paint.onresize
         document.getElementById("loading-icon").remove()
     }
@@ -27,5 +28,8 @@ window.addEventListener('load', () => {
         text.change_mode()
         paint.change_mode()
         other.change_mode()
+    }
+    function container_on() {
+        getRuleBySelector('.container .tab-title').style["pointer-events"] = "auto"
     }
 });

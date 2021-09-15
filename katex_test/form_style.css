@@ -113,12 +113,13 @@ rgba(133, 235, 175);
 .container .tab-title {
     background:white;
     position: relative;
+    pointer-events: none;
     border-bottom: 2px solid 
 transparent;
 }
 .container .tab-title:hover {
     cursor: pointer;
-    text-decoration: underline
+    text-decoration: underline;
 }
 .container .tab-body {
     order: 1;

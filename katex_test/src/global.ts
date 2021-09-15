@@ -38,3 +38,21 @@ export function katextext_to_canvas(parent, html, scale, callback) {
         element.remove()
     })
 }
+export function getRuleBySelector(sele) {
+    var i, j, sheets, rules, rule = null;
+
+    // stylesheetのリストを取得
+    sheets = document.styleSheets;
+    for (i = 0; i < sheets.length; i++) {
+        // そのstylesheetが持つCSSルールのリストを取得
+        rules = sheets[i].cssRules;
+        for (j = 0; j < rules.length; j++) {
+            // セレクタが一致するか調べる
+            if (sele === rules[j].selectorText) {
+                rule = rules[j];
+                break;
+            }
+        }
+    }
+    return rule;
+}
