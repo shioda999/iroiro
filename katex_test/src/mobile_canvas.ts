@@ -123,8 +123,8 @@ export class MobileCanvas {
         let px2 = a[0], py2 = a[1]
         if (this.isDrag == false) {
             const k = Math.min(Math.min(w / 4, h / 4), 30)
-            if (x + k < px && px < w + x - k
-                && y + k < py && py < h + y - k) {
+            if (x + k < px2 && px2 < w + x - k
+                && y + k < py2 && py2 < h + y - k) {
                 this.ope = "move"
                 this.canvas.change_cursor("move")
             }
